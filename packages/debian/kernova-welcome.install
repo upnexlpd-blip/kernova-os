@@ -1,0 +1,5 @@
+apps/welcome/*.py usr/share/kernova/welcome
+apps/welcome/locales/*.json usr/share/kernova/welcome/locales
+apps/integration/kernova-welcome.desktop usr/share/applications
+apps/integration/kernova-welcome-autostart.desktop etc/xdg/autostart
+docs/user-guide.md usr/share/doc/kernova-welcome

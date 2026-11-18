@@ -1,0 +1,94 @@
+#!/usr/bin/python3
+"""live-build's auto/config entry point, copied into each new work tree."""
+
+import gzip
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+
+def main():
+    product = json.loads(Path("product.json").read_text())
+    if not Path(".kernova-work").is_file() or Path("config/common").exists():
+        sys.exit("Configure only a fresh work tree through scripts/build-iso.")
+    if sys.argv[1:]:
+        sys.exit("Use scripts/build-iso to choose a profile.")
+    if product["suite"] != "trixie" or product["architecture"] != "amd64":
+        sys.exit("This recipe supports Debian trixie on amd64.")
+    for key, pattern in {
+        "slug": r"[a-z][a-z0-9-]{0,30}",
+        "name": r"[A-Za-z0-9][A-Za-z0-9 .-]{0,64}",
+        "version": r"[0-9]+(?:\.[0-9]+){2}",
+        "locale": r"[a-z]{2,3}_[A-Z]{2}\.UTF-8",
+    }.items():
+        if not re.fullmatch(pattern, product[key]):
+            sys.exit(f"Unsupported product.json {key}")
+
+    boot = ("boot=live components live-config.noroot "
+            "live-config.username=kernova-live "
+            "live-config.user-default-groups=audio,cdrom,dip,netdev,plugdev,video "
+            f"live-config.locales={product['locale']}")
+    archive = "https://deb.debian.org/debian"
+    security = "https://deb.debian.org/debian-security"
+    options = {
+        "--ignore-system-defaults": None,
+        "--mode": "debian",
+        "--distribution": product["suite"],
+        "--architecture": product["architecture"],
+        "--binary-image": "iso-hybrid",
+        "--bootloaders": "grub-pc grub-efi",
+        "--uefi-secure-boot": "enable",
+        "--linux-flavours": "amd64",
+        "--initramfs": "live-boot",
+        "--initsystem": "systemd",
+        "--chroot-filesystem": "squashfs",
+        "--bootappend-live": boot,
+        "--bootappend-live-failsafe": boot + " nomodeset",
+        "--debian-installer": "live",
+        "--debian-installer-distribution": product["suite"],
+        "--debian-installer-gui": "true",
+        "--build-with-chroot": "true",
+        "--archive-areas": "main non-free-firmware",
+        "--parent-archive-areas": "main non-free-firmware",
+        "--firmware-chroot": "true",
+        "--firmware-binary": "true",
+        "--security": "true",
+        "--updates": "true",
+        "--backports": "false",
+        "--apt-secure": "true",
+        "--apt-recommends": "false",
+        "--debootstrap-options": "--include=ca-certificates",
+        "--mirror-bootstrap": archive,
+        "--mirror-chroot-security": security,
+        "--mirror-binary": archive,
+        "--mirror-binary-security": security,
+        "--parent-mirror-debian-installer": archive,
+        "--checksums": "sha256",
+        "--image-name": f"{product['slug']}-{product['version']}",
+        "--iso-application": product["name"],
+        "--iso-publisher": product["name"],
+        "--iso-volume": (product["slug"] + "-" + product["version"]).upper()[:32],
+    }
+    # Debian uses gzip/troff for the packaged English manual. Check both sources:
+    # a newer manpage on the web alone does not establish support on this VM.
+    manual = Path("/usr/share/man/man1/lb_config.1.gz")
+    with gzip.open(manual, "rt") as stream:
+        manual_options = set(re.findall(r"--[a-z][a-z-]+", stream.read().replace(r"\-", "-")))
+    usage = subprocess.check_output(["lb", "config", "noauto", "--usage"], text=True)
+    usage_options = set(re.findall(r"--[a-z][a-z-]+", usage))
+    missing = options.keys() - (manual_options & usage_options)
+    if missing:
+        sys.exit("Installed live-build usage/manual lacks " + ", ".join(sorted(missing)))
+    argv = ["lb", "config", "noauto"]
+    for key, value in options.items():
+        argv.append(key)
+        if value is not None:
+            argv.append(value)
+    Path("config-options.json").write_text(json.dumps(options, indent=2) + "\n")
+    subprocess.run(argv, check=True)
+
+
+if __name__ == "__main__":
+    main()

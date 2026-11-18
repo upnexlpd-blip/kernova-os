@@ -1,0 +1,35 @@
+Windows 11 Pro 10.0.26300 x64 | 2026-11-18 | KERNOVA source 0.1.0
+Account: ordinary Windows user. AMD Ryzen 5 3600X, 6 cores, 12 logical CPUs, 31.9 GiB installed RAM.
+CIM: VirtualizationFirmwareEnabled=False; VMMonitorModeExtensions=True; HypervisorPresent=False.
+NTFS; workspace volume C: approximately 46 GiB free. D: approximately 675 GiB free.
+No lb, debootstrap, dpkg-buildpackage, qemu-system-x86_64, VBoxManage, Get-VM or docker command found.
+PowerShell mount resolves to a Windows alias. Windows sudo.exe does not provide Linux mounts or chroot.
+deb.debian.org archive HEAD HTTP 200 outside the restricted command sandbox.
+The local user path below is abbreviated as <project>. No host VM provisioned.
+
+> wsl.exe --list --verbose
+The Windows Subsystem for Linux is not installed. You can install by running 'wsl.exe --install'.
+For more information please visit https://aka.ms/wslinstall
+exit 1
+
+> python -B scripts/preflight
+Host Windows 11, AMD64, 12 logical CPUs
+Project <project>; 45.7 GiB available
+BLOCKED: native Linux mounts, chroot and Debian live-build require a Linux builder. Copy this project onto ext4 in a dedicated Debian 13 amd64 VM.
+exit 1
+
+> python -B scripts/build-iso foundation
+BLOCKED: build-iso requires a dedicated Debian 13 amd64 Linux builder. Run scripts/preflight.
+exit 1
+
+> python -B scripts/build-iso preview
+BLOCKED: build-iso requires a dedicated Debian 13 amd64 Linux builder. Run scripts/preflight.
+exit 1
+
+> python -B scripts/build-packages build/host-package-check
+Run scripts/build-packages as an ordinary user in the Debian trixie build VM.
+exit 1
+
+> python -B scripts/test-packages
+Run scripts/test-packages as an ordinary user on the trixie build VM.
+exit 1

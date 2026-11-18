@@ -1,0 +1,8 @@
+product.json usr/share/kernova
+branding/kernova-logo.svg usr/share/icons/hicolor/scalable/apps
+branding/KernovaNight.colors usr/share/color-schemes
+branding/Parallax/metadata.json usr/share/wallpapers/Parallax
+generated/Parallax/contents/images/3840x2160.png usr/share/wallpapers/Parallax/contents/images
+branding/org.kernova.night/metadata.json usr/share/plasma/look-and-feel/org.kernova.night
+branding/org.kernova.night/contents/defaults usr/share/plasma/look-and-feel/org.kernova.night/contents
+generated/org.kernova.night/contents/previews/preview.png usr/share/plasma/look-and-feel/org.kernova.night/contents/previews

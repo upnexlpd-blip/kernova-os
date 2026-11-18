@@ -1,0 +1,25 @@
+#!/bin/sh
+set -eu
+if [ "$(uname -s)" != Linux ] || [ ! -r /etc/os-release ]; then
+    echo "Run inside the dedicated Debian 13 amd64 build VM." >&2
+    exit 1
+fi
+# shellcheck source=/dev/null
+. /etc/os-release
+if [ "$ID" != debian ] || [ "${VERSION_CODENAME:-}" != trixie ] || [ "$(dpkg --print-architecture)" != amd64 ]; then
+    echo "Expected Debian trixie amd64; check /etc/os-release and dpkg --print-architecture." >&2
+    exit 1
+fi
+if [ "$(id -u)" != 0 ]; then
+    echo "Run sudo ./scripts/install-prerequisites in the build VM." >&2
+    exit 1
+fi
+apt-get update --error-on=any
+apt-get install --no-install-recommends \
+    live-build debootstrap debian-archive-keyring ca-certificates gpgv \
+    wget rsync apt-utils cpio file bzip2 xz-utils zstd util-linux \
+    squashfs-tools xorriso mtools dosfstools sbsigntool \
+    build-essential dpkg-dev debhelper dh-python fakeroot librsvg2-bin desktop-file-utils \
+    uidmap mmdebstrap \
+    python3 python3-pyside6.qtwidgets shellcheck git sudo \
+    qemu-system-x86 qemu-system-gui qemu-utils ovmf seabios

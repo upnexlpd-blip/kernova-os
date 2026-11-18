@@ -1,0 +1,23 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	mkdir -p generated/Parallax/contents/images generated/org.kernova.night/contents/previews
+	rsvg-convert -w 3840 -h 2160 -o generated/Parallax/contents/images/3840x2160.png branding/Parallax/parallax.svg
+	rsvg-convert -w 512 -h 288 -o generated/org.kernova.night/contents/previews/preview.png branding/Parallax/parallax.svg
+
+override_dh_auto_test:
+	desktop-file-validate apps/integration/*.desktop
+	python3 -c "from pathlib import Path; [compile(p.read_bytes(), str(p), 'exec') for p in Path('apps/welcome').glob('*.py')]"
+
+override_dh_auto_install:
+	install -Dm755 apps/integration/kernova-welcome debian/kernova-welcome/usr/bin/kernova-welcome
+	install -Dm755 scripts/check-session debian/kernova-default-settings/usr/share/kernova/diagnostics/check-session
+
+override_dh_python3:
+	dh_python3 -pkernova-welcome /usr/share/kernova/welcome
+
+override_dh_compress:
+	dh_compress -Xuser-guide.md

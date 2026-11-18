@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+"""Build native Debian source and four arch-independent binary packages."""
+import argparse
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+
+ROOT = Path(__file__).resolve().parents[1]
+NAMES = {"kernova-branding", "kernova-default-settings", "kernova-desktop", "kernova-welcome"}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("output_directory", type=Path, help="a new or empty directory")
+    output = parser.parse_args().output_directory.resolve()
+    if sys.platform != "linux" or os.geteuid() == 0:
+        parser.exit(1, "Run scripts/build-packages as an ordinary user in the Debian trixie build VM.\n")
+    required = ("dpkg-buildpackage", "dpkg-parsechangelog", "dpkg-deb", "dh", "dh_python3",
+                "rsvg-convert", "desktop-file-validate")
+    missing = [tool for tool in required if not shutil.which(tool)]
+    if missing:
+        parser.exit(1, f"Missing Debian build tools: {', '.join(missing)}. See docs/build.md.\n")
+    if output.exists() and (not output.is_dir() or any(output.iterdir())):
+        parser.exit(1, f"Choose a new or empty directory. Retaining existing files in {output}\n")
+    version = json.loads((ROOT / "product.json").read_text(encoding="utf-8"))["version"]
+    changelog = ROOT / "packages/debian/changelog"
+    package_version = subprocess.check_output(
+        ["dpkg-parsechangelog", "-l", str(changelog), "-SVersion"], text=True).strip()
+    if version != package_version:
+        parser.exit(1, f"product.json version {version} differs from Debian changelog {package_version}.\n")
+
+    build = ROOT / "build"
+    build.mkdir(exist_ok=True)
+    job = Path(tempfile.mkdtemp(prefix="packages-", dir=build))
+    source = job / f"kernova-components-{version}"
+    source.mkdir()
+    for directory in ("debian", "defaults"):
+        shutil.copytree(ROOT / "packages" / directory, source / directory)
+    shutil.copytree(ROOT / "branding", source / "branding")
+    for pattern in ("product.json", "LICENSE", "docs/user-guide.md", "scripts/check-session",
+                    "apps/integration/kernova-welcome", "apps/integration/*.desktop",
+                    "apps/welcome/*.py", "apps/welcome/locales/*.json"):
+        matches = sorted(ROOT.glob(pattern))
+        if not matches:
+            raise SystemExit(f"Missing required package input {pattern}. Staging tree: {source}")
+        for path in matches:
+            destination = source / path.relative_to(ROOT)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, destination)
+    (source / "debian/rules").chmod(0o755)
+
+    log = job / "build.log"
+    print(f"Building {package_version}. Debian build log: {log}", flush=True)
+    with log.open("wb") as stream:
+        result = subprocess.run(["dpkg-buildpackage", "--build=source,all", "--no-sign"],
+                                cwd=source, stdout=stream, stderr=subprocess.STDOUT, check=False)
+    if result.returncode:
+        sys.stderr.write("\n".join(log.read_text(errors="replace").splitlines()[-30:]) + "\n")
+        raise SystemExit(f"dpkg-buildpackage failed ({result.returncode}). Full log: {log}")
+
+    binaries = sorted(job.glob("*.deb"))
+    if {deb.name for deb in binaries} != {f"{name}_{version}_all.deb" for name in NAMES}:
+        raise SystemExit(f"Unexpected .deb filenames after build. Inspect {job}")
+    for deb in binaries:
+        metadata = subprocess.check_output(
+            ["dpkg-deb", "-W", "--showformat=${Package} ${Version} ${Architecture}", str(deb)],
+            text=True).split()
+        if metadata != [deb.name.split("_")[0], version, "all"]:
+            raise SystemExit(f"Unexpected binary metadata in {deb}: {metadata}")
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    # A rename on the output filesystem exposes all four binaries together.
+    with tempfile.TemporaryDirectory(prefix=".kernova-debs-", dir=output.parent) as staging:
+        complete = Path(staging) / "complete"
+        complete.mkdir(mode=0o755)
+        for deb in binaries:
+            shutil.copy2(deb, complete / deb.name)
+        os.replace(complete, output)
+    print(f"Published four Debian packages to {output}. Source, build info and log: {job}")
+
+
+if __name__ == "__main__":
+    main()

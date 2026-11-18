@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+"""Inspect the ISO, embedded filesystem and installer against the release bundle."""
+
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+from installer_archive import digest, verified_hashes
+
+
+def require(assertion, message):
+    if not assertion:
+        raise ValueError(message)
+
+
+def output(*argv, **kwargs):
+    return subprocess.check_output(argv, text=True, **kwargs)
+
+
+def installed_packages(status):
+    packages = {}
+    for stanza in status.split("\n\n"):
+        fields = {}
+        key = None
+        for line in stanza.splitlines():
+            if line.startswith((" ", "\t")) and key == "Depends":
+                fields[key] += " " + line.strip()
+            elif line and not line[0].isspace() and ": " in line:
+                key, value = line.split(": ", 1)
+                fields[key] = value
+        if fields.get("Status") == "install ok installed":
+            packages[fields["Package"]] = fields
+    return packages
+
+
+def signed(path):
+    listing = output("sbverify", "--list", path, stderr=subprocess.STDOUT)
+    require(re.search(r"^signature\s+[1-9]\d*\s*$", listing, re.M), f"No signature table in {path.name}")
+
+
+def inspect(iso, tmp):
+    bundle = iso.parent
+    require(iso.is_file() and iso.stat().st_size > 0, "Missing or empty ISO")
+    checksum = (bundle / "SHA256SUMS").read_text().strip()
+    require(checksum == f"{digest(iso)}  {iso.name}", "ISO SHA-256 mismatch")
+    metadata = json.loads((bundle / "build.json").read_text())
+    profile = metadata["profile"]
+    product = metadata["product"]
+    require(profile in ("foundation", "preview"), "Unknown profile")
+    require(iso.name == f"{product['slug']}-{product['version']}-amd64.iso", "Unexpected ISO name")
+    hashes = verified_hashes(bundle / "installer")
+
+    def extract(source):
+        dest = tmp / source.lstrip("/")
+        dest.parent.mkdir(exist_ok=True, parents=True)
+        subprocess.run(["xorriso", "-abort_on", "FAILURE", "-osirrox", "on", "-indev", iso,
+                        "-extract", source, dest, "-end"], stdout=subprocess.DEVNULL, check=True)
+        require(dest.is_file() and dest.stat().st_size, f"Missing or empty ISO file {source}")
+        return dest
+
+    report = output("xorriso", "-indev", iso, "-report_el_torito", "plain", "-report_system_area", "plain", "-end")
+    for firmware in ("BIOS", "UEFI"):
+        require(re.search(r"El Torito boot img\s*:\s*\d+\s+" + firmware + r"\s+y\b", report),
+                f"No bootable {firmware} El Torito entry")
+    require(re.search(r"System area summary\s*:.*MBR", report), "No hybrid system area MBR")
+    extract("/boot/grub/grub_eltorito")
+    menu = extract("/boot/grub/grub.cfg").read_text()
+    start = extract("/boot/grub/install_start.cfg").read_text()
+    require(re.search(r"source\s+/boot/grub/install_start.cfg", menu),
+            "GRUB does not expose the installer")
+    require("/install/gtk/vmlinuz" in start and "/install/gtk/initrd.gz" in start, "Broken installer menu")
+    require("live-config.noroot" in menu and "nomodeset" in menu, "Missing live boot options")
+    versions = set(re.findall(r"^\s*linux\s+/live/vmlinuz-([\w.+-]+)\s", menu, re.M))
+    require(versions, "No live kernel in GRUB menu")
+    for version in versions:
+        kernel = extract(f"/live/vmlinuz-{version}")
+        require(f"/live/initrd.img-{version}" in menu, "Mismatched GRUB initrd")
+        extract(f"/live/initrd.img-{version}")
+        signed(kernel)
+    esp = extract("/boot/grub/efi.img")
+    for filename in ("bootx64.efi", "grubx64.efi"):
+        dest = tmp / filename
+        subprocess.run(["mcopy", "-i", esp, f"::/EFI/boot/{filename}", dest], check=True)
+        signed(dest)
+    for name, checksum in hashes.items():
+        installer = extract("/install/" + name.removeprefix("cdrom/"))
+        require(digest(installer) == checksum, f"Unauthenticated installer file {name}")
+        if name.endswith("/vmlinuz"):
+            signed(installer)
+    require(extract("/.disk/cd_type").read_text().strip() == "live", "Wrong d-i installation mode")
+    require("live-installer" in extract("/.disk/udeb_include").read_text().splitlines(),
+            "d-i live installer component is disabled")
+    udebs = output("xorriso", "-indev", iso, "-find", "/pool-udeb", "-type", "f", "-name",
+                   "live-installer_*.udeb", "-exec", "echo", "--", "-end")
+    require(re.search(r"/live-installer_[^/'\s]+\.udeb", udebs), "Missing live-installer udeb")
+    manifest = extract("/live/filesystem.packages")
+    require(manifest.read_bytes() == (bundle / "packages.tsv").read_bytes(), "Package manifest mismatch")
+    removed = set(extract("/live/filesystem.packages-remove").read_text().splitlines())
+    require({"live-config", "live-config-systemd"} <= removed, "Target keeps live session initialization")
+    rootfs = extract("/live/filesystem.squashfs")
+
+    def cat(path):
+        return output("unsquashfs", "-cat", rootfs, path)
+
+    packages = installed_packages(cat("var/lib/dpkg/status"))
+    external = {}
+    for line in manifest.read_text().splitlines():
+        parts = line.split()
+        if len(parts) == 2:
+            external[parts[0].split(":")[0]] = parts[1]
+    required = set("linux-image-amd64 initramfs-tools systemd-sysv live-boot live-config plasma-desktop "
+                   "plasma-workspace kwin-wayland sddm dolphin konsole network-manager bluez pipewire-audio "
+                   "firmware-iwlwifi firmware-realtek".split())
+    if profile == "preview":
+        vendor = {"kernova-desktop", "kernova-welcome", "kernova-branding", "kernova-default-settings"}
+        required.update(vendor)
+        require(not vendor & removed, "Installer removes a vendor package from the target")
+        for name in vendor:
+            require(name in packages and packages[name]["Version"] == product["version"],
+                    f"Unexpected release version of {name}")
+        require(json.loads(cat("usr/share/kernova/product.json")) == product, "Wrong vendor identity")
+        # Validate each dependency group of the project's metapackage against
+        # actual dpkg state, including alternatives if the application list changes.
+        for group in packages["kernova-desktop"]["Depends"].split(","):
+            candidates = [item.strip().split()[0].split(":")[0] for item in group.split("|")]
+            match = next((name for name in candidates if name in packages), None)
+            require(match, f"Missing desktop dependency {group}")
+            required.add(match)
+    require("openssh-server" not in packages, "Unexpected SSH server")
+    for name in sorted(required):
+        require(name in packages and external.get(name) == packages[name]["Version"],
+                f"Missing package or version mismatch for {name}")
+    require("kernova-live:" not in cat("etc/passwd"), "Live account baked into installation source")
+    require(not cat("etc/machine-id").strip(), "Machine identity is already initialized")
+    sources = cat("etc/apt/sources.list")
+    for suite in ("trixie", "trixie-updates", "trixie-security"):
+        mirror = "https://deb.debian.org/debian-security" if suite.endswith("-security") else "https://deb.debian.org/debian"
+        require(re.search(rf"^deb\s+{re.escape(mirror)}/?\s+{suite}\s+main\s+non-free-firmware\s*$", sources, re.M),
+                f"Missing signed Debian archive configuration for {suite}")
+    print(report.rstrip())
+    print(f"Validated {iso.name} ({profile}), {len(packages)} installed packages, "
+          f"{len(required)} required package versions, and Debian-authenticated installer files.")
+    print("BIOS/UEFI boot records and EFI signature tables are present. Guest boot and enforcement require VM tests.")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("iso", type=Path)
+    args = parser.parse_args()
+    if os.name != "posix":
+        sys.exit("Run ISO validation on a Linux system with the Debian build prerequisites.")
+    iso = args.iso.resolve()
+    # A large SquashFS extraction can exceed /tmp on a small RAM-backed tmpfs.
+    # Use a writable project volume when called by build-iso and accept TMPDIR otherwise.
+    scratch = os.environ.get("TMPDIR") or (iso.parent if os.access(iso.parent, os.W_OK) else None)
+    with tempfile.TemporaryDirectory(prefix="kernova-iso-check-", dir=scratch) as directory:
+        inspect(iso, Path(directory))
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
+        sys.exit(f"ISO validation failed: {error}")

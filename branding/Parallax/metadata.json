@@ -1,0 +1,10 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "Parallax",
+    "Name": "Parallax",
+    "Name[mk]": "Паралакса",
+    "Authors": [{"Name": "KERNOVA OS contributors"}],
+    "License": "MIT"
+  }
+}

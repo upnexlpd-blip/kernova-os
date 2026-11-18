@@ -1,0 +1,12 @@
+[Default Applications]
+inode/directory=org.kde.dolphin.desktop;
+text/plain=org.kde.kate.desktop;
+text/html=firefox-esr.desktop;
+x-scheme-handler/http=firefox-esr.desktop;
+x-scheme-handler/https=firefox-esr.desktop;
+application/pdf=okularApplication_pdf.desktop;
+application/zip=org.kde.ark.desktop;
+image/jpeg=org.kde.gwenview.desktop;
+image/png=org.kde.gwenview.desktop;
+audio/mpeg=vlc.desktop;
+video/mp4=vlc.desktop;

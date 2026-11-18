@@ -1,0 +1,32 @@
+Compiled 17 Python sources. Found 3 shell entry points.
+Shell syntax and ShellCheck passed.
+desktop-file-validate passed.
+test_launcher_icon_exists_and_is_scalable (test_branding.BrandingTests.test_launcher_icon_exists_and_is_scalable) ... ok
+test_new_account_theme_resolves_to_palette_and_wallpaper (test_branding.BrandingTests.test_new_account_theme_resolves_to_palette_and_wallpaper) ... ok
+test_text_and_focus_contrast_on_each_normal_and_alternate_surface (test_branding.BrandingTests.test_text_and_focus_contrast_on_each_normal_and_alternate_surface) ... ok
+test_rejects_missing_or_duplicate_installer (test_iso_validation.InstallerArchiveTests.test_rejects_missing_or_duplicate_installer) ... ok
+test_rejects_modified_manifest (test_iso_validation.InstallerArchiveTests.test_rejects_modified_manifest) ... ok
+test_requires_verified_trixie_sha256_section (test_iso_validation.InstallerArchiveTests.test_requires_verified_trixie_sha256_section) ... ok
+test_verifies_all_four_paths (test_iso_validation.InstallerArchiveTests.test_verifies_all_four_paths) ... ok
+test_excludes_residual_config_and_reads_multiline_dependencies (test_iso_validation.RootFilesystemTests.test_excludes_residual_config_and_reads_multiline_dependencies) ... ok
+test_installed_boot_has_only_private_disk (test_vm.GuestTests.test_installed_boot_has_only_private_disk) ... ok
+test_refuses_reuse_path_traversal_and_foreign_disk (test_vm.GuestTests.test_refuses_reuse_path_traversal_and_foreign_disk) ... ok
+test_secure_needs_enrolled_keys (test_vm.GuestTests.test_secure_needs_enrolled_keys) ... ok
+test_actions_use_fixed_commands_and_require_the_network_module (test_welcome.WelcomeProbeTests.test_actions_use_fixed_commands_and_require_the_network_module) ... ok
+test_cpu_and_usable_memory (test_welcome.WelcomeProbeTests.test_cpu_and_usable_memory) ... ok
+test_graphics_reports_names_and_falls_back_to_pci_ids (test_welcome.WelcomeProbeTests.test_graphics_reports_names_and_falls_back_to_pci_ids) ... ok
+test_live_requires_exact_parameter (test_welcome.WelcomeProbeTests.test_live_requires_exact_parameter) ... ok
+test_macedonian_locale_and_english_fallback (test_welcome.WelcomeProbeTests.test_macedonian_locale_and_english_fallback) ... ok
+test_missing_and_malformed_product_metadata (test_welcome.WelcomeProbeTests.test_missing_and_malformed_product_metadata) ... ok
+test_os_release_is_parsed_as_data (test_welcome.WelcomeProbeTests.test_os_release_is_parsed_as_data) ... ok
+test_autostart_choice_persists_and_menu_enters_gui (test_welcome_qt.WelcomeQtTests.test_autostart_choice_persists_and_menu_enters_gui) ... ok
+test_compressed_guide_opens_in_native_reader (test_welcome_qt.WelcomeQtTests.test_compressed_guide_opens_in_native_reader) ... ok
+test_fixed_action_passes_separate_program_and_arguments (test_welcome_qt.WelcomeQtTests.test_fixed_action_passes_separate_program_and_arguments) ... ok
+test_installed_and_unknown_states_display_truthful_status (test_welcome_qt.WelcomeQtTests.test_installed_and_unknown_states_display_truthful_status) ... ok
+test_pages_keyboard_and_compact_geometry (test_welcome_qt.WelcomeQtTests.test_pages_keyboard_and_compact_geometry) ... ok
+test_root_never_enters_gui (test_welcome_qt.WelcomeQtTests.test_root_never_enters_gui) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.257s
+
+OK

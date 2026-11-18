@@ -1,0 +1,58 @@
+KERNOVA OS 0.1.0 development preview
+Recipe and archive checks, 2026-11-18
+
+Host: Windows 11 amd64, Git for Windows Bash, Windows CPython 3.12.
+Source under review: Debian live-build 1:20250505+deb13u1.
+Source archive: https://deb.debian.org/debian/pool/main/l/live-build/live-build_20250505+deb13u1.tar.xz
+Debian manual: https://manpages.debian.org/trixie/live-build/lb_config.1.en.html
+
+PASS  Configuration generation and validation with the upstream shell scripts
+  The test invoked this project's auto/config with the English lb_config.1
+  from the Debian source and the source's frontend/lb executed by Git Bash.
+  All 37 long options appeared in both the manual and actual --usage output.
+  The following upstream validation command exited 0 in the fresh work tree.
+    lb config noauto --ignore-system-defaults --validate
+    P: Validation check complete! Please address any problem notices given above.
+  Configuration checks confirmed 14 settings, including grub-pc BIOS, grub-efi
+  UEFI, strict signed boot enabled, iso-hybrid, live d-i, signed APT indexes,
+  trixie for build, target and installer, firmware in both stages, security
+  and updates enabled, and components main and non-free-firmware.
+  Upstream printed missing dpkg-parsechangelog and missing local VERSION while
+  looking up its installed version. The real build uses Debian's installed
+  package and manual. No bootstrap, chroot, installer or binary stage ran here.
+
+PASS  Debian archive input inspection
+  Retrieved the trixie InRelease from https://deb.debian.org/debian/dists/trixie/
+  (Origin Debian, Codename trixie, version 13.7, 2026-09-12).
+  Used Git for Windows gpgv and an extracted temporary Debian archive keyring
+  2025.1. The build recipe instead requires the builder's existing keyring.
+    gpgv --keyring KEYRING --status-fd 1 --output Release InRelease
+  Exit 0, including valid primary fingerprints for trixie archive and stable:
+    04B54C3CDCA79751B16BC6B5225629DF75B188BD
+    41587F7DB8C774BCCF131416762F67A0B2C39DE4
+  Checked the exact length and SHA-256 of both amd64 Packages.xz indexes
+  against the SHA256 section of the authenticated Release. Resolved 99
+  unique named build, base, live-session and desktop packages at the time
+  of inspection. This was a name check, with dependency solving left to APT.
+    main              7778d3e3f303b7ddb8ce0fe7c8d57473a076c6bf2e8f241f75421d2396352498
+    non-free-firmware a05bfaf35b64eb8271e374f617b3b75b5ba24dacfa86fd7ddbec5a60d99a17da
+  Verified main/installer-amd64/current/images/SHA256SUMS, 80699 bytes,
+  SHA-256 31a1a4fc99c5b0a729d261f137cd7e1599bfa6f214f83fe4e596543d8ccf2dec.
+  Downloaded all four installer inputs and checked each SHA-256:
+    2b2358b37674d2505350528875bb17afae2a36522a9e8a9417eaca65a7da0e08  cdrom/vmlinuz
+    8de544ab627ab794504c530c82de621814386b5b67a492f1e3133390c47ea933  cdrom/initrd.gz
+    2b2358b37674d2505350528875bb17afae2a36522a9e8a9417eaca65a7da0e08  cdrom/gtk/vmlinuz
+    0c64f072959f7b841be9cbd323512da62818947a35a79c5c62430d3fabc2b3cb  cdrom/gtk/initrd.gz
+  These historical input hashes are evidence. Builds authenticate the current
+  trixie inputs each time. None of the four is a KERNOVA ISO checksum.
+
+PASS  Portable input and package-state regression tests
+    python -B -m unittest discover -s tests -p test_iso_validation.py -v
+  5 tests passed (mandatory paths, duplicate or missing entry, wrong suite,
+  wrong hash section, changed bytes, installed state and folded dependencies).
+  Git Bash syntax and ShellCheck passed for scripts/install-prerequisites.
+
+BLOCKED  Build execution, inspecting an actual KERNOVA ISO and guest testing
+    python -B scripts/build-iso foundation
+    BLOCKED: build-iso requires a dedicated Debian 13 amd64 Linux builder. Run scripts/preflight.
+  Exit 1 on Windows. No KERNOVA ISO or corresponding checksum was produced.

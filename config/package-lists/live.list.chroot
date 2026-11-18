@@ -1,0 +1,2 @@
+# Suppress live-build's shared live package list. Install live-specific
+# components only in the live pass so d-i can remove them from the target.

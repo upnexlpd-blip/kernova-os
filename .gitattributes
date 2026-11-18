@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.png binary
+*.gz binary
+*.iso binary
+*.deb binary
+.source-revision export-subst

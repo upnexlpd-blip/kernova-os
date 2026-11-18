@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+"""Report build capabilities. The scoped probe runs in a private mount namespace."""
+
+import os
+import platform
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+from urllib.error import URLError
+from urllib.request import Request, urlopen
+
+
+ROOT = Path(__file__).resolve().parents[1]
+COMMANDS = ("sudo", "lb", "debootstrap", "dpkg", "dpkg-buildpackage", "dh", "rsvg-convert",
+            "desktop-file-validate", "unsquashfs", "xorriso", "gpgv", "sbverify", "mcopy",
+            "unshare", "findmnt", "chroot", "mount", "mknod", "wget", "rsync", "git")
+
+
+def output(*args):
+    return subprocess.check_output(args, text=True).strip()
+
+
+def check():
+    print(f"Host {platform.system()} {platform.release()}, {platform.machine()}, {os.cpu_count()} logical CPUs")
+    free = shutil.disk_usage(ROOT).free / 2**30
+    print(f"Project {ROOT}; {free:.1f} GiB available")
+    if platform.system() != "Linux":
+        print("BLOCKED: native Linux mounts, chroot and Debian live-build require a Linux builder. "
+              "Copy this project onto ext4 in a dedicated Debian 13 amd64 VM.")
+        return 1
+    problems = []
+    os.environ["PATH"] = os.environ.get("PATH", "") + ":/usr/sbin:/sbin"
+    release = platform.freedesktop_os_release()
+    print(f"Distribution {release.get('PRETTY_NAME')}")
+    if (release.get("ID"), release.get("VERSION_CODENAME")) != ("debian", "trixie"):
+        problems.append("Use a dedicated Debian 13 (trixie) amd64 build VM.")
+    if not re.fullmatch(r"/[A-Za-z0-9./_+\-]+", str(ROOT)):
+        problems.append("Use a simple Linux project path without spaces or shell metacharacters.")
+    if os.geteuid() == 0:
+        problems.append("Use an ordinary build account with sudo; package generation must be unprivileged.")
+    if shutil.which("dpkg") and output("dpkg", "--print-architecture") != "amd64":
+        problems.append("Use an amd64 build environment.")
+    print(f"Kernel environment {platform.uname().release}")
+    if shutil.which("systemd-detect-virt"):
+        virt = subprocess.run(["systemd-detect-virt"], text=True, stdout=subprocess.PIPE)
+        print(f"Virtualization {virt.stdout.strip()}; /dev/kvm accessible "
+              f"{os.access('/dev/kvm', os.R_OK | os.W_OK)} (affects VM test speed)")
+    if Path("/proc/meminfo").exists():
+        memory = re.search(r"MemTotal:\s+(\d+)", Path("/proc/meminfo").read_text())
+        if memory:
+            print(f"RAM {int(memory[1]) / 1024**2:.1f} GiB")
+    if free < 45:
+        print("Advisory: a KDE build, validation copy of SquashFS, and guest disks can exhaust "
+              "this volume. A fresh 80 GB build disk is a starting allocation.")
+    missing = [name for name in COMMANDS if not shutil.which(name)]
+    if missing:
+        problems.append("Missing " + ", ".join(missing) + ". Run sudo ./scripts/install-prerequisites.")
+    if not Path("/usr/share/man/man1/lb_config.1.gz").is_file():
+        problems.append("Install the trixie live-build package including its lb_config manual.")
+    if shutil.which("lb"):
+        print("Installed live-build " + output("dpkg-query", "-W", "-f=${Version}", "live-build"))
+    if shutil.which("findmnt"):
+        filesystem = output("findmnt", "-no", "FSTYPE", "-T", str(ROOT))
+        options = set(output("findmnt", "-no", "OPTIONS", "-T", str(ROOT)).split(","))
+        print(f"Project filesystem {filesystem}")
+        if options & {"nosuid", "noexec", "nodev", "ro"} or filesystem in {
+            "9p", "drvfs", "ntfs", "ntfs3", "fuseblk", "vfat", "exfat", "vboxsf", "cifs", "virtiofs"
+        }:
+            problems.append("Copy the project to a writable local Linux filesystem with exec, dev and suid.")
+    for name in ("build", "artifacts"):
+        path = ROOT / name
+        if path.is_symlink() or (path.exists() and (not path.is_dir() or not os.access(path, os.W_OK))):
+            problems.append(f"{path} must be an ordinary writable project directory.")
+        if path.exists() and shutil.which("findmnt") and (
+            output("findmnt", "-no", "TARGET", "-T", str(path))
+            != output("findmnt", "-no", "TARGET", "-T", str(ROOT))
+        ):
+            problems.append(f"Keep {path} on the project mount for stage checks and atomic publication.")
+    if not os.access(ROOT, os.W_OK):
+        problems.append("The project directory must be writable by your ordinary account.")
+    for repo, suite in (("debian", "trixie"), ("debian-security", "trixie-security")):
+        url = f"https://deb.debian.org/{repo}/dists/{suite}/InRelease"
+        try:
+            with urlopen(Request(url, method="HEAD"), timeout=15) as response:
+                print(f"Archive {url} HTTP {response.status}")
+        except (OSError, URLError) as error:
+            problems.append(f"Cannot reach {url}: {error}")
+    if not problems:
+        print("Checking sudo, a private tmpfs mount, a project device node and chroot.", flush=True)
+        probe = """
+set -eu
+trap 'rm -f -- "$1/null"' EXIT
+mknod "$1/null" c 1 3
+: > "$1/null"
+mount -t tmpfs -o size=1m tmpfs "$1/mnt"
+chroot / /usr/bin/true
+umount "$1/mnt"
+"""
+        with tempfile.TemporaryDirectory(prefix=".kernova-probe-", dir=ROOT) as name:
+            (Path(name) / "mnt").mkdir()
+            result = subprocess.run(["sudo", "--", "unshare", "--mount", "--propagation", "private",
+                                     "--", "sh", "-ec", probe, "preflight", name])
+            if result.returncode:
+                problems.append("sudo, unshare, mount, mknod or chroot failed; use a capable dedicated builder.")
+    for problem in problems:
+        print("BLOCKED: " + problem)
+    if not problems:
+        print("Preflight passed.")
+    return int(bool(problems))
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(check())
+    except (OSError, subprocess.SubprocessError, ValueError) as error:
+        sys.exit(f"Preflight failed: {error}")

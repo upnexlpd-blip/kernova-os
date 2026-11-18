@@ -1,0 +1,11 @@
+{
+  "KPackageStructure": "Plasma/LookAndFeel",
+  "KPlugin": {
+    "Id": "org.kernova.night",
+    "Name": "KERNOVA Night",
+    "Name[mk]": "КЕРНОВА Ноќ",
+    "Description": "Midnight surfaces, cool highlights and the Parallax wallpaper",
+    "Authors": [{"Name": "KERNOVA OS contributors"}],
+    "License": "MIT"
+  }
+}

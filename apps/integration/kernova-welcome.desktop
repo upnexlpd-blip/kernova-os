@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=KERNOVA Welcome
+Comment=Get started and find local help for KERNOVA OS
+Comment[mk]=Први чекори и локална помош за KERNOVA OS
+Exec=/usr/bin/kernova-welcome
+TryExec=/usr/bin/kernova-welcome
+Icon=kernova-logo
+Terminal=false
+Categories=System;

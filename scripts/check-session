@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+"""Read-only guest checks. Run in Konsole as the currently logged-in user."""
+import argparse
+import json
+import os
+from pathlib import Path
+import platform
+import pwd
+import re
+import subprocess
+import sys
+
+EFI = Path("/sys/firmware/efi")
+LIVE_USER = "kernova-live"
+EFI_GLOBAL = "8be4df61-93ca-11d2-aa0d-00e098032b8c"
+
+
+def run(args):
+    try:
+        result = subprocess.run(args, capture_output=True, text=True, timeout=20)
+        return result.returncode, (result.stdout + result.stderr).strip()
+    except (OSError, subprocess.TimeoutExpired) as error:
+        return 127, str(error)
+
+
+def efivar(name):
+    path = EFI / "efivars" / f"{name}-{EFI_GLOBAL}"
+    try:
+        raw = path.read_bytes()
+        return raw[4] if len(raw) == 5 else None
+    except OSError:
+        return None
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("session", choices=["live", "installed"])
+    parser.add_argument("--firmware", choices=["bios", "uefi", "secure"], required=True)
+    args = parser.parse_args()
+    if sys.platform != "linux" or os.getuid() == 0:
+        parser.error("Run inside the KERNOVA desktop as the logged-in ordinary user.")
+    info = json.loads(Path("/usr/share/kernova/product.json").read_text())
+    checks = {}
+
+    def check(label, ok, detail):
+        checks[label] = {"result": "Passed" if ok else "Failed", "observed": detail}
+
+    user = pwd.getpwuid(os.getuid()).pw_name
+    is_live = args.session == "live"
+    boot_live = "boot=live" in Path("/proc/cmdline").read_text().split()
+    check("boot mode", boot_live == is_live, "live" if boot_live else "installed")
+    check("account", (user == LIVE_USER) == is_live, "temporary" if user == LIVE_USER else "personal")
+    if not is_live:
+        try:
+            pwd.getpwnam(LIVE_USER)
+            live_account = True
+        except KeyError:
+            live_account = False
+        check("temporary account removed", not live_account, live_account)
+        identity = Path("/etc/machine-id").read_text().strip()
+        check("initialized machine identity", bool(re.fullmatch("[0-9a-f]{32}", identity))
+              and identity != "0" * 32, "value withheld")
+    flag = efivar("SecureBoot") if EFI.is_dir() else None
+    setup = efivar("SetupMode") if EFI.is_dir() else None
+    # Plain OVMF can omit SecureBoot entirely. A failed read of an existing
+    # variable must not be mistaken for disabled enforcement.
+    efivars = EFI / "efivars"
+    plain_uefi = efivars.is_dir() and (flag == 0 or
+                                      not (efivars / f"SecureBoot-{EFI_GLOBAL}").exists())
+    efi_ok = {"bios": not EFI.is_dir(), "uefi": plain_uefi,
+              "secure": EFI.is_dir() and flag == 1 and setup == 0}
+    check("firmware", efi_ok[args.firmware], {"efi": EFI.is_dir(), "SecureBoot": flag, "SetupMode": setup})
+    check("desktop", "KDE" in os.getenv("XDG_CURRENT_DESKTOP", "").upper(), os.getenv("XDG_CURRENT_DESKTOP"))
+    check("Wayland session", os.getenv("XDG_SESSION_TYPE") == "wayland", os.getenv("XDG_SESSION_TYPE"))
+    for service in ("sddm", "NetworkManager"):
+        code, out = run(["systemctl", "is-active", service])
+        check(service, code == 0 and out == "active", out)
+    code, out = run(["systemctl", "--failed", "--no-legend", "--no-pager"])
+    check("system services", code == 0 and not out, out or "No failed units")
+    code, out = run(["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"])
+    check("PipeWire audio sink", code == 0, out)
+    code, _ = run(["getent", "ahosts", "deb.debian.org"])
+    check("archive DNS", code == 0, "resolved" if code == 0 else "lookup failed")
+    for package in ("kernova-branding", "kernova-default-settings", "kernova-welcome", "kernova-desktop"):
+        code, version = run(["dpkg-query", "-W", "-f=${db:Status-Status} ${Version}", package])
+        check(package, code == 0 and version == f"installed {info['version']}", version)
+    for mime in ("text/html", "inode/directory", "application/pdf", "image/png", "video/mp4"):
+        code, handler = run(["xdg-mime", "query", "default", mime])
+        safe = re.fullmatch(r"[a-zA-Z0-9._-]+\.desktop", handler)
+        check(f"association {mime}", code == 0 and safe and
+              Path("/usr/share/applications", handler).is_file(), handler)
+    if not is_live:
+        code, out = run(["apt-cache", "policy"])
+        suites = sorted(set(re.findall(r"\bn=([^,\s]+)", out)))
+        check("indexed Debian archives", code == 0 and {"trixie", "trixie-security"}.issubset(suites), suites)
+    print(json.dumps({"product": info, "kernel": platform.release(), "expected_session": args.session,
+                      "expected_firmware": args.firmware, "checks": checks}, indent=2))
+    return int(any(v["result"] == "Failed" for v in checks.values()))
+
+
+if __name__ == "__main__":
+    sys.exit(main())

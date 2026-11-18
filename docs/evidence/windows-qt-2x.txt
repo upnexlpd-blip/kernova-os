@@ -1,0 +1,11 @@
+test_autostart_choice_persists_and_menu_enters_gui (test_welcome_qt.WelcomeQtTests.test_autostart_choice_persists_and_menu_enters_gui) ... ok
+test_compressed_guide_opens_in_native_reader (test_welcome_qt.WelcomeQtTests.test_compressed_guide_opens_in_native_reader) ... ok
+test_fixed_action_passes_separate_program_and_arguments (test_welcome_qt.WelcomeQtTests.test_fixed_action_passes_separate_program_and_arguments) ... ok
+test_installed_and_unknown_states_display_truthful_status (test_welcome_qt.WelcomeQtTests.test_installed_and_unknown_states_display_truthful_status) ... ok
+test_pages_keyboard_and_compact_geometry (test_welcome_qt.WelcomeQtTests.test_pages_keyboard_and_compact_geometry) ... ok
+test_root_never_enters_gui (test_welcome_qt.WelcomeQtTests.test_root_never_enters_gui) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.290s
+
+OK

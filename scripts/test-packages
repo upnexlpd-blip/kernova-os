@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+"""Exercise APT install, upgrade, removal and purge in a fresh trixie chroot."""
+import argparse
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def build_fixture(target, version):
+    # The lower version and differing conffile exercise real dpkg upgrade logic.
+    fixture = target / "fixture-source"
+    fixture.mkdir()
+    for name in ("packages", "branding", "apps"):
+        shutil.copytree(ROOT / name, fixture / name, ignore=shutil.ignore_patterns("__pycache__"))
+    for name in ("LICENSE", "scripts/build-packages", "scripts/check-session", "docs/user-guide.md"):
+        dest = fixture / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / name, dest)
+    data = json.loads((ROOT / "product.json").read_text(encoding="utf-8"))
+    data["version"] = version
+    (fixture / "product.json").write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    changelog = fixture / "packages/debian/changelog"
+    # This isolated source tree has a single synthetic revision.
+    changelog.write_text(
+        f"kernova-components ({version}) trixie; urgency=medium\n\n"
+        "  * Local package lifecycle fixture.\n\n"
+        " -- KERNOVA OS contributors <maintainers@kernova.invalid>  Tue, 17 Nov 2026 12:00:00 +0000\n",
+        encoding="utf-8")
+    with (fixture / "packages/defaults/kdeglobals").open("a", encoding="utf-8") as conffile:
+        conffile.write("\n# Earlier package lifecycle fixture.\n")
+    subprocess.run([sys.executable, fixture / "scripts/build-packages", target / "older"], check=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.parse_args()
+    if sys.platform != "linux" or os.geteuid() == 0:
+        parser.exit(1, "Run scripts/test-packages as an ordinary user on the trixie build VM.\n")
+    if not shutil.which("mmdebstrap"):
+        parser.exit(1, "Install mmdebstrap and uidmap in the dedicated build VM.\n")
+    build = ROOT / "build"
+    build.mkdir(exist_ok=True)
+    job = Path(tempfile.mkdtemp(prefix="lifecycle-", dir=build))
+    version = json.loads((ROOT / "product.json").read_text(encoding="utf-8"))["version"]
+    build_fixture(job, version + "~test1")
+    subprocess.run([sys.executable, ROOT / "scripts/build-packages", job / "current"], check=True)
+    shutil.copy2(ROOT / "packages/lifecycle-check.sh", job / "lifecycle-check.sh")
+    (job / "expected-version").write_text(version + "\n", encoding="utf-8")
+    # Relative paths here also support a checkout under a directory with spaces.
+    command = [
+        "mmdebstrap", "--mode=unshare", "--variant=minbase", "--architectures=amd64",
+        "--include=ca-certificates,kpackagetool6,desktop-file-utils",
+        "--customize-hook=copy-in older current expected-version lifecycle-check.sh /tmp",
+        '--customize-hook=chroot "$1" env KERNOVA_LIFECYCLE_CHROOT=1 sh /tmp/lifecycle-check.sh',
+        "trixie", "/dev/null", "deb https://deb.debian.org/debian trixie main",
+        "deb https://deb.debian.org/debian trixie-updates main",
+        "deb https://security.debian.org/debian-security trixie-security main",
+    ]
+    log = job / "lifecycle.log"
+    print(f"Running isolated APT checks, including desktop dependencies. Log: {log}", flush=True)
+    with log.open("wb") as stream:
+        result = subprocess.run(command, cwd=job, stdout=stream, stderr=subprocess.STDOUT)
+    if result.returncode:
+        sys.stderr.write("\n".join(log.read_text(errors="replace").splitlines()[-25:]) + "\n")
+        raise SystemExit(f"mmdebstrap package lifecycle failed ({result.returncode}). Evidence: {log}")
+    print(f"Package lifecycle passed for {version}. Evidence: {log}")
+
+
+if __name__ == "__main__":
+    main()

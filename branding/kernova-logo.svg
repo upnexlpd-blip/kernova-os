@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>KERNOVA</title>
+  <rect x="1" y="1" width="62" height="62" rx="14" fill="#132037"/>
+  <path d="M13 15h8v34h-8z" fill="#e4edff"/>
+  <path d="M24 31 40 15h11L34 32l17 17H40L24 33z" fill="#a3baff"/>
+  <path d="m37 26 11-11h4L39 28z" fill="#b9a8ff"/>
+</svg>

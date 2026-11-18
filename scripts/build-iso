@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+"""Build and publish a validated live ISO in a never-reused run directory."""
+
+import argparse
+import json
+import os
+import platform
+import shutil
+import subprocess
+import sys
+import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
+
+from installer_archive import digest
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = ROOT / "scripts"
+
+
+def revision():
+    if (ROOT / ".git").exists():
+        result = subprocess.run(["git", "rev-parse", "--verify", "HEAD"], cwd=ROOT,
+                                text=True, capture_output=True)
+        if result.returncode == 0:
+            return result.stdout.strip()
+    stamp = ROOT / ".source-revision"
+    if stamp.is_file():
+        value = stamp.read_text().strip()
+        if len(value) in (40, 64) and all(c in "0123456789abcdef" for c in value):
+            return value
+    return "uncommitted source (see SHA-256 input inventory)"
+
+
+def source_hashes():
+    inventory = {}
+    for top in ("product.json", "auto", "config", "scripts", "packages", "branding", "apps", "docs", "LICENSE"):
+        item = ROOT / top
+        for path in sorted(item.rglob("*")) if item.is_dir() else [item]:
+            if path.is_file() and "__pycache__" not in path.parts and path.suffix not in (".pyc", ".pyo"):
+                inventory[path.relative_to(ROOT).as_posix()] = digest(path)
+    return inventory
+
+
+def run(profile, run_dir, log):
+    work = run_dir / "work"
+    work.mkdir()
+    environment = dict(os.environ, LC_ALL="C", TZ="UTC", PYTHONDONTWRITEBYTECODE="1")
+    environment["TMPDIR"] = str(run_dir)
+    # Debian's wrappers use these env vars as implicit config. Build in the fresh
+    # tree using our arguments, even if the account previously used live-build.
+    for key in list(environment):
+        if key.startswith("LB_") or key in ("LIVE_BUILD", "CONFIG_VALIDATED", "DEBOOTSTRAP_OPTIONS"):
+            del environment[key]
+
+    def command(label, argv, cwd=work, evidence=None):
+        print(f"\n== {label} ==", flush=True)
+        log.write(f"\n== {label} ==\n")
+        log.flush()
+        with subprocess.Popen(argv, cwd=cwd, env=environment, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT, text=True, errors="replace") as child:
+            for line in child.stdout:
+                print(line, end="", flush=True)
+                log.write(line)
+                log.flush()
+                if evidence:
+                    evidence.write(line)
+            if child.wait():
+                raise RuntimeError(f"{label} failed (exit {child.returncode})")
+
+    command("Builder preflight", [SCRIPTS / "preflight"], ROOT)
+    inputs = source_hashes()
+    shutil.copytree(ROOT / "auto", work / "auto")
+    shutil.copytree(ROOT / "config", work / "config", ignore=shutil.ignore_patterns("profiles"))
+    shutil.copy2(ROOT / "product.json", work / "product.json")
+    (work / ".kernova-work").touch()
+    command("Generate fresh live-build configuration", ["lb", "config"])
+    command("Validate generated settings", ["lb", "config", "noauto", "--ignore-system-defaults", "--validate"])
+    product = json.loads((work / "product.json").read_text())
+    if profile == "preview":
+        shutil.copy2(ROOT / "config/profiles/preview.list.chroot", work / "config/package-lists")
+        command("Build KERNOVA Debian packages as ordinary user",
+                [SCRIPTS / "build-packages", work / "config/packages.chroot"], ROOT)
+        expected = set((ROOT / "config/profiles/preview.list.chroot").read_text().split())
+        actual = {subprocess.check_output(["dpkg-deb", "-f", path, "Package"], text=True).strip()
+                  for path in (work / "config/packages.chroot").glob("*.deb")}
+        if actual != expected:
+            raise ValueError(f"Expected {sorted(expected)}, got {sorted(actual)}")
+
+    stage = run_dir / "release"
+    stage.mkdir()
+    command("Authenticate and cache Debian Installer", [sys.executable, SCRIPTS / "installer_archive.py",
+                                                        work, stage / "installer"])
+    # Mounts made by live-build die with the private namespace, including on
+    # failure. Use the VM's packaged executable. Only this child runs as root.
+    command("Build hybrid ISO", ["sudo", "--", "unshare", "--mount", "--propagation", "private",
+                                 "--", "/usr/bin/lb", "build"])
+
+    stem = f"{product['slug']}-{product['version']}-{product['architecture']}"
+    iso = stage / f"{stem}.iso"
+    raw = work / f"{stem}.hybrid.iso"
+    if not raw.is_file() or raw.stat().st_size == 0:
+        raise ValueError(f"Live-build did not produce {raw.name}")
+    # Same mounted project filesystem by preflight. Rename avoids another ISO copy.
+    raw.rename(iso)
+    shutil.copy2(work / f"{stem}.packages", stage / "packages.tsv")
+    (stage / "SHA256SUMS").write_text(f"{digest(iso)}  {iso.name}\n")
+    shutil.copy2(work / "config-options.json", stage / "config-options.json")
+    generated = stage / "live-build-config"
+    generated.mkdir()
+    for name in ("common", "bootstrap", "chroot", "binary", "source"):
+        shutil.copy2(work / "config" / name, generated / name)
+    if source_hashes() != inputs:
+        raise ValueError("Source inputs changed during this build; rerun from the intended revision.")
+    versions = subprocess.check_output(
+        ["dpkg-query", "-W", "-f=${Package}\t${Version}\n", "live-build", "debootstrap", "dpkg",
+         "dpkg-dev", "debian-archive-keyring", "squashfs-tools", "xorriso", "gpgv", "sbsigntool"],
+        text=True)
+    metadata = {"product": product, "profile": profile, "completed_utc": datetime.now(timezone.utc).isoformat(),
+                "source_revision": revision(), "host_tools": dict(line.split("\t") for line in versions.splitlines()),
+                "source_sha256": inputs}
+    (stage / "build.json").write_text(json.dumps(metadata, indent=2) + "\n")
+    with (stage / "validation.log").open("x") as evidence:
+        command("Validate release candidate", [SCRIPTS / "validate-iso", iso], ROOT, evidence)
+    # At this point all deliverables are outside work/. Refuse to clean a tree
+    # with external submounts, a replaced working directory, or a missing marker.
+    mounts = subprocess.check_output(["findmnt", "-rn", "-o", "TARGET"], text=True).splitlines()
+    if (work.resolve() != work or work.parent.parent != ROOT / "build"
+            or not (work / ".kernova-work").is_file()
+            or any(path == str(work) or path.startswith(str(work) + "/") for path in mounts)):
+        raise ValueError(f"Unexpected work tree or mount below {work}; preserved for inspection")
+    command("Clean this validated run's chroot and cache",
+            ["sudo", "--", "unshare", "--mount", "--propagation", "private", "--", "/usr/bin/lb", "clean", "--purge"])
+    log.flush()
+    shutil.copyfile(log.name, stage / "build.log")
+    target = ROOT / "artifacts" / run_dir.name
+    target.parent.mkdir(exist_ok=True)
+    if target.exists():
+        raise FileExistsError(target)
+    stage.rename(target)
+    print(f"Published {target / iso.name}")
+    return 0
+
+
+def main():
+    cli = argparse.ArgumentParser(description=__doc__)
+    cli.add_argument("profile", choices=("foundation", "preview"), nargs="?", default="preview")
+    args = cli.parse_args()
+    if platform.system() != "Linux":
+        sys.exit("BLOCKED: build-iso requires a dedicated Debian 13 amd64 Linux builder. Run scripts/preflight.")
+    if os.geteuid() == 0:
+        sys.exit("Run scripts/build-iso as an ordinary user with sudo.")
+    build = ROOT / "build"
+    if build.is_symlink() or (ROOT / "artifacts").is_symlink():
+        sys.exit("Refusing a symlink for build/ or artifacts/.")
+    build.mkdir(exist_ok=True)
+    prefix = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ-")
+    folder = Path(tempfile.mkdtemp(prefix=prefix, suffix="-" + args.profile, dir=build))
+    with (folder / "build.log").open("x", buffering=1) as log:
+        print(f"Build log {log.name}", flush=True)
+        try:
+            return run(args.profile, folder, log)
+        except (OSError, ValueError, RuntimeError, subprocess.SubprocessError, KeyboardInterrupt) as error:
+            msg = f"FAILED: {error}. Preserved work and log at {folder}."
+            print(msg, file=sys.stderr)
+            log.write(msg + "\n")
+            return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

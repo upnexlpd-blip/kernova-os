@@ -1,0 +1,65 @@
+# Verification matrix — 0.1.0 development preview
+
+Updated 18 November 2026. **Passed** requires the stated observation. **Failed** means an executed check found a defect. **Blocked** means the command needs an unavailable environment or artifact. **Not tested** means the procedure has yet to run. No release image has been produced. Source checks refer to the source tarball in artifacts/. Linux runtime rows below refer to the intended full preview unless explicitly marked foundation.
+
+| Check | Environment | State | Command or procedure | Evidence |
+| --- | --- | --- | --- | --- |
+| Source compilation, shell syntax and ShellCheck | Windows 11 amd64, Python 3.12, Git Bash, ShellCheck 0.11 | Passed | Run scripts/check-source with pinned PySide6 6.8.2.1 on PYTHONPATH | [Test transcript](evidence/windows-source.txt) |
+| Application launcher and KDE autostart file validity | Windows, MSYS2 desktop-file-utils 0.29-1 | Passed | desktop-file-validate apps/integration/kernova-welcome.desktop apps/integration/kernova-welcome-autostart.desktop | [Test transcript](evidence/windows-source.txt) |
+| Welcome behavior and Qt journeys | Windows, Qt offscreen | Passed | Same command. Read both catalogs, navigate all six pages by keyboard, test compact geometry, launch arguments, opt-out, guide and error paths | [Test transcript](evidence/windows-source.txt) |
+| Welcome at 2× UI scale | Windows, Qt offscreen | Passed | QT_SCALE_FACTOR=2, QT_QPA_PLATFORM=offscreen, python -B -m unittest discover -s tests -p test_welcome_qt.py -v | [Six Qt tests](evidence/windows-qt-2x.txt) |
+| Theme, palette contrast, logo and default references | Source, Windows | Passed | tests/test_branding.py through scripts/check-source | [Test transcript](evidence/windows-source.txt) |
+| Ownership of selected KERNOVA files, dependency names and Discover backend | Debian 13.7 signed amd64/all indexes inspected on Windows | Passed | Compare authenticated Contents archives against shipped paths and inspect Packages and Provides | [Ownership audit and command](../packages/README.md) |
+| Build arguments, installer inputs and generated settings | Trixie live-build 1:20250505+deb13u1, Windows compatibility harness | Passed | Check all 37 flags against Debian manual/usage, generate and validate config, verify all four installer images through the signed release | [Recipe evidence](evidence/iso-recipe.txt) |
+| Explicit image and builder package availability | Signed trixie main/non-free-firmware amd64 Packages.xz | Passed | Verify InRelease, compare both SHA-256 hashes and lengths, map package-list names, binary Depends in debian/control and prerequisite package names to Package records | [Versions and hashes](evidence/archive-audit.txt), [signature transcript](evidence/trixie-signatures.txt) |
+| Test VM storage and firmware selection | Windows, unit fixtures and authentic trixie OVMF descriptors | Passed | Reject reused names, bad disk size and traversal, inspect detached command, compare UEFI/enrolled selections | [Tests](evidence/windows-source.txt), [real descriptor selection](evidence/archive-audit.txt) |
+| Debian prerequisites, privileged image build | Windows, NTFS, WSL absent | Blocked | python -B scripts/build-iso foundation; python -B scripts/build-iso preview | [Host and command output](evidence/windows-builder.txt) |
+| Debian package build, installed file validation and lifecycle | Dedicated Debian 13 amd64 required | Blocked | ./scripts/build-packages build/debs-0.1.0 and ./scripts/test-packages | Future build/packages-*/build.log and build/lifecycle-*/lifecycle.log |
+| Actual ISO content, hashes, EFI signatures and published manifest | Debian builder, foundation and preview | Blocked | ./scripts/validate-iso "$iso" after each build | Future release's build.json, SHA256SUMS, packages.tsv and validation.log |
+| Foundation desktop live boot | New QEMU guest, foundation profile | Not tested | Boot foundation ISO as described in docs/install.md, check Plasma, Konsole, SDDM, DNS and logout | Record foundation-live |
+| BIOS live boot and live desktop | SeaBIOS, fresh bios-one | Not tested | Boot media, complete L below with bios | Record bios-live |
+| BIOS installed boot | SeaBIOS, bios-one, ISO detached | Not tested | Complete I below with bios | Record bios-installed |
+| BIOS post-update boot | Same installed disk, ISO detached | Not tested | Complete U below with bios | Record bios-updated |
+| UEFI live boot and live desktop | OVMF without enforcement, uefi-one | Not tested | Complete L below with uefi | Record uefi-live |
+| UEFI installed boot | Same NVRAM and disk, ISO detached | Not tested | Complete I below with uefi | Record uefi-installed |
+| UEFI post-update boot | Same installed disk, ISO detached | Not tested | Complete U below with uefi | Record uefi-updated |
+| Secure Boot live boot and enforcement | Enrolled OVMF, secure-one | Not tested | Complete L with secure; check SecureBoot=1 and SetupMode=0 | Record secure-live |
+| Secure Boot installed boot and enforcement | Same NVRAM and disk, ISO detached | Not tested | Complete I with secure; check both EFI variables again | Record secure-installed |
+| Secure Boot post-update boot | Same installed disk, ISO detached | Not tested | Complete U with secure and recheck enforcement | Record secure-updated |
+| Recovery drill and backup restore | Installed disposable guest | Not tested | Restore and check a test file; boot an older installed kernel if available; try d-i rescue per maintenance.md | Record recovery with firmware, version and checksums |
+
+For each runtime record, save the ISO SHA-256, profile, guest name, firmware mode, QEMU/OVMF package versions, acceleration, date and observed outcome. The firmware package versions come from the machine running QEMU. In the guest, store reports under ~/kernova-evidence; copy the reviewed files out using your chosen transfer method before retiring the test disk. Keep any screenshots labeled with the real guest, firmware and resolution. Exclude passwords and personal files. If a check fails, record the first error, stage, relevant journal excerpt and exact retry before moving it to Passed.
+
+### L — live desktop
+
+1. On the Debian builder use `./scripts/vm media <name> "$iso"`. Select Live system. Verify the actual login session. In a guest Konsole run `/usr/share/kernova/diagnostics/check-session live --firmware <mode>` for the preview. Check the exit status and JSON. Run `systemctl --user --failed` and inspect unexpected units with `journalctl --user -b`.
+2. Type in Kate, save a file with non-ASCII characters in its name, then open it from Dolphin. Open a local PDF in Okular, an image in Gwenview and an archive in Ark. Launch Firefox ESR, Discover and the other selected apps from the launcher. Use Discover's Installed view to find a known installed Debian package. Check the reported versions with dpkg-query.
+3. Open the network applet, check `nmcli device status`, resolve deb.debian.org, then open a Debian HTTPS page in Firefox. Play a local audio sample through VLC and change volume using the panel. Record audible output and the guest sink. A DNS lookup alone cannot establish browser or audio behavior.
+4. Try the launcher, task switcher, tray, clock, a notification, lock/unlock, logout and SDDM sign-in. Test reboot and shutdown. Test 1366×768 and 1920×1080 and a higher scale using Display Configuration where available. Verify keyboard focus, readable settings, launcher access and welcome scrolling. Switch to Breeze light and reduce animation speed.
+5. Check the temporary account and actual authorization policy. Inspect `id` and `sudo -k -n -- /usr/bin/true`. The restricted live account should lack noninteractive root access. Record the result. The full session, including changes made while testing, is disposable.
+
+### I — interactive install and detached boot
+
+1. Follow [the installation procedure](install.md). Verify that d-i copies the custom filesystem to the new virtual disk. Boot with `./scripts/vm boot <name>` and log in with the personal account. Run `lsblk -o NAME,SIZE,TYPE,SERIAL,MOUNTPOINTS`, `findmnt /` and `cat /proc/cmdline`. In an EFI guest check that /boot/efi is on the guest disk. Capture boot success with the ISO detached.
+2. Save the test file and hash described in install.md. Refresh APT; run the session checker with `installed --firmware <mode>` and inspect the JSON. Compare the installed custom package versions with the release manifest. Check Welcome, its opt-out, the saved theme, application associations, Discover and the default login desktop.
+3. Run `getent passwd kernova-live` (no live account expected), `id`, `sudo -k -n -- /usr/bin/true` (must require authentication or deny), then `sudo -l` interactively to inspect the privileges actually granted. Check effective policy for NOPASSWD grants and review /etc/sudoers.d, /etc/sddm.conf and /etc/sddm.conf.d if present for residual live autologin. A rejected single sudo command alone does not establish the whole policy. At the SDDM screen verify that the temporary live credentials cannot log into the installed guest.
+4. Inspect active sockets with `ss -lntup` and check `systemctl --failed`. Record and investigate unexpected listeners or unit failures. Confirm a valid machine-id with the checker; compare its hash privately with a second independently installed VM to detect cloning. Save the result, excluding the machine ID itself from shared evidence.
+5. Restart, log in again, verify `sha256sum -c persistent.sha256` from ~/kernova-evidence and reopen the file. Record any unexpected desktop changes.
+
+### U — installed update and reboot
+
+Use [the update and recovery procedure](maintenance.md) for an actual package-changing APT or local package update. Save the before/after manifest and APT history, reboot with the ISO detached, rerun the checker and reopen the persistent file. A successful update requires a working login and desktop with the user's settings preserved after reboot.
+
+### Hardware compatibility
+
+| Hardware or behavior | Exact proposed or observed target | State |
+| --- | --- | --- |
+| Guest display and desktop scaling | QEMU virtio-vga, 2 virtual CPUs, 3584 MiB RAM | Not tested |
+| Guest networking and DNS | QEMU virtio-net-pci with user networking | Not tested |
+| Guest audio | Emulated Intel HDA duplex, PulseAudio-compatible host backend | Not tested |
+| Guest input and storage | QEMU xHCI, USB keyboard/tablet, VirtIO disk with serial KERNOVA-TEST | Not tested |
+| Physical graphics acceleration and proprietary NVIDIA | No physical GPU tested | Not tested |
+| Physical Wi-Fi, Bluetooth, audio and peripherals | No adapter, controller or device tested | Not tested |
+| Suspend/resume, disk encryption, dual boot | No designated target tested | Not tested |
+
+The Windows host inventory describes the development machine only. Record exact PCI/USB IDs, firmware, kernel and observed results when a physical target is explicitly selected.

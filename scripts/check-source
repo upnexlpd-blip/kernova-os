@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+"""Validate source in a Linux checkout or run the portable subset on Windows."""
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def main():
+    os.chdir(ROOT)
+    windows = sys.platform == "win32"
+    bash = shutil.which("bash") or (r"C:\Program Files\Git\bin\bash.exe" if windows else None)
+    shellcheck = shutil.which("shellcheck")
+    # Optional portable Windows tool, kept outside the source tree.
+    portable = ROOT / "build/host-shellcheck/shellcheck.exe"
+    if not shellcheck and windows and portable.is_file():
+        shellcheck = str(portable)
+    scripts = []
+    python_files = []
+    for directory in ("auto", "apps", "scripts", "tests", "config", "packages"):
+        for path in sorted(Path(directory).rglob("*")):
+            if not path.is_file() or "__pycache__" in path.parts:
+                continue
+            source = path.read_bytes()
+            header = source.split(b"\n", 1)[0]
+            if path.suffix == ".py" or header.startswith(b"#!") and b"python3" in header:
+                compile(source, str(path), "exec")
+                python_files.append(path)
+            elif header.startswith(b"#!") and (header.endswith(b"/sh") or header.endswith(b"bash")):
+                scripts.append(path.as_posix())
+    print(f"Compiled {len(python_files)} Python sources. Found {len(scripts)} shell entry points.", flush=True)
+    if not bash or not shellcheck:
+        sys.exit("Install bash and shellcheck for shell validation.")
+    for script in scripts:
+        subprocess.run([bash, "-n", script], check=True)
+    if scripts:
+        subprocess.run([shellcheck, *scripts], check=True)
+    print("Shell syntax and ShellCheck passed.", flush=True)
+    desktop_validator = shutil.which("desktop-file-validate")
+    if desktop_validator:
+        subprocess.run([desktop_validator, *sorted(Path("apps/integration").glob("*.desktop"))], check=True)
+        print("desktop-file-validate passed.", flush=True)
+    elif windows:
+        print("Not tested here: desktop-file-validate. Run this command in the Debian builder.", flush=True)
+    else:
+        sys.exit("Install desktop-file-utils in the builder.")
+    if not windows:
+        subprocess.run(["dpkg-parsechangelog", "-l", "packages/debian/changelog", "-SVersion"], check=True)
+        # Make sure the Debian run actually tests the Qt widgets.
+        subprocess.run([sys.executable, "-c", "from PySide6 import QtWidgets"], check=True)
+    env = dict(os.environ, QT_QPA_PLATFORM="offscreen", PYTHONDONTWRITEBYTECODE="1")
+    return subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", "tests", "-v"],
+                          env=env, check=False).returncode
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except (OSError, SyntaxError, subprocess.CalledProcessError) as error:
+        sys.exit(f"Source validation failed: {error}")

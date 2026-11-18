@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=KERNOVA Welcome
+Comment=Open KERNOVA Welcome on sign-in
+Comment[mk]=Отворање на KERNOVA Welcome при најава
+Exec=/usr/bin/kernova-welcome --autostart
+TryExec=/usr/bin/kernova-welcome
+Icon=kernova-logo
+Terminal=false
+OnlyShowIn=KDE;

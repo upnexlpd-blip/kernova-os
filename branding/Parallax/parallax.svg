@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3840" height="2160" viewBox="0 0 1920 1080">
+  <title>Parallax</title>
+  <desc>Folded midnight-blue planes catch a narrow band of lilac light. The left side opens into a quiet navy sky.</desc>
+  <defs>
+    <linearGradient id="sky" x2="1" y2=".62" gradientUnits="objectBoundingBox">
+      <stop stop-color="#101927"/><stop offset=".48" stop-color="#17253a"/><stop offset="1" stop-color="#38415d"/>
+    </linearGradient>
+    <radialGradient id="dawn" cx="86%" cy="33%" r="66%">
+      <stop stop-color="#788aaf" stop-opacity=".68"/><stop offset=".55" stop-color="#536484" stop-opacity=".18"/><stop offset="1" stop-color="#263449" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="top" x1=".25" y1="1" x2=".88" y2="0">
+      <stop stop-color="#243448"/><stop offset=".58" stop-color="#3e5272"/><stop offset=".92" stop-color="#8a9cbb"/><stop offset="1" stop-color="#a8b9d4"/>
+    </linearGradient>
+    <linearGradient id="facet" x1=".05" y1=".85" x2="1" y2=".12">
+      <stop stop-color="#1a263a"/><stop offset=".6" stop-color="#354664"/><stop offset="1" stop-color="#72779c"/>
+    </linearGradient>
+    <linearGradient id="rim" x1=".12" y1="1" x2=".96" y2="0">
+      <stop stop-color="#303d53"/><stop offset=".58" stop-color="#6f7f9f"/><stop offset="1" stop-color="#d0c6f4"/>
+    </linearGradient>
+    <linearGradient id="face" x1=".12" y1=".9" x2=".88" y2="0">
+      <stop stop-color="#0f1927"/><stop offset=".55" stop-color="#22324a"/><stop offset="1" stop-color="#51556e"/>
+    </linearGradient>
+    <linearGradient id="base" x1="0" y1=".7" x2="1" y2=".2">
+      <stop stop-color="#111b2a"/><stop offset=".63" stop-color="#20324a"/><stop offset="1" stop-color="#303b55"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1920v1080H0z"/>
+  <path fill="url(#dawn)" d="M0 0h1920v1080H0z"/>
+  <path fill="url(#top)" d="M366 1080 1328 416 1702 182l218-54v952z"/>
+  <path fill="url(#facet)" d="m366 1080 962-664 374-234-327 354-318 544z"/>
+  <path fill="url(#rim)" d="m326 1080 963-620 167-56 464-302v84l-486 304-871 590z"/>
+  <path fill="url(#face)" d="m346 1080 954-608 159-56 461-304v665l-578 303z"/>
+  <path fill="url(#facet)" d="m1459 416 461-304v224l-496 414-344 330H723z"/>
+  <path fill="url(#base)" d="m0 1033 450-106 597-198 398-64 475-209v624H0z"/>
+  <path fill="#586782" opacity=".65" d="m0 1033 450-106 597-198 398-64 475-209-465 214-407 63-596 198z"/>
+  <path fill="url(#face)" d="m1137 1080 309-415 474-209v624z"/>
+</svg>
