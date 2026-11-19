@@ -60,6 +60,8 @@ class LiveInstallerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             files = {
+                "etc/apt/sources.list": "deb [trusted=yes] file:/run/live/medium trixie main non-free-firmware\n"
+                    "deb https://deb.debian.org/debian trixie main non-free-firmware\n",
                 "etc/calamares/settings.conf": "\nbranding: debian\nprompt-install: false\n"
                     "  - dpkg-unsafe-io\n  - sources-media\n  - machineid\n"
                     "  - bootloader-config\n  - grubcfg\n  - dpkg-unsafe-io-undo\n"
@@ -79,6 +81,8 @@ class LiveInstallerTests(unittest.TestCase):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(contents)
             configure(root, PAYLOAD)
+            self.assertEqual((root / "etc/apt/sources.list").read_text(),
+                             "deb https://deb.debian.org/debian trixie main non-free-firmware\n")
             # calamares-settings-debian diverts the upstream menu entry on a
             # real trixie image. The branded launcher and policy still activate.
             (root / "usr/share/applications/calamares.desktop").unlink()

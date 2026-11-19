@@ -139,6 +139,7 @@ def inspect(iso, tmp):
             "apps/integration/kernova-ai-tools.desktop": "usr/share/applications/kernova-ai-tools.desktop",
             "packages/defaults/flathub.flatpakrepo": "usr/share/kernova/flathub.flatpakrepo",
             "packages/defaults/15kernova-refresh": "etc/apt/apt.conf.d/15kernova-refresh",
+            "packages/defaults/kernova.sources": "etc/apt/sources.list.d/kernova.sources",
         }
         for wall in ("KernovaFirstLight", "KernovaOlympicCoast", "KernovaChollaTrail"):
             relative = wall + "/contents/images/3840x2160.jpg"
@@ -189,6 +190,8 @@ def inspect(iso, tmp):
                             "shim-signed", "efibootmgr"):
                 require(re.search(rf"/{package}_[^/\s]+\.deb", pool), f"Missing offline boot package {package}")
             listing = output("unsquashfs", "-l", rootfs)
+            for path in ("etc/apt/apt.conf.d/00-kernova-local.conf", "etc/apt/sources.list.d/00-kernova-local.list"):
+                require(f"squashfs-root/{path}\n" not in listing, f"Build-only package source shipped in {path}")
             for live_only in ("usr/libexec/kernova-live-install", "etc/polkit-1/rules.d/49-kernova-live-install.rules",
                               "usr/share/polkit-1/actions/org.kernova.live.install.policy"):
                 require(f"squashfs-root/{live_only}\n" not in listing, f"Live authorization baked into {live_only}")

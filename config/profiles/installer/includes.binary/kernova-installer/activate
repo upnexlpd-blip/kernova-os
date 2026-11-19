@@ -16,6 +16,16 @@ def replace_setting(path, old, new):
 
 
 def configure(root, payload):
+    # Calamares installs boot packages through its own temporary APT list.
+    # Discover should use the signed network sources, including in a Live session.
+    sources = root / "etc/apt/sources.list"
+    if sources.is_file():
+        lines = sources.read_text().splitlines(keepends=True)
+        media_entry = "deb [trusted=yes] file:/run/live/medium trixie main non-free-firmware"
+        network = [line for line in lines if line.strip() != media_entry]
+        if network != lines:
+            sources.write_text("".join(network))
+
     def install(source, destination, mode=0o644):
         destination = root / destination
         destination.parent.mkdir(parents=True, exist_ok=True)
