@@ -23,6 +23,7 @@ class DiscoverTests(unittest.TestCase):
             marker = Path(state) / "kernova/flathub-initialized"
             marker.parent.mkdir()
             marker.touch()
+            (marker.parent / "viber-popup-initialized").touch()
             with patch.dict(os.environ, XDG_STATE_HOME=state), patch.dict(sys.modules, fcntl=MagicMock()):
                 for app, app_id in launcher["APPLICATIONS"].items():
                     with self.subTest(app=app), patch.object(sys, "argv", [str(LAUNCHER), app]), patch("os.execv") as execute:
@@ -35,6 +36,23 @@ class DiscoverTests(unittest.TestCase):
                     launcher["main"]()
                     execute.assert_called_once_with("/usr/bin/plasma-discover", ["/usr/bin/plasma-discover"])
 
+    def test_existing_catalog_gets_viber_default_once(self):
+        initialize = runpy.run_path(str(LAUNCHER))["initialize_catalog"]
+        for settings, changes in (("", 1), ("[Environment]\nQT_QPA_PLATFORM=wayland", 0),
+                                  ("[Context]\nunset-environment=QT_QPA_PLATFORM;", 0)):
+            with self.subTest(settings=settings), tempfile.TemporaryDirectory() as state, patch.dict(
+                    os.environ, XDG_STATE_HOME=state), patch.dict(sys.modules, fcntl=MagicMock()), patch(
+                    "subprocess.check_output", return_value=settings), patch("subprocess.run") as apply:
+                directory = Path(state) / "kernova"
+                directory.mkdir()
+                (directory / "flathub-initialized").touch()
+                initialize(DESCRIPTOR)
+                initialize(DESCRIPTOR)
+                self.assertEqual(apply.call_count, changes)
+                if changes:
+                    self.assertEqual(apply.call_args.args[0][-2:],
+                                     ["--env=QT_QPA_PLATFORM=xcb;wayland", "com.viber.Viber"])
+
     def test_remote_setup_retries_failures_and_preserves_user_removal(self):
         initialize = runpy.run_path(str(LAUNCHER))["initialize_catalog"]
         bindings = MagicMock()
@@ -43,6 +61,8 @@ class DiscoverTests(unittest.TestCase):
         installation.add_remote.side_effect = [RuntimeError("simulated failure"), True]
         with tempfile.TemporaryDirectory() as state, patch.dict(os.environ, XDG_STATE_HOME=state), patch.dict(
                 sys.modules, {"gi": MagicMock(), "gi.repository": bindings, "fcntl": MagicMock()}):
+            (Path(state) / "kernova").mkdir()
+            (Path(state) / "kernova/viber-popup-initialized").touch()
             with self.assertRaisesRegex(RuntimeError, "simulated failure"):
                 initialize(DESCRIPTOR)
             initialize(DESCRIPTOR)

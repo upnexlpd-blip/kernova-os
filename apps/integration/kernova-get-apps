@@ -3,6 +3,7 @@
 import argparse
 import os
 from pathlib import Path
+import subprocess
 import sys
 
 
@@ -15,16 +16,37 @@ APPLICATIONS = {
 }
 
 
+def initialize_viber(state):
+    """Let Viber position its own Qt popups on Plasma through XWayland."""
+    marker = state / "viber-popup-initialized"
+    if marker.exists():
+        return
+    override = ["/usr/bin/flatpak", "override", "--user"]
+    app = APPLICATIONS["viber"]
+    settings = subprocess.check_output([*override, "--show", app], text=True)
+    # Keep an existing Qt backend choice, including an explicit unset.
+    if not any(line.startswith("QT_QPA_PLATFORM=") or
+               (line.startswith("unset-environment=") and
+                "QT_QPA_PLATFORM" in line.partition("=")[2].split(";"))
+               for line in settings.splitlines()):
+        subprocess.run([*override, "--env=QT_QPA_PLATFORM=xcb;wayland", app], check=True)
+    marker.touch()
+
+
 def initialize_catalog(descriptor=Path("/usr/share/kernova/flathub.flatpakrepo")):
     import fcntl
 
     state = Path(os.environ.get("XDG_STATE_HOME") or Path.home() / ".local/state") / "kernova"
     marker = state / "flathub-initialized"
-    if marker.exists():
+    if marker.exists() and (state / "viber-popup-initialized").exists():
         return
     state.mkdir(mode=0o700, parents=True, exist_ok=True)
     with (state / "catalog.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            initialize_viber(state)
+        except (OSError, subprocess.CalledProcessError) as error:
+            print(f"Could not initialize the Viber popup setting: {error}", file=sys.stderr)
         if marker.exists():
             return
 
