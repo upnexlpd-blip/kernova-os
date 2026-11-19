@@ -1,5 +1,11 @@
 # KERNOVA OS development preview
 
+## Windows program support 0.1.6, 19 November 2026
+
+An installed KERNOVA 0.1.5 Plasma VM previously opened the application chooser for the official OpenTTD 15.3 Windows x64 installer. After upgrading the five KERNOVA packages, a fresh unprivileged account double-clicked the same installer in Dolphin, confirmed Execute and completed the original installation wizard with its defaults. The launcher fetched the Wine 11.0 Flatpak for the account. Opening **Windows Programs → OpenTTD/OpenTTD** launched the Windows game. After consenting to the game's OpenGFX download, the tester generated a map and placed track. The game charged £90. [Before the update](docs/evidence/windows-games-0.1.6/before.png) · [First launch](docs/evidence/windows-games-0.1.6/first-open.png) · [Installation](docs/evidence/windows-games-0.1.6/installed.png) · [Shortcut](docs/evidence/windows-games-0.1.6/start-menu.png) · [Gameplay](docs/evidence/windows-games-0.1.6/gameplay.png)
+
+The test used QEMU on Windows with WHPX, UEFI, two virtual CPUs, 4 GiB RAM and software rendering. The installer SHA-256 was `f061a7fd16ebe682edd45b02d048f068735a4a296c2b2b325246b10e01c748bf`. OpenTTD's Windows MIDI initialization hung in the first candidate. The launcher selects the game's null MIDI driver for OpenTTD. Sound effects, hardware GPU performance and other games remain unverified.
+
 ## Stable package update 0.1.5, 19 November 2026
 
 The Welcome application bundles eight Papirus app icons for offline use. The branding package adds seven photographs, bringing the KERNOVA photo collection to ten 3840×2160 wallpapers. Each wallpaper includes its photographer and source in its KDE metadata. An installed 0.1.4 Plasma VM upgraded through Discover and displayed all eight icons and ten wallpaper previews. [Discover](docs/evidence/artwork-0.1.5/discover.png) · [App catalog](docs/evidence/artwork-0.1.5/welcome-apps.png) · [Desktop shortcuts](docs/evidence/artwork-0.1.5/welcome-shortcuts.png) · [Wallpaper chooser](docs/evidence/artwork-0.1.5/wallpaper-chooser.png)

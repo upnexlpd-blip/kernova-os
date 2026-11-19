@@ -2,6 +2,12 @@
 
 KERNOVA 0.1.3 includes the public signing key and package source. In an installed Plasma session, Discover periodically checks for updates and shows a notification when a newer package is available. Open **Discover â†’ Updates** to review and install it. A GitHub account is unnecessary.
 
+## Open Windows games in 0.1.6
+
+Install the update in **Discover → Updates**. In Dolphin, double-click the downloaded Windows `.exe` installer and confirm **Execute** if prompted. The first launch downloads Wine and its runtime from Flathub for your account. Follow the game's installer, then open **Windows Programs** in the application menu and select the installed shortcut.
+
+For OpenTTD 15.3, keep the default Start Menu shortcut and allow the game's first-run graphics download. The launcher disables this game's Windows MIDI music driver because it stalled during testing. Game compatibility depends on the title.
+
 ## Install Smart Performance 0.1.4
 
 On an installed KERNOVA 0.1.3 desktop, connect to the internet and wait for the Discover notification, or open **Discover > Updates > Refresh**. Select **Update All**, authenticate and open **KERNOVA Performance Center** from the application menu. To verify the installed release, run `dpkg-query -W kernova-desktop kernova-performance`.
