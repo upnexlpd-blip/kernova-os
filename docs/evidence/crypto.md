@@ -1,5 +1,28 @@
 # Kernova Crypto 0.1.11 verification
 
+## Dashboard update 0.1.12
+
+The refreshed dashboard passed the Debian 13 validation job
+[44600768201](https://github.com/upnexlpd-blip/kernova-os/actions/runs/44600768201)
+and stable publication
+[44601116605](https://github.com/upnexlpd-blip/kernova-os/actions/runs/44601116605).
+The Windows source check ran 53 tests with three platform-dependent skips.
+Native live-data checks covered featured-card navigation, chart loading and a
+compact 800 by 620 window with two card columns and no root horizontal overflow.
+
+The new view includes offline coin artwork, interactive featured markets, market
+breadth and quoted-volume summaries, chart volume bars, candle inspection and
+sort shortcuts. The original 482 color PNGs come from spothq/cryptocurrency-icons
+revision 1a63530be6e374711a8554f31b17e4cb92c25fa5 under CC0-1.0. Missing artwork
+uses neutral initials. The license and source notice accompany the icons.
+
+Windows independently verified the stable signature, signed index and all five
+0.1.12 package hashes. The actual desktop package contains all 482 PNGs, the
+license and the dashboard code. The audit is in
+build/crypto-style-0.1.12-verification/verification.json in the primary checkout.
+
+[Windows native preview with live data](crypto-style-preview-windows.png)
+
 Verified on 19 November 2026.
 
 ## Native market data
