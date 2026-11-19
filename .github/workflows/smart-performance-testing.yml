@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: kernova-testing-archive
+  group: ${{ github.ref == 'refs/heads/qa/installation-reporting-stable' && 'kernova-reporting-validation' || 'kernova-testing-archive' }}
   cancel-in-progress: false
 jobs:
   verify:
