@@ -1,4 +1,8 @@
 apps/integration/kernova-get-apps usr/bin
+apps/torrent/* usr/share/kernova/torrent
+apps/integration/org.kernova.Torrent.desktop usr/share/applications
+branding/kernova-torrent.svg usr/share/icons/hicolor/scalable/apps
+defaults/kernova-torrent-resume.desktop etc/xdg/autostart
 apps/integration/kernova-windows usr/bin
 apps/integration/kernova-windows.desktop usr/share/applications
 defaults/kde-mimeapps.list etc/xdg

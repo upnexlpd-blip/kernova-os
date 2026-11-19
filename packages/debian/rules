@@ -24,4 +24,5 @@ override_dh_compress:
 	dh_compress -Xuser-guide.md
 
 execute_after_dh_fixperms:
+	chmod 755 debian/kernova-desktop/usr/share/kernova/torrent/kernova-torrent
 	chmod 755 debian/kernova-performance/usr/share/kernova/performance/*.py

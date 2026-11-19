@@ -1,2 +1,4 @@
 [Default Applications]
+application/x-bittorrent=org.kernova.Torrent.desktop;
+x-scheme-handler/magnet=org.kernova.Torrent.desktop;
 application/vnd.microsoft.portable-executable=kernova-windows.desktop;

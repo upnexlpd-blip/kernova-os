@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Resume KERNOVA Torrent
+Exec=kernova-torrent --resume
+TryExec=kernova-torrent
+NoDisplay=true

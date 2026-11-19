@@ -1,0 +1,327 @@
+#!/usr/bin/python3
+import os
+from pathlib import Path
+import sys
+import time
+
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gio, GLib, Gtk
+
+from transfers import Transfers, identity, parse_source
+
+
+def size(value):
+    return GLib.format_size_full(max(0, int(value)), GLib.FormatSizeFlags.IEC_UNITS)
+
+
+def button(text, callback, icon=None):
+    widget = Gtk.Button.new_with_label(text)
+    if icon:
+        widget.set_image(Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.BUTTON))
+        widget.set_always_show_image(True)
+    widget.connect("clicked", callback)
+    return widget
+
+
+class Library(Gtk.ApplicationWindow):
+    def __init__(self, app, queue):
+        super().__init__(application=app, title="KERNOVA Torrent")
+        self.set_default_size(920, 530)
+        self.set_icon_name("kernova-torrent")
+        self.queue = queue
+        self.items = {}
+        self.last_save = time.monotonic()
+        header = Gtk.HeaderBar(title="KERNOVA Torrent", show_close_button=True)
+        header.pack_start(Gtk.Image.new_from_icon_name("kernova-torrent", Gtk.IconSize.LARGE_TOOLBAR))
+        add = button("Open torrent", self.choose, "document-open-symbolic")
+        add.get_style_context().add_class("suggested-action")
+        header.pack_end(add)
+        header.pack_end(button("Magnet link", self.magnet, "insert-link-symbolic"))
+        self.set_titlebar(header)
+        self.layout = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, margin=16)
+        self.add(self.layout)
+        tools = Gtk.Box(spacing=8)
+        self.layout.pack_start(tools, False, False, 0)
+        self.filter = Gtk.ComboBoxText()
+        for label in ("All transfers", "Downloading", "Seeding", "Paused", "Errors"):
+            self.filter.append_text(label)
+        self.filter.set_active(0)
+        tools.pack_start(self.filter, False, False, 0)
+        self.actions = []
+        for label, action in (("Pause", lambda *_: self.change(True)), ("Resume", lambda *_: self.change(False)),
+                              ("Open folder", self.open_folder), ("Remove", self.remove)):
+            control = button(label, action)
+            tools.pack_start(control, False, False, 0)
+            self.actions.append(control)
+        tools.pack_end(button("Speed limit", self.speed_limit), False, False, 0)
+        self.store = Gtk.ListStore(str, str, str, int, str, str, str, str)
+        self.view_model = self.store.filter_new()
+        self.view_model.set_visible_func(self.visible)
+        self.filter.connect("changed", lambda *_: self.view_model.refilter())
+        self.view = Gtk.TreeView(model=self.view_model)
+        self.view.set_search_column(1)
+        for i, label in enumerate(("Name", "Status", "Progress", "Down", "Up", "ETA"), 1):
+            cell = Gtk.CellRendererProgress() if i == 3 else Gtk.CellRendererText()
+            column = Gtk.TreeViewColumn(label, cell, **({"value": i} if i == 3 else {"text": i}))
+            column.set_resizable(True)
+            if i == 1:
+                column.set_expand(True)
+                cell.set_property("ellipsize", 3)
+                column.set_min_width(115)
+            if i == 3:
+                column.set_min_width(100)
+            self.view.append_column(column)
+        scroll = Gtk.ScrolledWindow()
+        scroll.set_shadow_type(Gtk.ShadowType.IN)
+        scroll.add(self.view)
+        self.stack = Gtk.Stack()
+        self.stack.add_named(scroll, "list")
+        empty = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, valign=Gtk.Align.CENTER)
+        empty.pack_start(Gtk.Image.new_from_icon_name("kernova-torrent", Gtk.IconSize.DIALOG), False, False, 0)
+        empty.pack_start(Gtk.Label(label="Open a torrent file or add a magnet link to start downloading."), False, False, 0)
+        self.stack.add_named(empty, "empty")
+        self.layout.pack_start(self.stack, True, True, 0)
+        self.details = Gtk.Label(xalign=0, selectable=True, wrap=True)
+        self.layout.pack_start(self.details, False, False, 0)
+        self.total = Gtk.Label(xalign=0)
+        self.total.get_style_context().add_class("dim-label")
+        self.layout.pack_end(self.total, False, False, 0)
+        self.view.get_selection().connect("changed", lambda *_: self.selection())
+        self.view.connect("row-activated", self.open_folder)
+        self.refresh()
+        GLib.timeout_add_seconds(1, self.refresh)
+
+    def visible(self, model, it, _):
+        return self.filter.get_active() == 0 or model[it][7] == self.filter.get_active_text()
+
+    def selected(self):
+        model, it = self.view.get_selection().get_selected()
+        return model[it][0] if it is not None else None
+
+    def selection(self):
+        key = self.selected()
+        for control in self.actions:
+            control.set_sensitive(key is not None)
+        if key is None:
+            self.details.set_text("")
+            return
+        row = self.queue.db.execute("SELECT folder,paused FROM transfers WHERE id=?", (key,)).fetchone()
+        if not row:
+            return
+        self.actions[0].set_sensitive(not row["paused"])
+        self.actions[1].set_sensitive(bool(row["paused"]) or key in self.queue.errors)
+        handle = self.queue.handles.get(key)
+        text = self.queue.errors.get(key, "")
+        if handle:
+            st = handle.status()
+            text = st.errc.message() if st.errc.value() else (
+                f"{size(st.total_wanted_done)} of {size(st.total_wanted)}   ·   {st.num_peers} peers")
+            self.actions[1].set_sensitive(bool(row["paused"]) or bool(st.errc.value()))
+        self.details.set_text(f"{text}\n{row['folder']}")
+
+    def refresh(self):
+        self.queue.collect()
+        down = up = 0
+        for row in self.queue.rows():
+            key = row["id"]
+            handle = self.queue.handles.get(key)
+            name, status, group = key[:16], "Error", "Errors"
+            percent = rx = tx = 0
+            eta = "—"
+            if handle:
+                st = handle.status()
+                name = st.name or key[:16]
+                percent = int(st.progress * 100)
+                rx, tx = st.download_payload_rate, st.upload_payload_rate
+                down += rx
+                up += tx
+                if st.errc.value():
+                    status = "Error"
+                elif row["paused"]:
+                    status = group = "Paused"
+                elif st.is_seeding:
+                    status = group = "Seeding"
+                else:
+                    group = "Downloading"
+                    status = {"downloading_metadata": "Finding metadata", "checking_files": "Checking files",
+                              "checking_resume_data": "Checking saved progress"}.get(str(st.state), "Downloading")
+                    if rx and st.total_wanted:
+                        seconds = max(0, st.total_wanted - st.total_wanted_done) // rx
+                        eta = f"{seconds // 3600:d}h {(seconds // 60) % 60:02d}m" if seconds >= 3600 else f"{seconds // 60}m {seconds % 60:02d}s"
+                if st.is_seeding and not row["complete"]:
+                    with self.queue.db:
+                        self.queue.db.execute("UPDATE transfers SET complete=1 WHERE id=?", (key,))
+                elif row["complete"] and str(st.state) == "downloading" and not st.is_finished:
+                    with self.queue.db:
+                        self.queue.db.execute("UPDATE transfers SET complete=0 WHERE id=?", (key,))
+            values = [key, name, status, percent, size(rx) + "/s", size(tx) + "/s", eta, group]
+            if key in self.items:
+                self.store.set(self.items[key], list(range(len(values))), values)
+            else:
+                self.items[key] = self.store.append(values)
+        self.stack.set_visible_child_name("list" if self.items else "empty")
+        self.total.set_text(f"{len(self.items)} transfers     ↓ {size(down)}/s     ↑ {size(up)}/s")
+        self.selection()
+        if time.monotonic() - self.last_save >= 10:
+            self.queue.checkpoint()
+            self.last_save = time.monotonic()
+        return True
+
+    def message(self, text):
+        dialog = Gtk.MessageDialog(transient_for=self, modal=True, message_type=Gtk.MessageType.INFO,
+                                   buttons=Gtk.ButtonsType.CLOSE, text=str(text))
+        dialog.run()
+        dialog.destroy()
+
+    def choose(self, *_):
+        dialog = Gtk.FileChooserDialog(title="Open a torrent", transient_for=self, action=Gtk.FileChooserAction.OPEN)
+        dialog.add_buttons("Cancel", Gtk.ResponseType.CANCEL, "Open", Gtk.ResponseType.OK)
+        pattern = Gtk.FileFilter()
+        pattern.set_name("BitTorrent files")
+        pattern.add_mime_type("application/x-bittorrent")
+        pattern.add_pattern("*.torrent")
+        dialog.add_filter(pattern)
+        path = dialog.get_filename() if dialog.run() == Gtk.ResponseType.OK else None
+        dialog.destroy()
+        if path:
+            self.offer(path)
+
+    def magnet(self, *_):
+        dialog = Gtk.Dialog(title="Add magnet link", transient_for=self, modal=True)
+        dialog.add_buttons("Cancel", Gtk.ResponseType.CANCEL, "Continue", Gtk.ResponseType.OK)
+        entry = Gtk.Entry(placeholder_text="magnet:?xt=…", width_chars=48, margin=12, activates_default=True)
+        dialog.get_content_area().add(entry)
+        dialog.set_default_response(Gtk.ResponseType.OK)
+        dialog.show_all()
+        result = dialog.run()
+        link = entry.get_text().strip()
+        dialog.destroy()
+        if result == Gtk.ResponseType.OK:
+            if link.lower().startswith("magnet:?"):
+                self.offer(link)
+            else:
+                self.message("Enter a magnet link beginning with magnet:?.")
+
+    def offer(self, value):
+        try:
+            if value.lower().startswith("magnet:?"):
+                source = value
+            else:
+                path = Path(value)
+                if not path.is_file() or path.stat().st_size > 32 * 1024 * 1024:
+                    raise ValueError("Choose a local torrent file smaller than 32 MiB.")
+                source = path.read_bytes()
+            p = parse_source(source)
+            key = identity(p)
+            if key in self.items:
+                self.filter.set_active(0)
+                it = self.view_model.convert_child_iter_to_iter(self.items[key])[1]
+                self.view.get_selection().select_iter(it)
+                self.present()
+                return
+            name = p.ti.name() if p.ti else p.name or key
+            summary = f"{p.ti.num_files()} files   ·   {size(p.ti.total_size())}" if p.ti else "File details will be fetched from peers."
+            dialog = Gtk.FileChooserDialog(title="Download " + name, transient_for=self,
+                                           action=Gtk.FileChooserAction.SELECT_FOLDER)
+            dialog.add_buttons("Cancel", Gtk.ResponseType.CANCEL, "Download here", Gtk.ResponseType.OK)
+            folder = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD) or str(Path.home() / "Downloads")
+            Path(folder).mkdir(parents=True, exist_ok=True)
+            dialog.set_current_folder(folder)
+            label = Gtk.Label(label=summary, xalign=0)
+            label.show()
+            dialog.set_extra_widget(label)
+            accepted = dialog.run() == Gtk.ResponseType.OK
+            target = dialog.get_filename() or dialog.get_current_folder()
+            dialog.destroy()
+            if accepted:
+                self.queue.add(source, target)
+                self.filter.set_active(0)
+                self.refresh()
+                self.view.get_selection().select_iter(self.view_model.convert_child_iter_to_iter(self.items[key])[1])
+        except (RuntimeError, ValueError, OSError) as exc:
+            self.message(exc)
+
+    def change(self, paused):
+        key = self.selected()
+        if key:
+            try:
+                self.queue.pause(key, paused)
+                self.refresh()
+            except (RuntimeError, OSError) as exc:
+                self.message(exc)
+
+    def open_folder(self, *_):
+        key = self.selected()
+        if key:
+            folder = self.queue.db.execute("SELECT folder FROM transfers WHERE id=?", (key,)).fetchone()[0]
+            try:
+                Gio.AppInfo.launch_default_for_uri(Path(folder).as_uri(), None)
+            except GLib.Error as exc:
+                self.message(exc.message)
+
+    def remove(self, *_):
+        key = self.selected()
+        if not key:
+            return
+        dialog = Gtk.MessageDialog(transient_for=self, modal=True, message_type=Gtk.MessageType.QUESTION,
+                                   text="Remove this transfer from the queue?")
+        dialog.format_secondary_text("Downloaded files will stay in their folder.")
+        dialog.add_buttons("Cancel", Gtk.ResponseType.CANCEL, "Remove transfer", Gtk.ResponseType.OK)
+        result = dialog.run()
+        dialog.destroy()
+        if result == Gtk.ResponseType.OK:
+            self.queue.remove(key)
+            self.store.remove(self.items.pop(key))
+            self.refresh()
+
+    def speed_limit(self, *_):
+        dialog = Gtk.Dialog(title="Download speed limit", transient_for=self, modal=True)
+        dialog.add_buttons("Cancel", Gtk.ResponseType.CANCEL, "Apply", Gtk.ResponseType.OK)
+        box = Gtk.Box(spacing=8, margin=12)
+        box.add(Gtk.Label(label="KiB/s (0 for unlimited)"))
+        limit = Gtk.SpinButton.new_with_range(0, 1048576, 1)
+        limit.set_value(self.queue.limit())
+        box.add(limit)
+        dialog.get_content_area().add(box)
+        dialog.show_all()
+        if dialog.run() == Gtk.ResponseType.OK:
+            self.queue.set_limit(limit.get_value_as_int())
+        dialog.destroy()
+
+
+class TorrentApp(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.kernova.Torrent", flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
+        self.queue = None
+        self.window = None
+
+    def do_command_line(self, command):
+        args = command.get_arguments()[1:]
+        if self.queue is None:
+            self.queue = Transfers()
+        if args == ["--resume"] and (self.window or not self.queue.pending()):
+            return 0
+        if not self.window:
+            self.queue.start()
+            self.window = Library(self, self.queue)
+            self.window.show_all()
+        self.window.present()
+        for arg in args:
+            if arg != "--resume":
+                value = arg if arg.lower().startswith("magnet:?") else command.create_file_for_arg(arg).get_path()
+                if value:
+                    self.window.offer(value)
+                else:
+                    self.window.message("Choose a local torrent file or a magnet link.")
+        return 0
+
+    def do_shutdown(self):
+        if self.queue:
+            self.queue.close()
+        Gtk.Application.do_shutdown(self)
+
+
+if __name__ == "__main__":
+    GLib.set_application_name("KERNOVA Torrent")
+    sys.exit(TorrentApp().run(sys.argv))
