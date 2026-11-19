@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import secrets
 import sys
+import tempfile
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
@@ -37,9 +38,20 @@ def report(endpoint, version, withdraw=False, state_path=STATE):
         if withdraw:
             return
         state = {"id": secrets.token_hex(32), "secret": secrets.token_hex(32), "endpoint": endpoint}
-        descriptor = os.open(state_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
-            json.dump(state, stream)
+        descriptor, temporary = tempfile.mkstemp(dir=state_path.parent, prefix=".installation-")
+        try:
+            with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+                json.dump(state, stream)
+                stream.flush()
+                os.fsync(stream.fileno())
+            try:
+                os.link(temporary, state_path)
+            except FileExistsError:
+                state = json.loads(state_path.read_text(encoding="utf-8"))
+                if state["endpoint"] != endpoint:
+                    raise ValueError("Use the original registration service.")
+        finally:
+            os.unlink(temporary)
     payload = {**state, "version": version, "session": "installed", "consent": True}
     payload.pop("endpoint")
     suffix = "/withdraw" if withdraw else ""
