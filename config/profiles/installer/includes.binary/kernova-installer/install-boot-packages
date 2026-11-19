@@ -23,4 +23,7 @@ if [ -f /etc/crypttab ] && grep -Eq '^[[:space:]]*[^#[:space:]]' /etc/crypttab; 
     printf '%s\n' 'UMASK=0077' > /etc/initramfs-tools/conf.d/initramfs-permissions
 fi
 install -d /etc/default/grub.d
+# The installed root inherits this live-build entry from the SquashFS.
+# The boot packages above were installed from a separate, temporary list.
+sed -i '/^deb \[trusted=yes\] file:\/run\/live\/medium trixie main non-free-firmware$/d' /etc/apt/sources.list
 printf '%s\n' 'GRUB_DISABLE_OS_PROBER=false' > /etc/default/grub.d/30-kernova-os-prober.cfg

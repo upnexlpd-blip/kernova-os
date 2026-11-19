@@ -12,8 +12,11 @@
   work=$(mktemp -d)
   cd "$work"
   curl -fsSL https://raw.githubusercontent.com/upnexlpd-blip/kernova-linux/apt/kernova.sources -o kernova.sources
-  echo '5501daF88da0afff004ba7c034792f76cb847f6382e0e277b3439d2f05a71fdf  kernova.sources' | sha256sum -c -
+  echo '5501daf88da0afff004ba7c034792f76cb847f6382e0e277b3439d2f05a71fdf  kernova.sources' | sha256sum -c -
   sudo install -m 0644 kernova.sources /etc/apt/sources.list.d/kernova.sources
+  if ! grep -qw 'boot=live' /proc/cmdline; then
+    sudo sed -i '/^deb \[trusted=yes\] file:\/run\/live\/medium trixie main non-free-firmware$/d' /etc/apt/sources.list
+  fi
   sudo apt-get update --error-on=any
 )
 ```
@@ -25,3 +28,5 @@
 За ново издание зголеми ја верзијата во product.json и packages/debian/changelog и испрати ја промената на main во kernova-os. GitHub Actions ги гради четирите KERNOVA пакети, го проверува потписот и го објавува APT индексот во гранката apt на kernova-linux. Секој понеделник повторно ги потпишува индексите со истите објавени пакети. Промените што припаѓаат само на Live медиумот, како менито за подигнување, се испорачуваат преку ново ISO.
 
 Отпечаток на примарниот клуч: `7656 A706 E55A 3F68 686D E0FD B9EF 5C29 B220 41E8`.
+
+Потклучот за потпишување важи до ноември 2029. Пред истекот операторот треба да го обнови клучот и да ја достави новата јавна верзија до клиентите преку постојниот важечки канал. Поставките за објавување се во GitHub Actions secrets на kernova-os. Приватниот примарен клуч се чува одделно од GitHub.
