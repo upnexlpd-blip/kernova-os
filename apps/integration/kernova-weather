@@ -10,6 +10,18 @@ gi.require_version("GWeather", "4.0")
 from gi.repository import Geoclue, Gio, GLib, Gtk, GWeather
 
 
+def current_city():
+    # Use a one-shot client. Its lifetime ends as soon as a city is found.
+    client = Geoclue.Simple.new_sync("org.kernova.Weather", Geoclue.AccuracyLevel.EXACT, None)
+    position = client.get_location()
+    world = GWeather.Location.get_world()
+    city = world.find_nearest_city(position.props.latitude, position.props.longitude) if position else None
+    if city is None:
+        return 1
+    print(city.serialize().print_(True))
+    return 0
+
+
 class Weather(Gtk.Application):
     def __init__(self):
         super().__init__(application_id="org.kernova.Weather")
@@ -47,7 +59,7 @@ class Weather(Gtk.Application):
             GLib.source_remove(self.timer)
             self.timer = 0
         if self.request:
-            self.request.cancel()
+            self.request.force_exit()
             self.request = None
 
     def do_shutdown(self):
@@ -57,10 +69,10 @@ class Weather(Gtk.Application):
     def find_location(self, button):
         button.set_sensitive(False)
         self.status.set_label("Finding your location... You can also open Weather and choose a city.")
-        self.request = Gio.Cancellable()
+        self.request = Gio.Subprocess.new([sys.executable, __file__, "--current-city"],
+                                          Gio.SubprocessFlags.STDOUT_PIPE)
         self.timer = GLib.timeout_add_seconds(30, self.location_timeout)
-        Geoclue.Simple.new(self.get_application_id(), Geoclue.AccuracyLevel.EXACT,
-                           self.request, self.location_ready, self.request)
+        self.request.communicate_utf8_async(None, None, self.location_ready)
 
     def location_timeout(self):
         self.timer = 0
@@ -69,32 +81,31 @@ class Weather(Gtk.Application):
         self.locate.set_sensitive(True)
         return GLib.SOURCE_REMOVE
 
-    def location_ready(self, source, result, request):
-        if request is not self.request:
+    def location_ready(self, process, result):
+        if process != self.request:
             return
         self.request = None
         self.cancel_location()
         self.locate.set_sensitive(True)
         try:
-            position = Geoclue.Simple.new_finish(result).get_location()
-            city = (GWeather.Location.get_world().find_nearest_city(position.get_latitude(), position.get_longitude())
-                    if position else None)
+            _, output, _ = process.communicate_utf8_finish(result)
+            if process.get_successful():
+                location = GLib.Variant.parse(None, output.strip(), None, None)
+                self.open_forecast(location)
+                return
         except GLib.Error:
-            city = None
-        if city is None:
-            self.status.set_label("Location is unavailable. Check location access or choose a city in Weather.")
-            return
-        self.open_forecast(city)
+            pass
+        self.status.set_label("Location is unavailable. Check location access or choose a city in Weather.")
 
-    def open_forecast(self, city=None):
+    def open_forecast(self, location=None):
         self.cancel_location()
         self.locate.set_sensitive(True)
-        if city is None:
+        if location is None:
             method = "Activate"
             params = GLib.Variant("(a{sv})", ({},))
         else:
             method = "ActivateAction"
-            location = GLib.Variant.new_variant(city.serialize())
+            location = GLib.Variant.new_variant(location)
             params = GLib.Variant("(sava{sv})", ("show-location", [location], {}))
         self.get_active_window().get_child().set_sensitive(False)
         self.get_dbus_connection().call(
@@ -112,4 +123,9 @@ class Weather(Gtk.Application):
 
 
 if __name__ == "__main__":
+    if sys.argv[1:] == ["--current-city"]:
+        try:
+            sys.exit(current_city())
+        except GLib.Error:
+            sys.exit(1)
     sys.exit(Weather().run(sys.argv))
