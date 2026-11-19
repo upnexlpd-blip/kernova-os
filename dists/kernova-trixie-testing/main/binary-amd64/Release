@@ -1,0 +1,7 @@
+Archive: kernova-trixie-testing
+Component: main
+Origin: KERNOVA
+Label: KERNOVA
+Architecture: amd64
+NotAutomatic: yes
+ButAutomaticUpgrades: yes
