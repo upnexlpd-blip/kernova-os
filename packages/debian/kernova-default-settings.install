@@ -1,3 +1,4 @@
 defaults/kdeglobals etc/skel/.config
 defaults/mimeapps.list etc/skel/.config
-defaults/plasmanotifyrc etc/xdg
+defaults/plasmanotifyrc etc/xdg/kernova
+defaults/kernova-desktop-defaults.sh etc/xdg/plasma-workspace/env
