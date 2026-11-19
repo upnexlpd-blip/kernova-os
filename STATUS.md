@@ -1,5 +1,9 @@
 # KERNOVA OS development preview
 
+## Viber message notifications, 0.1.14
+
+A laptop user confirmed bottom-right placement for incoming Viber messages after selecting the xcb platform and reopening the app. On an installed KERNOVA 0.1.13 Plasma Wayland guest with the previous xcb;wayland preference, all five signed 0.1.14 testing packages upgraded successfully. At the next login, the session set xcb automatically. The existing Viber Flatpak saw xcb inside its sandbox and dpkg reported no pending issues. [Package upgrade](docs/evidence/viber-0.1.14/upgrade.png) and [login check](docs/evidence/viber-0.1.14/login.png).
+
 ## Viber popup placement on Plasma Wayland, 0.1.13
 
 An installed 0.1.10 desktop upgraded to the five signed 0.1.13 testing packages. Running the session's catalog initializer applied the per-account platform preference to the existing Flathub Viber installation. Rakuten Viber then opened using XWayland, verified by its mapped ViberPC window. A frameless Qt test popup was centered on native Wayland. With the backend selected for Viber, it appeared at the requested (717, 650) on a 1024 by 768 screen, 12 pixels from the right and above the panel. Testing covered window placement and Viber startup. An incoming message on a linked Viber account still needs confirmation. [Placement test](docs/evidence/viber-0.1.13/placement.png)
