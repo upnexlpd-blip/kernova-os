@@ -10,10 +10,13 @@ from unittest.mock import patch
 
 APP = Path(__file__).resolve().parents[1] / "apps/crypto"
 sys.path.insert(0, str(APP))
-from market_data import MarketError, Ticker, candles, parse_tickers
+from market_data import MarketError, Ticker, candles, parse_tickers, price
 
 
 class MarketDataTests(unittest.TestCase):
+    def test_small_prices_are_visible(self):
+        self.assertEqual(float(price(0.0000000002)), 0.0000000002)
+
     def test_only_active_valid_markets_are_shown(self):
         base = dict(symbol="BTCUSDT", lastPrice="100", priceChangePercent="-2",
                     quoteVolume="1000", highPrice="110", lowPrice="90", closeTime=1000)

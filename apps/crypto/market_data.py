@@ -107,5 +107,7 @@ def candles(symbol, period):
 
 
 def price(value):
+    if 0 < value < .000001:
+        return f"{value:.6g}"
     decimals = 2 if value >= 100 else 4 if value >= 1 else 8
     return f"{value:,.{decimals}f}"
