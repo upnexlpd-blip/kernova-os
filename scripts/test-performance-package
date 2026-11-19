@@ -1,0 +1,46 @@
+#!/bin/bash
+# Run only inside the workflow's disposable Debian container.
+set -euo pipefail
+test -f /.dockerenv
+export DEBIAN_FRONTEND=noninteractive QT_QPA_PLATFORM=offscreen
+deb=$(realpath artifacts/debs/kernova-performance_*_all.deb)
+apt-get install -y --no-install-recommends "$deb"
+test -x /usr/bin/kernova-performance
+kernova-performance-run coding -- python3 -c 'import os; assert os.sched_getscheduler(0) == os.SCHED_BATCH'
+python3 - <<'PY'
+import sys
+sys.path.insert(0,"/usr/share/kernova/performance")
+from center import QApplication, Center
+app = QApplication([])
+win = Center()
+assert win.mode.count() == 4
+win.tabs.setCurrentIndex(1)
+assert win.history.toPlainText()
+PY
+# Actually interrupt dpkg between unpack and configure, then recover its pending state.
+dpkg --remove kernova-performance
+dpkg --unpack "$deb"
+python3 - <<'PY'
+from pathlib import Path
+import os, signal, subprocess, time
+marker = Path("/tmp/configure-started")
+proc = subprocess.Popen(["dpkg", "--pre-invoke=touch /tmp/configure-started && sleep 60",
+                         "--configure", "kernova-performance"],start_new_session=True)
+try:
+    for _ in range(100):
+        if marker.exists():
+            break
+        time.sleep(.05)
+    else:
+        raise RuntimeError("dpkg did not enter configuration")
+finally:
+    os.killpg(proc.pid,signal.SIGKILL)
+    proc.wait()
+assert proc.returncode == -signal.SIGKILL
+PY
+test "$(dpkg-query -W -f='${db:Status-Status}' kernova-performance)" = unpacked
+dpkg --configure -a
+apt-get check
+test "$(dpkg-query -W -f='${db:Status-Status}' kernova-performance)" = installed
+dpkg --purge kernova-performance
+test ! -e /usr/bin/kernova-performance

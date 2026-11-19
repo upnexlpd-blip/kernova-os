@@ -5,7 +5,7 @@ test -r /tmp/expected-version
 test -d /tmp/older && test -d /tmp/current
 export DEBIAN_FRONTEND=noninteractive LC_ALL=C
 version=$(cat /tmp/expected-version)
-packages='kernova-branding kernova-default-settings kernova-welcome kernova-desktop'
+packages='kernova-branding kernova-default-settings kernova-welcome kernova-performance kernova-desktop'
 core='kernova-desktop plasma-workspace plasma-desktop kwin-wayland sddm firefox-esr'
 skel=/etc/skel/.config/kdeglobals
 newhome=/home/kernova-new

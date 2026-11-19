@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=KERNOVA Update Center
+Comment=Review system versions, transactions and available updates
+Exec=kernova-performance --updates
+Icon=system-software-update
+Categories=System;Settings;

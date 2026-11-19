@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=KERNOVA Performance Center
+Comment=Launch applications with a performance profile
+Exec=kernova-performance
+Icon=preferences-system-performance
+Categories=System;Settings;
+Keywords=Gaming;Battery;Coding;Power;

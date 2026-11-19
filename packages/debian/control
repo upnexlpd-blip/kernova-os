@@ -25,7 +25,7 @@ Description: initial desktop settings for new KERNOVA accounts
 Package: kernova-welcome
 Architecture: all
 Section: kde
-Depends: ${misc:Depends}, ${python3:Depends}, python3-pyside6.qtwidgets, qt6-svg-plugins, kernova-branding (= ${binary:Version})
+Depends: ${misc:Depends}, ${python3:Depends}, python3-pyside6.qtwidgets, qt6-svg-plugins, kernova-performance (= ${binary:Version}), kernova-branding (= ${binary:Version})
 Description: offline native introduction and system information for KERNOVA
  Helps desktop users get started, personalize the desktop and find help.
  Uses the ordinary account and the installed system's settings tools.
@@ -49,3 +49,13 @@ Recommends: kernova-branding (= ${binary:Version}), kernova-default-settings (= 
 Description: KDE Plasma desktop and everyday applications for KERNOVA
  Keeps the Wayland session, display manager, device integration and everyday
  applications installed independently of the optional KERNOVA appearance.
+
+Package: kernova-performance
+Architecture: all
+Section: kde
+Depends: ${misc:Depends}, python3, python3-pyside6.qtwidgets, apt
+Suggests: power-profiles-daemon, plasma-discover
+Description: Smart Performance Center and system updates for KERNOVA
+ Launch a workload with Gaming, Coding, Battery Saver or Maximum Performance
+ scheduling. Supported hardware power profiles last for the workload lifetime.
+ Review package versions and history and open Discover to install updates.

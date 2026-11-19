@@ -1,0 +1,3 @@
+apps/performance/*.py usr/share/kernova/performance
+apps/integration/kernova-performance.desktop usr/share/applications
+apps/integration/kernova-update-center.desktop usr/share/applications

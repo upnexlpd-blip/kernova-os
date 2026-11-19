@@ -13,6 +13,7 @@ override_dh_auto_test:
 	python3 -c "from pathlib import Path; [compile(p.read_bytes(), str(p), 'exec') for p in Path('apps/welcome').glob('*.py')]"
 
 override_dh_auto_install:
+	chmod 755 apps/performance/center.py apps/performance/profiles.py
 	install -Dm755 apps/integration/kernova-welcome debian/kernova-welcome/usr/bin/kernova-welcome
 	install -Dm755 scripts/check-session debian/kernova-default-settings/usr/share/kernova/diagnostics/check-session
 
@@ -21,3 +22,6 @@ override_dh_python3:
 
 override_dh_compress:
 	dh_compress -Xuser-guide.md
+
+execute_after_dh_fixperms:
+	chmod 755 debian/kernova-performance/usr/share/kernova/performance/*.py

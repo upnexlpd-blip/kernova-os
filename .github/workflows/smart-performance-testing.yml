@@ -1,0 +1,92 @@
+name: Smart Performance testing release
+on:
+  push:
+    branches: [dev/smart-performance-0.1.4]
+    paths-ignore: ['docs/evidence/**', 'docs/smart-performance.md', 'STATUS.md']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kernova-testing-archive
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build and test native packages on Debian 13
+        run: |
+          docker run --rm -v "$PWD:/source" -w /source debian:trixie bash -euc '
+            apt-get update
+            apt-get install -y --no-install-recommends build-essential fakeroot debhelper dh-sequence-python3 librsvg2-bin desktop-file-utils python3-pyside6.qtwidgets qt6-svg-plugins shellcheck reprepro gnupg ca-certificates
+            mkdir -p /tmp/builder
+            chown "$1:$2" /tmp/builder
+            runuser_cmd=(setpriv --reuid "$1" --regid "$2" --clear-groups env HOME=/tmp/builder)
+            "${runuser_cmd[@]}" python3 scripts/check-source
+            "${runuser_cmd[@]}" python3 scripts/build-packages artifacts/debs
+            apt-get --simulate install /source/artifacts/debs/*.deb
+            bash scripts/test-performance-package
+          ' bash "$(id -u)" "$(id -g)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tested-debs
+          path: artifacts/debs/*.deb
+          if-no-files-found: error
+  testing:
+    needs: verify
+    if: github.ref == 'refs/heads/dev/smart-performance-0.1.4'
+    environment: testing
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: tested-debs
+          path: artifacts/debs
+      - run: sudo apt-get update -qq && sudo apt-get install -y reprepro
+      - name: Sign tested packages and publish the testing channel
+        env:
+          SIGNING_KEY: ${{ secrets.TESTING_SIGNING_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version=$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' product.json)
+          tag="testing-v$version"
+          key=A009D55DF827E04759C2F2637FB7AAA29B49472F
+          export GNUPGHOME=$(mktemp -d)
+          trap 'gpgconf --kill gpg-agent; rm -rf "$GNUPGHOME"' EXIT
+          printf '%s\n' "$SIGNING_KEY" | gpg --batch --import
+          unset SIGNING_KEY
+          work=$(mktemp -d)
+          if git ls-remote --exit-code --heads origin apt-testing >/dev/null; then
+            git fetch origin refs/heads/apt-testing:refs/remotes/origin/apt-testing
+            git worktree add --detach "$work/repo" origin/apt-testing
+            previous=$(cat "$work/repo/version")
+            dpkg --compare-versions "$version" ge "$previous"
+            if [[ "$version" == "$previous" ]]; then
+              # Renew metadata using the exact bytes users already installed.
+              test "$(cat "$work/repo/revision")" = "$GITHUB_SHA"
+              cp "$work/repo"/pool/main/k/kernova-components/*_"$version"_all.deb artifacts/debs/
+            fi
+          else
+            git worktree add --detach "$work/repo" HEAD
+            git -C "$work/repo" switch --orphan apt-testing
+          fi
+          python3 scripts/build-update-repo artifacts/debs artifacts/testing "$key" --suite kernova-trixie-testing
+          (cd artifacts/debs && sha256sum *.deb > SHA256SUMS && gpg --batch -u "$key" -ba SHA256SUMS && gpg --verify SHA256SUMS.asc SHA256SUMS)
+          cp -r artifacts/testing/. "$work/repo/"
+          cp docs/testing.sources "$work/repo/testing.sources"
+          echo "$version" > "$work/repo/version"
+          echo "$GITHUB_SHA" > "$work/repo/revision"
+          git -C "$work/repo" add .
+          if ! git -C "$work/repo" diff --cached --quiet; then
+            git -C "$work/repo" -c user.name='KERNOVA Testing' -c user.email='testing@kernova.invalid' commit -m "Testing archive $version"
+            git -C "$work/repo" push origin HEAD:refs/heads/apt-testing
+          fi
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --latest=false --title "Smart Performance $version (testing)" --notes "Adds the Smart Performance Center, four workload profiles and update history. For opted-in testing systems only." artifacts/debs/*.deb artifacts/debs/SHA256SUMS*
+          fi
