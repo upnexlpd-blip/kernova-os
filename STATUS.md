@@ -1,5 +1,9 @@
 # KERNOVA OS development preview
 
+## Desktop weather, 0.1.15
+
+The KERNOVA Weather launcher opens GNOME Weather for a manually chosen city or requests a one-time system location. In an installed Plasma Wayland guest, manual search loaded Berlin. With the GeoClue static test provider reporting coordinates near Skopje, Use my location selected Skopje and loaded the hourly and daily forecasts. The test used the real system location service and online weather provider. Physical GPS hardware was unavailable in the VM. [Hourly forecast](docs/evidence/weather-0.1.15/hourly.png) and [daily forecast](docs/evidence/weather-0.1.15/daily.png).
+
 ## Viber message notifications, 0.1.14
 
 A laptop user confirmed bottom-right placement for incoming Viber messages after selecting the xcb platform and reopening the app. On an installed KERNOVA 0.1.13 Plasma Wayland guest with the previous xcb;wayland preference, all five signed 0.1.14 testing packages upgraded successfully. At the next login, the session set xcb automatically. The existing Viber Flatpak saw xcb inside its sandbox and dpkg reported no pending issues. [Package upgrade](docs/evidence/viber-0.1.14/upgrade.png) and [login check](docs/evidence/viber-0.1.14/login.png).
