@@ -50,7 +50,7 @@ class Library(Gtk.ApplicationWindow):
         tools.pack_start(self.filter, False, False, 0)
         self.actions = []
         for label, action in (("Pause", lambda *_: self.change(True)), ("Resume", lambda *_: self.change(False)),
-                              ("Open folder", self.open_folder), ("Remove", self.remove)):
+                              ("Open folder", self.open_folder), ("Remove", self.remove), ("Files", self.files)):
             control = button(label, action)
             tools.pack_start(control, False, False, 0)
             self.actions.append(control)
@@ -222,17 +222,24 @@ class Library(Gtk.ApplicationWindow):
                 return
             name = p.ti.name() if p.ti else p.name or key
             summary = f"{p.ti.num_files()} files   ·   {size(p.ti.total_size())}" if p.ti else "File details will be fetched from peers."
-            dialog = Gtk.FileChooserDialog(title="Download " + name, transient_for=self,
-                                           action=Gtk.FileChooserAction.SELECT_FOLDER)
-            dialog.add_buttons("Cancel", Gtk.ResponseType.CANCEL, "Download here", Gtk.ResponseType.OK)
+            dialog = Gtk.Dialog(title="Add transfer", transient_for=self, modal=True)
+            dialog.add_buttons("Cancel", Gtk.ResponseType.CANCEL, "Download", Gtk.ResponseType.OK)
+            dialog.set_default_response(Gtk.ResponseType.OK)
+            panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10, margin=18)
+            dialog.get_content_area().add(panel)
+            title = Gtk.Label(label=name, xalign=0, wrap=True, max_width_chars=48)
+            title.get_style_context().add_class("title")
+            panel.add(title)
+            panel.add(Gtk.Label(label=summary, xalign=0))
             folder = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD) or str(Path.home() / "Downloads")
             Path(folder).mkdir(parents=True, exist_ok=True)
-            dialog.set_current_folder(folder)
-            label = Gtk.Label(label=summary, xalign=0)
-            label.show()
-            dialog.set_extra_widget(label)
+            panel.add(Gtk.Label(label="Download folder", xalign=0))
+            destination = Gtk.FileChooserButton(title="Choose download folder", action=Gtk.FileChooserAction.SELECT_FOLDER)
+            destination.set_filename(folder)
+            panel.add(destination)
+            dialog.show_all()
             accepted = dialog.run() == Gtk.ResponseType.OK
-            target = dialog.get_filename() or dialog.get_current_folder()
+            target = destination.get_filename() or folder
             dialog.destroy()
             if accepted:
                 self.queue.add(source, target)
@@ -259,6 +266,31 @@ class Library(Gtk.ApplicationWindow):
                 Gio.AppInfo.launch_default_for_uri(Path(folder).as_uri(), None)
             except GLib.Error as exc:
                 self.message(exc.message)
+
+    def files(self, *_):
+        handle = self.queue.handles.get(self.selected())
+        info = handle.torrent_file() if handle else None
+        if not info:
+            self.message("File details become available when the torrent metadata arrives.")
+            return
+        dialog = Gtk.Dialog(title="Files in " + info.name(), transient_for=self, modal=True)
+        dialog.add_button("Close", Gtk.ResponseType.CLOSE)
+        dialog.set_default_size(540, 320)
+        model = Gtk.ListStore(str, str)
+        storage = info.files()
+        for i in range(storage.num_files()):
+            model.append((storage.file_path(i), size(storage.file_size(i))))
+        view = Gtk.TreeView(model=model)
+        for index, label in enumerate(("File", "Size")):
+            column = Gtk.TreeViewColumn(label, Gtk.CellRendererText(), text=index)
+            column.set_expand(index == 0)
+            view.append_column(column)
+        scroll = Gtk.ScrolledWindow()
+        scroll.add(view)
+        dialog.get_content_area().pack_start(scroll, True, True, 0)
+        dialog.show_all()
+        dialog.run()
+        dialog.destroy()
 
     def remove(self, *_):
         key = self.selected()
@@ -295,6 +327,10 @@ class TorrentApp(Gtk.Application):
         super().__init__(application_id="org.kernova.Torrent", flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
         self.queue = None
         self.window = None
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        Gtk.Settings.get_default().set_property("gtk-application-prefer-dark-theme", True)
 
     def do_command_line(self, command):
         args = command.get_arguments()[1:]
