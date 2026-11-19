@@ -2,8 +2,8 @@ Origin: KERNOVA
 Label: KERNOVA
 Suite: kernova-trixie-testing
 Codename: kernova-trixie-testing
-Date: Thu, 19 Nov 2026 15:04:24 UTC
-Valid-Until: Thu, 03 Dec 2026 15:04:24 UTC
+Date: Thu, 19 Nov 2026 15:12:30 UTC
+Valid-Until: Thu, 03 Dec 2026 15:12:30 UTC
 Architectures: amd64
 Components: main
 NotAutomatic: yes
