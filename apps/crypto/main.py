@@ -2,9 +2,11 @@
 """Kernova Crypto, a native public-market explorer."""
 from dataclasses import asdict
 from datetime import datetime, timezone
+from functools import lru_cache
 import json
 import math
 import os
+import re
 from pathlib import Path
 import sys
 import tempfile
@@ -13,13 +15,70 @@ import time
 
 from PySide6.QtCore import (QAbstractTableModel, QModelIndex, QObject, QPointF, QRectF,
                             QRunnable, QSettings, QSortFilterProxyModel, QStandardPaths,
-                            Qt, QThreadPool, QTimer, Signal)
-from PySide6.QtGui import QColor, QIcon, QPainter, QPen
+                            Qt, QSize, QThreadPool, QTimer, Signal)
+from PySide6.QtGui import QColor, QIcon, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QButtonGroup, QComboBox,
-                               QFrame, QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+                               QFrame, QGridLayout, QHBoxLayout, QHeaderView, QLabel, QLineEdit,
                                QMainWindow, QPushButton, QSplitter, QTableView,
-                               QVBoxLayout, QWidget)
+                               QVBoxLayout, QWidget, QScrollArea)
 from market_data import MarketError, PERIODS, Ticker, candles, exchange_symbols, parse_tickers, price, request_json
+
+
+@lru_cache(maxsize=512)
+def coin_icon(symbol):
+    name = symbol.lower() if re.fullmatch(r"[A-Za-z0-9-]{1,30}", symbol) else "generic"
+    path = Path(__file__).with_name("icons") / (name + ".png")
+    if path.is_file() and name != "generic":
+        icon = QIcon(str(path))
+        icon.addFile(str(path), QSize(), QIcon.Mode.Selected)
+        return icon
+    pixmap = QPixmap(128, 128)
+    pixmap.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QColor("#34364e"))
+    painter.drawEllipse(2, 2, 124, 124)
+    painter.setPen(QColor("#d7cef4"))
+    font = painter.font()
+    font.setPixelSize(43)
+    font.setBold(True)
+    painter.setFont(font)
+    painter.drawText(pixmap.rect(), Qt.AlignmentFlag.AlignCenter, symbol[:2].upper())
+    painter.end()
+    return QIcon(pixmap)
+
+
+class AssetCard(QPushButton):
+    def __init__(self, symbol, name):
+        super().__init__()
+        self.symbol = symbol
+        self.setObjectName("assetCard")
+        self.setMinimumHeight(106)
+        self.setAccessibleName("View " + name + " market")
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(7)
+        heading = QHBoxLayout()
+        logo = QLabel()
+        logo.setPixmap(coin_icon(symbol.removesuffix("USDT")).pixmap(30, 30))
+        heading.addWidget(logo)
+        heading.addWidget(QLabel(name), 1)
+        self.change = QLabel("Loading")
+        heading.addWidget(self.change)
+        layout.addLayout(heading)
+        self.value = QLabel("Waiting for price")
+        self.value.setObjectName("cardValue")
+        layout.addWidget(self.value)
+        for label in self.findChildren(QLabel):
+            label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+            label.setTextFormat(Qt.TextFormat.PlainText)
+
+    def update_price(self, row):
+        self.value.setText(price(row.price) + " USDT")
+        self.change.setText(f"{row.change:+.2f}%")
+        self.setAccessibleDescription(f"{price(row.price)} USDT. 24-hour change {row.change:+.2f} percent.")
+        self.change.setStyleSheet("color: " + ("#72e3bb" if row.change >= 0 else "#ff9aa9"))
 
 
 class Signals(QObject):
@@ -47,7 +106,7 @@ class Fetch(QRunnable):
 
 
 class Markets(QAbstractTableModel):
-    headers = ("Watch", "Market", "Price · USDT", "24h change", "24h volume · USDT")
+    headers = ("Watch", "Market", "Price · USDT", "24h change", "24h volume")
 
     def __init__(self, watchlist, parent=None):
         super().__init__(parent)
@@ -69,6 +128,8 @@ class Markets(QAbstractTableModel):
             return None
         row = self.rows[index.row()]
         column = index.column()
+        if role == Qt.ItemDataRole.DecorationRole and column == 1:
+            return coin_icon(row.base)
         if role == Qt.ItemDataRole.CheckStateRole and column == 0:
             return Qt.CheckState.Checked if row.symbol in self.watchlist else Qt.CheckState.Unchecked
         if role == Qt.ItemDataRole.UserRole:
@@ -111,6 +172,8 @@ class Chart(QWidget):
         super().__init__()
         self.rows = []
         self.message = "Select a market to load its chart."
+        self.hover = None
+        self.setMouseTracking(True)
         self.setMinimumSize(280, 180)
         self.setAccessibleName("OHLC price chart in USDT")
 
@@ -121,7 +184,7 @@ class Chart(QWidget):
         if not self.rows:
             painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap, self.message)
             return
-        area = QRectF(12, 18, max(1, self.width() - 100), max(1, self.height() - 56))
+        area = QRectF(12, 24, max(1, self.width() - 100), max(1, self.height() - 94))
         low = min(row[3] for row in self.rows)
         high = max(row[2] for row in self.rows)
         spread = max(high - low, high * .001)
@@ -139,6 +202,7 @@ class Chart(QWidget):
             painter.setPen(QColor("#a8aec6"))
             painter.drawText(QRectF(area.right() + 8, position - 9, 80, 20), Qt.AlignmentFlag.AlignVCenter, price(value))
         width = area.width() / len(self.rows)
+        peak_volume = max(max(row[5] for row in self.rows), 1)
         for index, row in enumerate(self.rows):
             _, open_, peak, trough, close, _ = row
             color = QColor("#65d8b9" if close >= open_ else "#f58ba3")
@@ -147,10 +211,34 @@ class Chart(QWidget):
             painter.drawLine(QPointF(x, y(peak)), QPointF(x, y(trough)))
             painter.fillRect(QRectF(x - width * .32, min(y(open_), y(close)),
                                    max(1, width * .64), max(1, abs(y(close) - y(open_)))), color)
+            volume_height = row[5] / peak_volume * 26
+            color.setAlpha(105)
+            painter.fillRect(QRectF(x - width * .32, area.bottom() + 34 - volume_height,
+                                   max(1, width * .64), volume_height), color)
+        if self.hover is not None and self.hover < len(self.rows):
+            x = area.left() + (self.hover + .5) * width
+            painter.setPen(QPen(QColor("#bcb7e7"), 1, Qt.PenStyle.DashLine))
+            painter.drawLine(QPointF(x, area.top()), QPointF(x, area.bottom() + 34))
         painter.setPen(QColor("#a8aec6"))
         for index, alignment in ((0, Qt.AlignmentFlag.AlignLeft), (-1, Qt.AlignmentFlag.AlignRight)):
             label = datetime.fromtimestamp(self.rows[index][0] / 1000, timezone.utc).strftime("%d %b %H:%M UTC")
-            painter.drawText(QRectF(area.left(), area.bottom() + 12, area.width(), 24), alignment, label)
+            painter.drawText(QRectF(area.left(), area.bottom() + 43, area.width(), 24), alignment, label)
+
+    def mouseMoveEvent(self, event):
+        if self.rows:
+            position = (event.position().x() - 12) / max(1, self.width() - 100)
+            self.hover = max(0, min(len(self.rows) - 1, int(position * len(self.rows))))
+            row = self.rows[self.hover]
+            stamp = datetime.fromtimestamp(row[0] / 1000, timezone.utc).strftime("%d %b %H:%M UTC")
+            self.setToolTip(f"{stamp}\nOpen {price(row[1])} · High {price(row[2])}\n"
+                            f"Low {price(row[3])} · Close {price(row[4])}\nBase-asset volume {row[5]:,.2f}")
+            self.update()
+        super().mouseMoveEvent(event)
+
+    def leaveEvent(self, event):
+        self.hover = None
+        self.update()
+        super().leaveEvent(event)
 
 
 class Crypto(QMainWindow):
@@ -179,11 +267,18 @@ class Crypto(QMainWindow):
         self.cache = Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.CacheLocation)) / "markets.json"
 
         root = QWidget()
-        self.setCentralWidget(root)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setWidget(root)
+        self.setCentralWidget(scroll)
         layout = QVBoxLayout(root)
         layout.setContentsMargins(26, 22, 26, 18)
         layout.setSpacing(16)
         title = QHBoxLayout()
+        logo = QLabel()
+        logo.setPixmap(self.windowIcon().pixmap(34, 34))
+        title.addWidget(logo)
         brand = QLabel("Kernova <b>Crypto</b>")
         brand.setObjectName("brand")
         title.addWidget(brand)
@@ -196,18 +291,38 @@ class Crypto(QMainWindow):
         layout.addLayout(title)
         self.caption = QLabel("Binance Spot · USDT markets · Prices refresh every 15 seconds")
         layout.addWidget(self.caption)
+        self.featured = QGridLayout()
+        self.featured.setSpacing(12)
+        self.featured_columns = 4
+        self.asset_cards = []
+        for symbol, name in (("BTCUSDT", "Bitcoin"), ("ETHUSDT", "Ethereum"),
+                             ("SOLUSDT", "Solana"), ("BNBUSDT", "BNB")):
+            card = AssetCard(symbol, name)
+            card.clicked.connect(lambda checked=False, value=symbol: self.open_symbol(value))
+            self.asset_cards.append(card)
+            self.featured.addWidget(card, 0, len(self.asset_cards) - 1)
+        layout.addLayout(self.featured)
+        self.market_summary = QLabel("Market overview is loading…")
+        self.market_summary.setWordWrap(True)
+        layout.addWidget(self.market_summary)
 
-        split = QSplitter(Qt.Orientation.Vertical)
+        split = QSplitter(Qt.Orientation.Horizontal)
         layout.addWidget(split, 1)
         detail = QFrame()
         detail.setObjectName("detail")
         detail_layout = QVBoxLayout(detail)
         detail_layout.setContentsMargins(20, 16, 20, 12)
         heading = QHBoxLayout()
+        self.pair_icon = QLabel()
+        self.pair_icon.setPixmap(coin_icon("BTC").pixmap(38, 38))
+        heading.addWidget(self.pair_icon)
         self.pair = QLabel("BTC / USDT")
         self.pair.setObjectName("pair")
         heading.addWidget(self.pair)
         heading.addStretch()
+        detail_layout.addLayout(heading)
+        periods = QHBoxLayout()
+        periods.addStretch()
         self.periods = QButtonGroup(self)
         for index, period in enumerate(PERIODS):
             button = QPushButton(period)
@@ -215,8 +330,11 @@ class Crypto(QMainWindow):
             button.setChecked(index == 0)
             self.periods.addButton(button)
             button.clicked.connect(lambda checked, value=period: self.change_period(value))
-            heading.addWidget(button)
-        detail_layout.addLayout(heading)
+            periods.addWidget(button)
+        detail_layout.addLayout(periods)
+        self.selected_price = QLabel("Waiting for price")
+        self.selected_price.setObjectName("selectedPrice")
+        detail_layout.addWidget(self.selected_price)
         self.summary = QLabel("Waiting for a current price")
         self.summary.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.summary.setWordWrap(True)
@@ -225,6 +343,7 @@ class Crypto(QMainWindow):
         self.chart = Chart()
         detail_layout.addWidget(self.chart, 1)
         self.chart_status = QLabel("Chart updates every minute. The latest candle can still change.")
+        self.chart_status.setWordWrap(True)
         detail_layout.addWidget(self.chart_status)
         split.addWidget(detail)
 
@@ -241,7 +360,7 @@ class Crypto(QMainWindow):
         tools.addWidget(self.search, 1)
         self.scope = QComboBox()
         self.scope.setAccessibleName("Market list")
-        self.scope.addItems(["All markets", "Watchlist"])
+        self.scope.addItems(["All markets", "Watchlist", "Top gainers", "Top volume"])
         tools.addWidget(self.scope)
         market_layout.addLayout(tools)
         self.model = Markets(self.watchlist, self)
@@ -257,8 +376,12 @@ class Crypto(QMainWindow):
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.table.setSortingEnabled(True)
         self.table.sortByColumn(4, Qt.SortOrder.DescendingOrder)
+        self.table.horizontalHeader().sortIndicatorChanged.connect(self.sync_scope_sort)
         self.table.verticalHeader().hide()
-        self.table.verticalHeader().setDefaultSectionSize(38)
+        self.table.verticalHeader().setDefaultSectionSize(48)
+        self.table.setIconSize(QSize(26, 26))
+        self.table.setShowGrid(False)
+        self.table.setAlternatingRowColors(True)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table.selectionModel().currentRowChanged.connect(self.select_market)
@@ -267,25 +390,30 @@ class Crypto(QMainWindow):
         self.scope.currentIndexChanged.connect(self.change_scope)
         market_layout.addWidget(self.table)
         split.addWidget(market_panel)
-        split.setSizes([390, 300])
+        split.insertWidget(0, market_panel)
+        split.setSizes([610, 510])
         self.notice = QLabel("Public market prices. Data is supplied by Binance and may be delayed.")
         self.notice.setWordWrap(True)
         layout.addWidget(self.notice)
-        for text in (self.pair, self.summary, self.connection, self.chart_status, self.notice):
+        for text in (self.pair, self.summary, self.connection, self.chart_status, self.notice, self.market_summary, self.selected_price):
             text.setTextFormat(Qt.TextFormat.PlainText)
         self.setStyleSheet("""
-            QMainWindow, QWidget { background: #121622; color: #e9edf7; font-size: 13px; }
+            QMainWindow, QWidget { background: #10131f; color: #e9edf7; font-size: 13px; }
             QLabel { background: transparent; }
             QLabel#brand { font-size: 25px; color: #f2edff; }
             QLabel#pair { font-size: 20px; font-weight: 600; }
-            QLabel#summary { font-size: 17px; color: #e3def4; }
-            QFrame#detail { background: #1b2131; border: 1px solid #394156; border-radius: 12px; }
+            QLabel#summary { font-size: 13px; color: #aeb8cf; }
+            QLabel#selectedPrice { font-size: 34px; font-weight: 600; color: #f0edff; }
+            QLabel#cardValue { font-size: 19px; font-weight: 600; color: #f0edff; }
+            QPushButton#assetCard { background: #1b2032; border: 1px solid #3c405b; border-radius: 12px; text-align: left; }
+            QPushButton#assetCard:hover { background: #282b44; border-color: #a190d9; }
+            QFrame#detail { background: #191e30; border: 1px solid #414660; border-radius: 14px; }
             QLineEdit, QComboBox { background: #1d2333; border: 1px solid #58627e; border-radius: 6px; padding: 8px; }
             QPushButton { background: #282e43; border: 1px solid #58627e; border-radius: 6px; padding: 8px 14px; }
             QPushButton:hover { background: #3c4260; }
             QPushButton:checked { background: #cabbf6; color: #201e2e; }
             QPushButton:disabled { color: #8891a9; }
-            QTableView { background: #151a28; alternate-background-color: #1b2131; gridline-color: #30394e; border: 1px solid #394156; selection-background-color: #343451; }
+            QTableView { background: #161b2a; alternate-background-color: #1b2030; border: 1px solid #394156; border-radius: 8px; selection-background-color: #3b3659; }
             QHeaderView::section { background: #232a3d; color: #bfc8df; border: 0; padding: 10px 6px; }
             QLineEdit:focus, QPushButton:focus, QComboBox:focus { border: 2px solid #c8b6ff; }
             QSplitter::handle { background: #3a4157; height: 5px; }
@@ -356,6 +484,7 @@ class Crypto(QMainWindow):
             source_time = datetime.fromtimestamp(market_time, timezone.utc).strftime("%d %b %H:%M:%S UTC")
             self.notice.setText(f"{len(value)} active USDT markets · Binance Spot · Market timestamp {source_time}")
             self.update_summary()
+            self.update_overview()
             self.save_cache()
         elif key == "chart:" + self.active_symbol + ":" + self.period:
             self.chart.rows = value
@@ -381,8 +510,58 @@ class Crypto(QMainWindow):
         row = next((row for row in self.model.rows if row.symbol == self.active_symbol), None)
         if row:
             self.pair.setText(row.base + " / USDT")
-            self.summary.setText(f"{price(row.price)} USDT   {row.change:+.2f}% in 24h\n"
-                                 f"24h high {price(row.high)}   Low {price(row.low)}   Volume {row.volume:,.0f} USDT")
+            self.pair_icon.setPixmap(coin_icon(row.base).pixmap(38, 38))
+            self.selected_price.setText(price(row.price) + " USDT")
+            self.summary.setText(f"{row.change:+.2f}% in 24h\nHigh {price(row.high)} · Low {price(row.low)}\n"
+                                 f"24h volume {row.volume:,.0f} USDT")
+
+    def update_overview(self):
+        by_symbol = {row.symbol: row for row in self.model.rows}
+        for card in self.asset_cards:
+            row = by_symbol.get(card.symbol)
+            card.setEnabled(row is not None)
+            if row is not None:
+                card.update_price(row)
+            else:
+                card.value.setText("Market unavailable")
+                card.change.setText("Unavailable")
+        rising = sum(row.change > 0 for row in self.model.rows)
+        falling = sum(row.change < 0 for row in self.model.rows)
+        unchanged = len(self.model.rows) - rising - falling
+        volume = sum(row.volume for row in self.model.rows)
+        self.market_summary.setText(f"{len(self.model.rows)} markets   ·   {rising} advancing   ·   "
+                                    f"{falling} declining   ·   {unchanged} unchanged   ·   "
+                                    f"USDT spot volume {volume:,.0f} in 24h")
+
+    def open_symbol(self, symbol):
+        row_index = next((index for index, row in enumerate(self.model.rows) if row.symbol == symbol), None)
+        if row_index is None:
+            return
+        index = self.proxy.mapFromSource(self.model.index(row_index, 1))
+        if not index.isValid():
+            self.search.clear()
+            self.scope.setCurrentIndex(0)
+            index = self.proxy.mapFromSource(self.model.index(row_index, 1))
+        if index.isValid():
+            self.table.selectRow(index.row())
+            self.select_market(index)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if not hasattr(self, "featured"):
+            return
+        columns = 4 if self.width() >= 1000 else 2
+        if columns != self.featured_columns:
+            self.featured_columns = columns
+            for index, card in enumerate(self.asset_cards):
+                self.featured.removeWidget(card)
+                self.featured.addWidget(card, index // columns, index % columns)
+
+    def sync_scope_sort(self, column, order):
+        scope = self.scope.currentIndex()
+        expected = 3 if scope == 2 else 4
+        if scope >= 2 and (column != expected or order != Qt.SortOrder.DescendingOrder):
+            self.scope.setCurrentIndex(0)
 
     def select_market(self, index, previous=QModelIndex()):
         if not index.isValid():
@@ -409,6 +588,8 @@ class Crypto(QMainWindow):
     def change_scope(self, index):
         self.proxy.watched = index == 1
         self.proxy.invalidateFilter()
+        if index in (2, 3):
+            self.table.sortByColumn(3 if index == 2 else 4, Qt.SortOrder.DescendingOrder)
 
     def save_watchlist(self, *args):
         self.settings.setValue("watchlist", sorted(self.watchlist))
@@ -447,6 +628,7 @@ class Crypto(QMainWindow):
             self.model.rows = rows
             self.model.endResetModel()
             self.update_summary()
+            self.update_overview()
             self.connection.setText("Saved snapshot · checking current prices")
         except (OSError, ValueError, KeyError, TypeError):
             pass

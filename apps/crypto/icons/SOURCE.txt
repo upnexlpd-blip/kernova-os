@@ -1,0 +1,4 @@
+Cryptocurrency Icons
+https://github.com/spothq/cryptocurrency-icons
+Revision 1a63530be6e374711a8554f31b17e4cb92c25fa5
+Original 128px color PNG files. CC0-1.0. Asset names identify their respective currencies.

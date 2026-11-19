@@ -1,6 +1,7 @@
 apps/integration/kernova-get-apps usr/bin
 apps/integration/kernova-crypto usr/bin
 apps/crypto/*.py usr/share/kernova/crypto
+apps/crypto/icons/* usr/share/kernova/crypto/icons
 apps/integration/org.kernova.Crypto.desktop usr/share/applications
 apps/torrent/* usr/share/kernova/torrent
 apps/integration/org.kernova.Torrent.desktop usr/share/applications

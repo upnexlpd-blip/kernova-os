@@ -97,6 +97,25 @@ class CryptoWindowTests(unittest.TestCase):
         self.window.received("chart:BTCUSDT:24H", [(1000, 10, 12, 8, 11, 5)], None)
         self.assertEqual(self.window.chart.rows, [])
 
+    def test_featured_market_opens_when_hidden_by_search(self):
+        self.window.received("prices", self.rows, None)
+        self.window.search.setText("BTC")
+        with patch.object(self.window, "fetch_chart"):
+            self.window.open_symbol("ETHUSDT")
+        self.assertEqual(self.window.active_symbol, "ETHUSDT")
+        self.assertEqual(self.window.search.text(), "")
+        self.assertEqual(self.window.model.rows[
+            self.window.proxy.mapToSource(self.window.table.currentIndex()).row()].symbol, "ETHUSDT")
+        self.assertFalse(crypto.coin_icon("BTC").isNull())
+        self.assertFalse(crypto.coin_icon("UNLISTED").isNull())
+
+    def test_sort_shortcut_returns_to_all_markets_for_custom_sort(self):
+        self.window.received("prices", self.rows, None)
+        self.window.scope.setCurrentIndex(2)
+        self.assertEqual(self.window.table.horizontalHeader().sortIndicatorSection(), 3)
+        self.window.table.sortByColumn(2, Qt.SortOrder.AscendingOrder)
+        self.assertEqual(self.window.scope.currentIndex(), 0)
+
     def test_closing_window_suppresses_late_network_delivery(self):
         delivered = []
         task = crypto.Fetch("prices", lambda: self.rows, self.window.stopping)
