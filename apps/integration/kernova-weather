@@ -56,7 +56,7 @@ class Weather(Gtk.Application):
 
     def find_location(self, button):
         button.set_sensitive(False)
-        self.status.set_label("Finding your location… You can also open Weather and choose a city.")
+        self.status.set_label("Finding your location... You can also open Weather and choose a city.")
         self.request = Gio.Cancellable()
         self.timer = GLib.timeout_add_seconds(30, self.location_timeout)
         Geoclue.Simple.new(self.get_application_id(), Geoclue.AccuracyLevel.EXACT,
