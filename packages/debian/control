@@ -25,7 +25,7 @@ Description: initial desktop settings for new KERNOVA accounts
 Package: kernova-welcome
 Architecture: all
 Section: kde
-Depends: ${misc:Depends}, ${python3:Depends}, python3-pyside6.qtwidgets, qt6-svg-plugins, kernova-performance (= ${binary:Version}), kernova-branding (= ${binary:Version})
+Depends: ${misc:Depends}, ${python3:Depends}, python3-pyside6.qtwidgets, qt6-svg-plugins, curl, konsole, kernova-performance (= ${binary:Version}), kernova-branding (= ${binary:Version})
 Description: offline native introduction and system information for KERNOVA
  Helps desktop users get started, personalize the desktop and find help.
  Uses the ordinary account and the installed system's settings tools.
