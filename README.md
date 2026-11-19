@@ -2,7 +2,11 @@
 
 KERNOVA OS is a Debian 13 desktop for 64-bit Intel and AMD computers. It includes KDE Plasma, Discover, a graphical installer, hardware settings and the KERNOVA Welcome app.
 
-**Already running 0.1.3 or 0.1.4?** Open **Discover > Updates > Refresh > Update All** for KERNOVA 0.1.5. Welcome now shows eight application icons, and Plasma includes [ten KERNOVA photo wallpapers](docs/evidence/artwork-0.1.5/gallery.jpg). Existing 0.1.2 installations need the [one-time channel setup](docs/github-updates.md).
+**Download the full KERNOVA OS 0.1.8 USB image.** [Download the amd64 ISO](https://github.com/upnexlpd-blip/kernova-os/releases/download/v0.1.8/kernova-os-0.1.8-amd64.iso) · [Release notes and SHA-256 checksum](https://github.com/upnexlpd-blip/kernova-os/releases/tag/v0.1.8)
+
+Write the image to a spare USB drive of 4 GB or larger in disk-image mode. Writing the image erases the selected USB drive. Boot the USB to try Plasma. Open **Install KERNOVA OS** on the Live desktop when you are ready to install.
+
+**Already running KERNOVA 0.1.3 or later?** Open **Discover > Updates > Refresh > Update All** to upgrade the installed desktop. Existing 0.1.2 installations need the [one-time channel setup](docs/github-updates.md).
 
 Start with the [quick start guide](START_HERE.md). See the [project status](STATUS.md) and [verification matrix](docs/verification.md) for release evidence.
 
@@ -18,7 +22,7 @@ sudo ./scripts/install-prerequisites
 ./scripts/build-iso foundation
 ```
 
-Boot the foundation image in a new VM. After Plasma starts, build the branded system with `./scripts/build-iso preview`. Each successful run prints the path to its own ISO and publishes the checksum, package manifest and build evidence together. The release filename for 0.1.3 is `kernova-os-0.1.3-amd64.iso`.
+Boot the foundation image in a new VM. After Plasma starts, build the branded system with `./scripts/build-iso preview`. Each successful run prints the path to its own ISO and publishes the checksum, package manifest and build evidence together. For 0.1.8, the release filename is `kernova-os-0.1.8-amd64.iso`. To reproduce the release package selection, pass `--package-dir` followed by the directory containing the five published 0.1.8 Debian packages. The builder checks each package against the release manifest.
 
 | Task | Entry point |
 | --- | --- |
