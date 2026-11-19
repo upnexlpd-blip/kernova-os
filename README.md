@@ -2,7 +2,7 @@
 
 KERNOVA OS is a Debian 13 desktop for 64-bit Intel and AMD computers. It includes KDE Plasma, Discover, a graphical installer, hardware settings and the KERNOVA Welcome app.
 
-**Already running 0.1.2?** Connect the signed update channel once, open Discover and select **Update All** to upgrade to 0.1.3. New 0.1.3 installations include the channel. [Update instructions](docs/github-updates.md) · [Verified upgrade](docs/evidence/updates/discover-0.1.3.png)
+**Already running 0.1.3?** Open **Discover > Updates > Refresh** and choose **Update All** to install Smart Performance 0.1.4 from the built-in stable channel. Earlier 0.1.2 installations need the [one-time channel setup](docs/github-updates.md).
 
 Start with the [quick start guide](START_HERE.md). See the [project status](STATUS.md) and [verification matrix](docs/verification.md) for release evidence.
 

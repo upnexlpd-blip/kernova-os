@@ -34,7 +34,15 @@ jobs:
           set -euo pipefail
           version=$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' product.json)
           published=$(cat build/public-channel/version 2>/dev/null || echo 0)
-          if dpkg --compare-versions "$version" gt "$published"; then
+          manifest="packages/releases/$version.sha256"
+          if dpkg --compare-versions "$version" gt "$published" && [[ -f "$manifest" ]]; then
+            mkdir -p artifacts/debs
+            while read -r pkg; do
+              file="${pkg}_${version}_all.deb"
+              curl --fail --location --retry 3 --output "artifacts/debs/$file" \
+                "https://github.com/$GITHUB_REPOSITORY/releases/download/testing-v$version/$file"
+            done < config/profiles/preview.list.chroot
+          elif dpkg --compare-versions "$version" gt "$published"; then
             docker run --rm -v "$PWD:/source" -w /source debian:trixie bash -euc '
               apt-get update
               apt-get install -y --no-install-recommends build-essential fakeroot debhelper dh-sequence-python3 python3 librsvg2-bin desktop-file-utils
@@ -50,6 +58,9 @@ jobs:
           else
             echo "Refusing a release older than the public channel" >&2
             exit 1
+          fi
+          if [[ -f "$manifest" ]]; then
+            (cd artifacts/debs && sha256sum *.deb) | cmp - "$manifest"
           fi
           sudo apt-get update -qq
           sudo apt-get install -y reprepro

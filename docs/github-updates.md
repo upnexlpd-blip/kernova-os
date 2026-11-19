@@ -1,6 +1,10 @@
 # Get KERNOVA updates in Discover
 
-KERNOVA 0.1.3 includes the public signing key and package source. In an installed Plasma session, Discover periodically checks for updates and shows a notification when a newer package is available. Open **Discover → Updates** to review and install it. A GitHub account is unnecessary.
+KERNOVA 0.1.3 includes the public signing key and package source. In an installed Plasma session, Discover periodically checks for updates and shows a notification when a newer package is available. Open **Discover â†’ Updates** to review and install it. A GitHub account is unnecessary.
+
+## Install Smart Performance 0.1.4
+
+On an installed KERNOVA 0.1.3 desktop, connect to the internet and wait for the Discover notification, or open **Discover > Updates > Refresh**. Select **Update All**, authenticate and open **KERNOVA Performance Center** from the application menu. To verify the installed release, run `dpkg-query -W kernova-desktop kernova-performance`.
 
 ## Connect an existing 0.1.2 installation
 
@@ -21,10 +25,10 @@ Open Konsole on the installed system and run the following commands once. They v
 )
 ```
 
-Open **Discover → Updates**. Check the candidate version with `apt-cache policy kernova-desktop`. Changes made in a regular Live session are temporary.
+Open **Discover â†’ Updates**. Check the candidate version with `apt-cache policy kernova-desktop`. Changes made in a regular Live session are temporary.
 
 ## Publish a release
 
-Increase the version in `product.json` and `packages/debian/changelog` and push the release to the main branch of kernova-os. GitHub Actions builds the four Debian packages, signs the index, verifies the signature and publishes it on the apt branch of kernova-linux. Every Monday it renews the indexes using the original packages. Live-only changes, such as boot menus, ship on new installation media.
+Increase the version in `product.json` and `packages/debian/changelog` and push the release to the main branch of kernova-os. For 0.1.4, GitHub Actions promotes the five tested Debian packages, verifies them against the approved release manifest, signs the stable index and publishes it on the apt branch of kernova-linux. Every Monday it renews the indexes using the original packages. Live-only changes, such as boot menus, ship on new installation media.
 
 The primary key fingerprint is `7656 A706 E55A 3F68 686D E0FD B9EF 5C29 B220 41E8`. Renew the signing subkey before November 2029 and distribute the refreshed public key through the current trusted channel. The primary private key stays outside GitHub. The publishing workflow uses GitHub Actions secrets for the signing subkey and the package repository deploy key.
