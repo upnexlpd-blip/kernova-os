@@ -2,6 +2,12 @@
 
 KERNOVA 0.1.3 includes the public signing key and package source. In an installed Plasma session, Discover periodically checks for updates and shows a notification when a newer package is available. Open **Discover â†’ Updates** to review and install it. A GitHub account is unnecessary.
 
+## KERNOVA Torrent and Steam startup in 0.1.7
+
+Open **Discover > Updates > Refresh**, then select **Update All**. To start a download, double-click a torrent in Dolphin or open a magnet link and select **Download**. Find **KERNOVA Torrent** in the application menu to view progress, change speed limits, pause a transfer or open its folder. After signing back in, unfinished downloads resume automatically. Removing a transfer keeps its downloaded files.
+
+For Steam, install the Flathub application in Discover and launch **Steam** from the application menu. The first launch downloads the Steam client before the sign-in screen appears. The desktop update installs Debian's Steam device rules. To capture a launch failure on the affected computer, run `flatpak run com.valvesoftware.Steam` in Konsole.
+
 ## Open Windows games in 0.1.6
 
 Install the update in **Discover → Updates**. In Dolphin, double-click the downloaded Windows `.exe` installer and confirm **Execute** if prompted. The first launch downloads Wine and its runtime from Flathub for your account. Follow the game's installer, then open **Windows Programs** in the application menu and select the installed shortcut.
