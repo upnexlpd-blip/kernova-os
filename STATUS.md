@@ -1,5 +1,9 @@
 # KERNOVA OS development preview
 
+## Viber popup placement on Plasma Wayland, 0.1.13
+
+An installed 0.1.10 desktop upgraded to the five signed 0.1.13 testing packages. Running the session's catalog initializer applied the per-account platform preference to the existing Flathub Viber installation. Rakuten Viber then opened using XWayland, verified by its mapped ViberPC window. A frameless Qt test popup was centered on native Wayland. With the backend selected for Viber, it appeared at the requested (717, 650) on a 1024 by 768 screen, 12 pixels from the right and above the panel. Testing covered window placement and Viber startup. An incoming message on a linked Viber account still needs confirmation. [Placement test](docs/evidence/viber-0.1.13/placement.png)
+
 ## Desktop update 0.1.10 and USB release 0.1.8
 
 The 0.1.8 Live image booted into KDE Plasma with SeaBIOS and as a read-only USB device with UEFI. With networking disconnected, Calamares installed to an empty 48 GiB virtual disk. The new account signed in after the USB was detached. All five KERNOVA packages reported version 0.1.8 on disk. The ISO contains 1,301 packages. Both internal checksum lists and the exported ISO SHA-256 were verified. [Completed installation](docs/evidence/usb-0.1.8/offline-install.png) · [Installed versions](docs/evidence/usb-0.1.8/installed-packages.png)
