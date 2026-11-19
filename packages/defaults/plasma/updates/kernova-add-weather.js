@@ -5,12 +5,18 @@ if (knownWidgetTypes.includes(weather)) {
             continue;
         }
         const clock = panel.widgets("org.kde.plasma.digitalclock")[0];
-        if (clock) {
-            const index = clock.index;
-            const applet = panel.addWidget(weather);
-            if (applet && index >= 0) {
-                applet.index = index;
-            }
+        if (!clock) {
+            continue;
+        }
+        // Plasma 6.3 uses this order to construct the panel at startup.
+        panel.currentConfigGroup = ["General"];
+        const savedOrder = String(panel.readConfig("AppletOrder", ""));
+        const order = savedOrder ? savedOrder.split(";") : panel.widgetIds.map(String);
+        const position = order.indexOf(String(clock.id));
+        const applet = panel.addWidget(weather);
+        if (applet && position >= 0) {
+            order.splice(position, 0, String(applet.id));
+            panel.writeConfig("AppletOrder", order.join(";"));
         }
     }
 }

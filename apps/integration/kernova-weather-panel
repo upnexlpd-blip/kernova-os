@@ -36,7 +36,7 @@ def temperature(city):
         loop.quit()
 
     weather.connect("updated", updated)
-    GLib.timeout_add_seconds(25, lambda: (loop.quit(), GLib.SOURCE_REMOVE)[1])
+    GLib.timeout_add_seconds(25, loop.quit)
     weather.update()
     loop.run()
 

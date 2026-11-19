@@ -12,15 +12,16 @@ PlasmoidItem {
     readonly property string readCommand: "/usr/bin/kernova-weather-panel"
     readonly property string openCommand: "/usr/bin/kernova-weather-panel --open"
 
-    preferredRepresentation: compactRepresentation
+    preferredRepresentation: fullRepresentation
     toolTipMainText: city || i18n("Weather")
     toolTipSubText: temperature ? i18n("Open forecast for %1", city) : i18n("Open Weather to view a forecast")
 
-    compactRepresentation: PlasmaComponents.ToolButton {
+    fullRepresentation: PlasmaComponents.ToolButton {
         text: root.temperature
         icon.name: root.temperature ? "" : "weather-clear-symbolic"
         Accessible.name: root.city ? i18n("Weather in %1: %2", root.city, root.temperature) : i18n("Open Weather")
-        Layout.minimumWidth: implicitWidth
+        Layout.minimumWidth: Math.max(34, implicitWidth)
+        Layout.preferredWidth: Layout.minimumWidth
         onClicked: commands.connectSource(root.openCommand)
     }
 
