@@ -1,10 +1,10 @@
 # KERNOVA OS
 
-Personal Debian 13 amd64 desktop with KDE Plasma. The current local development preview is **0.1.2**. It includes KDE Discover, the KERNOVA Welcome and AI Tools applications, hardware settings, three photographic wallpapers and the graphical Calamares installer. [Preview ISO](artifacts/20261119T093631Z-preview/kernova-os-0.1.2-amd64.iso) · [SHA-256](artifacts/20261119T093631Z-preview/SHA256SUMS) · [Source archive](artifacts/kernova-os-0.1.2-source.tar.gz) · [Build and verification status](STATUS.md)
+KERNOVA OS is a Debian 13 desktop for 64-bit Intel and AMD computers. It includes KDE Plasma, Discover, a graphical installer, hardware settings and the KERNOVA Welcome app.
 
-Start with the [quick start guide](START_HERE.md). The detailed results are in [STATUS.md](STATUS.md) and the [verification matrix](docs/verification.md).
+**Already running 0.1.2?** Connect the signed update channel once, open Discover and select **Update All** to upgrade to 0.1.3. New 0.1.3 installations include the channel. [Update instructions](docs/github-updates.md) � [Verified upgrade](docs/evidence/updates/discover-0.1.3.png)
 
-[Enable Discover updates on an existing installation](docs/github-updates.md)
+Start with the [quick start guide](START_HERE.md). See the [project status](STATUS.md) and [verification matrix](docs/verification.md) for release evidence.
 
 ## First build
 
@@ -18,7 +18,7 @@ sudo ./scripts/install-prerequisites
 ./scripts/build-iso foundation
 ```
 
-Boot the foundation image in a new VM. After Plasma starts, build the branded system with `./scripts/build-iso preview`. Each successful run prints the path to its own ISO and publishes the checksum, package manifest and build evidence together. The release filename for 0.1.2 is `kernova-os-0.1.2-amd64.iso`.
+Boot the foundation image in a new VM. After Plasma starts, build the branded system with `./scripts/build-iso preview`. Each successful run prints the path to its own ISO and publishes the checksum, package manifest and build evidence together. The release filename for 0.1.3 is `kernova-os-0.1.3-amd64.iso`.
 
 | Task | Entry point |
 | --- | --- |
