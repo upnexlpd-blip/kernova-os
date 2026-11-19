@@ -1,73 +1,73 @@
 Package: kernova-branding
 Source: kernova-components
-Version: 0.1.10
+Version: 0.1.13
 Architecture: all
 Maintainer: KERNOVA OS contributors <maintainers@kernova.invalid>
-Installed-Size: 16099
+Installed-Size: 16107
 Depends: hicolor-icon-theme, breeze, kf6-breeze-icon-theme, plasma-workspace-data
 Priority: optional
 Section: kde
-Filename: pool/main/k/kernova-components/kernova-branding_0.1.10_all.deb
-Size: 16286184
-SHA256: 9f8ae7156a8f4460b52540843d411f167882bd7155cf74384b6c0ad466ae9520
-SHA1: 6018172b37437868f7e0b63e70ef47475ab827bb
-MD5sum: 55173c58ed7552039796da6802337512
+Filename: pool/main/k/kernova-components/kernova-branding_0.1.13_all.deb
+Size: 16289144
+SHA256: aebd9fa4f7f9db09033fb2caf11a735a122e98e24074ec3fb561641786ef7f5f
+SHA1: eda81b3c4155b1e13b09cb506d54f6d6ca423828
+MD5sum: 45a8f801701d87de7c04c8f936d06722
 Description: KERNOVA identity, Plasma color scheme and Parallax wallpaper
  Installs the KERNOVA product information, original mark and wallpaper, and
  the Night global theme for Plasma 6. The theme uses KDE's Breeze controls.
 
 Package: kernova-default-settings
 Source: kernova-components
-Version: 0.1.10
+Version: 0.1.13
 Architecture: all
 Maintainer: KERNOVA OS contributors <maintainers@kernova.invalid>
-Installed-Size: 35
-Depends: python3, kernova-branding (= 0.1.10)
+Installed-Size: 43
+Depends: python3, kernova-branding (= 0.1.13)
 Priority: optional
 Section: kde
-Filename: pool/main/k/kernova-components/kernova-default-settings_0.1.10_all.deb
-Size: 7464
-SHA256: cb59536576239ef0a49c5420439e944cbdbdbfd1cde25f3ef1a4bf9d10eaefbc
-SHA1: bfa6418a4f4f233772a9e500ecdabe440d9aa21d
-MD5sum: f8a3065035fc790ce3e637ede29e73c8
+Filename: pool/main/k/kernova-components/kernova-default-settings_0.1.13_all.deb
+Size: 10388
+SHA256: f3f228c418e2c626b3ee4d2800951400ac638753cc61f93cc6fb011df0c75e29
+SHA1: c602079b8535d815ae14bd294916c33a0743b051
+MD5sum: e1164408e9c494a38fc2f8f38b07b724
 Description: initial desktop settings for new KERNOVA accounts
  Seeds the global theme and file associations when an account is created.
  Includes a read-only diagnostic command for checking a running session.
 
 Package: kernova-desktop
 Source: kernova-components
-Version: 0.1.10
+Version: 0.1.13
 Architecture: all
 Maintainer: KERNOVA OS contributors <maintainers@kernova.invalid>
-Installed-Size: 88
+Installed-Size: 2066
 Depends: plasma-desktop, plasma-workspace, kwin-wayland, xwayland, sddm, sddm-theme-breeze, xserver-xorg, qt6-wayland, breeze, fonts-noto-core, systemsettings, kde-cli-tools, kinfocenter, kscreen, kde-config-screenlocker, libgl1-mesa-dri, polkit-kde-agent-1, xdg-desktop-portal-kde, xdg-user-dirs, xdg-utils, powerdevil, upower, udisks2, network-manager, wpasupplicant, plasma-nm, bluez, bluedevil, pipewire-audio, plasma-pa, plasma-discover, plasma-discover-backend-flatpak, flatpak, python3, python3-gi, python3-pyside6.qtwidgets, gir1.2-flatpak-1.0, packagekit, pciutils, curl, gpg, gir1.2-gtk-3.0, python3-libtorrent, steam-devices, kde-config-flatpak, baloo6, kio-extras, kaccounts-integration, kaccounts-providers, signon-ui-qt, signon-ui-service, firefox-esr, dolphin, konsole, kate, ark, okular, gwenview, kde-spectacle, plasma-systemmonitor, vlc
-Recommends: kernova-branding (= 0.1.10), kernova-default-settings (= 0.1.10), kernova-welcome (= 0.1.10)
+Recommends: kernova-branding (= 0.1.13), kernova-default-settings (= 0.1.13), kernova-welcome (= 0.1.13)
 Priority: optional
 Section: metapackages
-Filename: pool/main/k/kernova-components/kernova-desktop_0.1.10_all.deb
-Size: 21704
-SHA256: 3adb677d7a392a5731afd7b0c8f7c222988c8da0e86d8eb0aad46b698974a6cd
-SHA1: 7edf3589f1e0695cfced0f91c30fd9bd7e8f07c4
-MD5sum: fc404e25270c8642e3f681dab579e407
+Filename: pool/main/k/kernova-components/kernova-desktop_0.1.13_all.deb
+Size: 1681580
+SHA256: b8cc965793c8960bcf9a19df47e8ae720ef2e385ef64547d1d65cde6c3d9ca2c
+SHA1: 4c1f533f8e45f9efd3eb8487935c8875b6e7f5fe
+MD5sum: acce814d8cc331fa37984082f77447ce
 Description: KDE Plasma desktop and everyday applications for KERNOVA
  Keeps the Wayland session, display manager, device integration and everyday
  applications installed independently of the optional KERNOVA appearance.
 
 Package: kernova-performance
 Source: kernova-components
-Version: 0.1.10
+Version: 0.1.13
 Architecture: all
 Maintainer: KERNOVA OS contributors <maintainers@kernova.invalid>
-Installed-Size: 31
+Installed-Size: 39
 Depends: python3, python3-pyside6.qtwidgets, apt
 Suggests: power-profiles-daemon, plasma-discover
 Priority: optional
 Section: kde
-Filename: pool/main/k/kernova-components/kernova-performance_0.1.10_all.deb
-Size: 7708
-SHA256: bbc20ac2391d26734fa5f0bcf5a60d74c42c2fc0c90bb516f111181d511f1431
-SHA1: 18cc6a7d431a77e255da2ad47f1d3ae7c0aa0072
-MD5sum: 7484b3ca583e3adecfb1b869df005d4a
+Filename: pool/main/k/kernova-components/kernova-performance_0.1.13_all.deb
+Size: 10632
+SHA256: 484ad6d747eca67151a83fab450fa35859b9aeb7a8b1ccff726b8fc22e84e6f4
+SHA1: adc51d501d312381ceeeef5545746c6f94a66d89
+MD5sum: 802b7562254317b25b3d9673c5500e11
 Description: Smart Performance Center and system updates for KERNOVA
  Launch a workload with Gaming, Coding, Battery Saver or Maximum Performance
  scheduling. Supported hardware power profiles last for the workload lifetime.
@@ -75,18 +75,18 @@ Description: Smart Performance Center and system updates for KERNOVA
 
 Package: kernova-welcome
 Source: kernova-components
-Version: 0.1.10
+Version: 0.1.13
 Architecture: all
 Maintainer: KERNOVA OS contributors <maintainers@kernova.invalid>
-Installed-Size: 146
-Depends: python3:any, python3-pyside6.qtwidgets, qt6-svg-plugins, curl, konsole, kernova-performance (= 0.1.10), kernova-branding (= 0.1.10)
+Installed-Size: 155
+Depends: python3:any, python3-pyside6.qtwidgets, qt6-svg-plugins, curl, konsole, kernova-performance (= 0.1.13), kernova-branding (= 0.1.13)
 Priority: optional
 Section: kde
-Filename: pool/main/k/kernova-components/kernova-welcome_0.1.10_all.deb
-Size: 33960
-SHA256: 35142c3ce3d82bcc71d5674700f99439824feccb439a03b859cedfb47e9fed75
-SHA1: a33136deb5246aef8ba5e40459583424fc64bd49
-MD5sum: c5a887b4e683136b3807f3dbf240386c
+Filename: pool/main/k/kernova-components/kernova-welcome_0.1.13_all.deb
+Size: 37180
+SHA256: ac1b8ff1388a8059dc2fc04af680918b1f22756e934c6e80c130400d8c4fccb8
+SHA1: 132f905561ec772ab2d37b390373fbb65141407d
+MD5sum: 4cb153e47c6c451c52d6d1158dab9a29
 Description: offline native introduction and system information for KERNOVA
  Helps desktop users get started, personalize the desktop and find help.
  Uses the ordinary account and the installed system's settings tools.
