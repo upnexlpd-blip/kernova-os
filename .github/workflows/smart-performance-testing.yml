@@ -1,13 +1,13 @@
 name: KERNOVA testing release
 on:
   push:
-    branches: [dev/smart-performance-0.1.4, dev/welcome-artwork-0.1.5, dev/windows-games-0.1.6, qa/windows-games-0.1.6, dev/torrent-0.1.7, qa/torrent-0.1.7, qa/installation-reporting-0.1.8]
+    branches: [dev/smart-performance-0.1.4, dev/welcome-artwork-0.1.5, dev/windows-games-0.1.6, qa/windows-games-0.1.6, dev/torrent-0.1.7, qa/torrent-0.1.7, qa/installation-reporting-0.1.8, qa/kernova-crypto]
     paths-ignore: ['docs/evidence/**', 'docs/smart-performance.md', 'STATUS.md']
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: ${{ startsWith(github.ref, 'refs/heads/qa/installation-reporting') && 'kernova-reporting-validation' || 'kernova-testing-archive' }}
+  group: ${{ github.ref == 'refs/heads/qa/kernova-crypto' && 'kernova-crypto-validation' || startsWith(github.ref, 'refs/heads/qa/installation-reporting') && 'kernova-reporting-validation' || 'kernova-testing-archive' }}
   cancel-in-progress: false
 jobs:
   verify:

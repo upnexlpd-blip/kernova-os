@@ -45,6 +45,7 @@ def main():
                     "apps/integration/kernova-welcome", "apps/integration/kernova-get-apps",
                     "apps/integration/kernova-app-catalog.sh", "apps/integration/kernova-update-source",
                     "apps/integration/kernova-windows",
+                    "apps/integration/kernova-crypto", "apps/crypto/*.py",
                     "apps/torrent/kernova-torrent", "apps/torrent/transfers.py",
                     "apps/integration/*.desktop",
                     "apps/performance/*.py", "apps/welcome/*.py", "apps/welcome/locales/*.json",

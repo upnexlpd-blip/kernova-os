@@ -32,6 +32,22 @@ If the desktop fails after a kernel update, select Advanced options for Debian G
 
 If the installed disk will not boot, start the ISO again. Use the installer’s advanced rescue option to identify the guest root filesystem and inspect it. For file recovery, mount the identified guest data volume read-only and copy important files to a separate backup target. An encrypted volume requires its passphrase. Restore a known-good backup when needed. APT and ext4 provide conventional package updates and filesystem storage. Keep independent backups for rollback and recovery.
 
+### Kernova Crypto
+
+Open **Kernova Crypto** from the application menu to follow Binance Spot markets
+quoted in USDT. Prices refresh every 15 seconds while the window is open.
+Select a market for 24-hour, 7-day or 30-day candlestick charts. Use the Watch
+checkbox to save a market and choose Watchlist to filter your saved markets.
+Search and numeric column sorting work on the current snapshot.
+
+The status shows when a snapshot was received and the provider's market timestamp.
+On connection failure the app retains the previous snapshot and marks the
+interruption. Provider rate limits temporarily pause requests. The newest candle
+can still change. Preferences and an offline snapshot are saved in your account.
+
+Data comes from Binance's public market-data service. USDT is the quote asset.
+[Binance public market-data documentation](https://github.com/binance/binance-spot-api-docs/blob/master/faqs/market_data_only.md)
+
 ### Credits
 
 KERNOVA contributes the desktop defaults, Parallax artwork, Welcome and build integration. Debian, the Linux kernel project, KDE and the application maintainers supply the underlying system. Each installed Debian package carries its licensing information under `/usr/share/doc/<package>/copyright`.

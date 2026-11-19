@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Kernova Crypto
+Comment=Follow live spot prices, watchlists and cryptocurrency charts
+Exec=kernova-crypto
+Icon=kernova-logo
+Categories=Office;Finance;
+Keywords=Crypto;Bitcoin;Ethereum;Markets;Prices;Charts;
+StartupWMClass=kernova-crypto
