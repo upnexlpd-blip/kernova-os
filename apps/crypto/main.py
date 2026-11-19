@@ -111,7 +111,7 @@ class Chart(QWidget):
         super().__init__()
         self.rows = []
         self.message = "Select a market to load its chart."
-        self.setMinimumSize(280, 230)
+        self.setMinimumSize(280, 180)
         self.setAccessibleName("OHLC price chart in USDT")
 
     def paintEvent(self, event):
@@ -162,7 +162,7 @@ class Crypto(QMainWindow):
             icon = Path(__file__).resolve().parents[2] / "branding/kernova-logo.svg"
         self.setWindowIcon(QIcon(str(icon)))
         self.resize(1180, 790)
-        self.setMinimumSize(760, 600)
+        self.setMinimumSize(680, 480)
         self.settings = QSettings("KERNOVA", "Crypto")
         saved = self.settings.value("watchlist", ["BTCUSDT", "ETHUSDT", "SOLUSDT"])
         self.watchlist = {symbol for symbol in (saved if isinstance(saved, list) else [saved])
@@ -459,6 +459,11 @@ def main():
     app.setApplicationDisplayName("Kernova Crypto")
     app.setDesktopFileName("org.kernova.Crypto")
     window = Crypto()
+    screen = app.primaryScreen()
+    if screen is not None:
+        available = screen.availableGeometry()
+        window.resize(min(window.width(), available.width() - 32),
+                      min(window.height(), available.height() - 32))
     window.show()
     return app.exec()
 
