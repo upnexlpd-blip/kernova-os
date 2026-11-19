@@ -4,7 +4,6 @@ from pathlib import Path
 import sys
 
 from PySide6.QtGui import QImageReader
-from PySide6.QtSvg import QSvgRenderer
 
 
 def main(root):
@@ -22,7 +21,7 @@ def main(root):
     for name in ("chrome", "viber", "telegram", "whatsapp", "browser", "files", "editor", "terminal"):
         icon = share / "kernova/welcome/icons" / f"{name}.svg"
         assert icon.read_bytes() == (source / "apps/welcome/icons" / icon.name).read_bytes()
-        assert QSvgRenderer(str(icon)).isValid(), icon
+        assert not QImageReader(str(icon)).read().isNull(), icon
     print("Verified ten packaged 4K photographs and eight application icons.")
 
 
