@@ -6,3 +6,4 @@ apps/integration/kernova-ai-tools.desktop usr/share/applications
 apps/integration/kernova-drivers.desktop usr/share/applications
 apps/integration/kernova-welcome-autostart.desktop etc/xdg/autostart
 docs/user-guide.md usr/share/doc/kernova-welcome
+defaults/statistics.json etc/kernova

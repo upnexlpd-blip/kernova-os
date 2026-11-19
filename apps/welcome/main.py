@@ -212,6 +212,14 @@ class WelcomeWindow(QWidget):
         layout.addWidget(self.start_heading)
         layout.addWidget(self.start_text)
         self.add_action(layout, "network")
+        layout.addWidget(label(self.t("installation_reporting_intro")))
+        self.add_registration_action(layout)
+
+    def add_registration_action(self, layout):
+        registration = QPushButton(self.t("installation_reporting"))
+        registration.clicked.connect(lambda: QProcess.startDetached(
+            "/usr/bin/python3", [str(Path(__file__).with_name("installation_registration.py"))]))
+        layout.addWidget(registration, alignment=Qt.AlignmentFlag.AlignLeft)
 
     def build_personalize(self, layout: QVBoxLayout):
         self.add_action(layout, "settings")
@@ -275,6 +283,7 @@ class WelcomeWindow(QWidget):
         layout.addWidget(drivers, alignment=Qt.AlignmentFlag.AlignLeft)
         self.info = {key: self.add_system_field(layout, key) for key in SYSTEM_FIELDS}
         self.add_action(layout, "info")
+        self.add_registration_action(layout)
 
     def build_drivers_dialog(self) -> QDialog:
         dialog = QDialog(self)

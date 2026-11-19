@@ -1,3 +1,11 @@
+kernova-components (0.1.6.1) trixie; urgency=medium
+
+  * Offer voluntary installation reporting in Welcome with explicit consent,
+    persistent retry credentials and report withdrawal.
+  * Configure the public HTTPS registration endpoint.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Thu, 19 Nov 2026 17:38:00 +0000
+
 kernova-components (0.1.6) trixie; urgency=medium
 
   * Open Windows installers from Dolphin and Start Menu shortcuts from

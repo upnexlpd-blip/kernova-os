@@ -1,7 +1,7 @@
 name: KERNOVA testing release
 on:
   push:
-    branches: [dev/smart-performance-0.1.4, dev/welcome-artwork-0.1.5, dev/windows-games-0.1.6, qa/windows-games-0.1.6]
+    branches: [dev/smart-performance-0.1.4, dev/welcome-artwork-0.1.5, dev/windows-games-0.1.6, qa/windows-games-0.1.6, qa/installation-reporting-stable]
     paths-ignore: ['docs/evidence/**', 'docs/smart-performance.md', 'STATUS.md']
   workflow_dispatch:
 permissions:
