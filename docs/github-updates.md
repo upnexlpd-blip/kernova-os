@@ -6,7 +6,7 @@ KERNOVA 0.1.3 includes the public signing key and package source. In an installe
 
 Open **Discover > Updates > Refresh**, then select **Update All**. To start a download, double-click a torrent in Dolphin or open a magnet link and select **Download**. Find **KERNOVA Torrent** in the application menu to view progress, change speed limits, pause a transfer or open its folder. After signing back in, unfinished downloads resume automatically. Removing a transfer keeps its downloaded files.
 
-For Steam, install the Flathub application in Discover and launch **Steam** from the application menu. The first launch downloads the Steam client before the sign-in screen appears. The desktop update installs Debian's Steam device rules. To capture a launch failure on the affected computer, run `flatpak run com.valvesoftware.Steam` in Konsole.
+For Steam, install the Flathub application in Discover and launch **Steam** from the application menu. The first launch downloads the Steam client before the sign-in screen appears. Restart KERNOVA once after applying the desktop update so the current user receives the new Steam device permissions. If the controller warning is already open, you can click **OK** to continue the client download. To capture a launch failure on the affected computer, run `flatpak run com.valvesoftware.Steam` in Konsole.
 
 ## Open Windows games in 0.1.6
 
