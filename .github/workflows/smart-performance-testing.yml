@@ -20,7 +20,9 @@ jobs:
         run: |
           docker run --rm -v "$PWD:/source" -w /source debian:trixie bash -euc '
             apt-get update
-            apt-get install -y --no-install-recommends build-essential fakeroot debhelper dh-sequence-python3 librsvg2-bin desktop-file-utils python3-pyside6.qtwidgets qt6-svg-plugins shellcheck reprepro gnupg ca-certificates
+            apt-get install -y --no-install-recommends build-essential fakeroot debhelper dh-sequence-python3 librsvg2-bin desktop-file-utils python3-pyside6.qtwidgets qt6-svg-plugins shellcheck reprepro gnupg gpgv ca-certificates
+            for tool in reprepro gpg gpgconf gpgv dpkg-deb apt-cache apt-get; do command -v "$tool"; done
+            test "$1" -ne 0
             mkdir -p /tmp/builder
             chown "$1:$2" /tmp/builder
             runuser_cmd=(setpriv --reuid "$1" --regid "$2" --clear-groups env HOME=/tmp/builder)
@@ -61,6 +63,7 @@ jobs:
           trap 'gpgconf --kill gpg-agent; rm -rf "$GNUPGHOME"' EXIT
           printf '%s\n' "$SIGNING_KEY" | gpg --batch --import
           unset SIGNING_KEY
+          revision=$GITHUB_SHA
           work=$(mktemp -d)
           if git ls-remote --exit-code --heads origin apt-testing >/dev/null; then
             git fetch origin refs/heads/apt-testing:refs/remotes/origin/apt-testing
@@ -69,8 +72,13 @@ jobs:
             dpkg --compare-versions "$version" ge "$previous"
             if [[ "$version" == "$previous" ]]; then
               # Renew metadata using the exact bytes users already installed.
-              test "$(cat "$work/repo/revision")" = "$GITHUB_SHA"
+              revision=$(cat "$work/repo/revision")
+              git fetch origin "$revision"
+              git diff --quiet "$revision" "$GITHUB_SHA" -- apps branding config packages product.json scripts/build-packages scripts/check-session docs/user-guide.md LICENSE
+              gh release download "$tag" --dir "$work/manifest" -p SHA256SUMS -p SHA256SUMS.asc
+              gpg --batch --verify "$work/manifest/SHA256SUMS.asc" "$work/manifest/SHA256SUMS"
               cp "$work/repo"/pool/main/k/kernova-components/*_"$version"_all.deb artifacts/debs/
+              (cd artifacts/debs && sha256sum --strict -c "$work/manifest/SHA256SUMS" && sha256sum *.deb | cmp - "$work/manifest/SHA256SUMS")
             fi
           else
             git worktree add --detach "$work/repo" HEAD
@@ -81,12 +89,12 @@ jobs:
           cp -r artifacts/testing/. "$work/repo/"
           cp docs/testing.sources "$work/repo/testing.sources"
           echo "$version" > "$work/repo/version"
-          echo "$GITHUB_SHA" > "$work/repo/revision"
+          echo "$revision" > "$work/repo/revision"
           git -C "$work/repo" add .
           if ! git -C "$work/repo" diff --cached --quiet; then
             git -C "$work/repo" -c user.name='KERNOVA Testing' -c user.email='testing@kernova.invalid' commit -m "Testing archive $version"
             git -C "$work/repo" push origin HEAD:refs/heads/apt-testing
           fi
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --latest=false --title "Smart Performance $version (testing)" --notes "Adds the Smart Performance Center, four workload profiles and update history. For opted-in testing systems only." artifacts/debs/*.deb artifacts/debs/SHA256SUMS*
+            gh release create "$tag" --target "$revision" --prerelease --latest=false --title "Smart Performance $version (testing)" --notes "Adds the Smart Performance Center, four workload profiles and update history. For opted-in testing systems only." artifacts/debs/*.deb artifacts/debs/SHA256SUMS*
           fi
