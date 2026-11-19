@@ -1,5 +1,9 @@
 # KERNOVA OS development preview
 
+## Stable package update 0.1.4, 19 November 2026
+
+Smart Performance 0.1.4 is available from the existing stable APT channel. The five package hashes match the tested GitHub prerelease. The published index was independently verified with the key embedded in 0.1.3. On an installed UEFI guest, APT showed 0.1.3 installed and 0.1.4 available from the stable source. Discover installed all five packages through **Update All**, and dpkg confirmed their versions. [Stable release](https://github.com/upnexlpd-blip/kernova-os/releases/tag/v0.1.4) · [APT origin](docs/evidence/performance/stable-origin.png) · [Discover](docs/evidence/performance/stable-discover.png) · [Installed versions](docs/evidence/performance/stable-installed.png)
+
 ## Local release 0.1.3, 19 November 2026
 
 The 2,380,533,760-byte ISO includes the signed public KERNOVA APT source for Discover. SHA-256 is `4f265639182cb409d4e22eb3ca8a472eaa69d7a5a5672a56b2d026fdbeed43da`. Windows verified the write to a physical Kingston DataTraveler 3.0 by reading it back and safely ejected the stick. [Local ISO](artifacts/20261119T112142Z-preview/kernova-os-0.1.3-amd64.iso) · [Build validation](artifacts/20261119T112142Z-preview/validation.log) · [USB record](docs/evidence/updates/kingston-0.1.3.txt)
