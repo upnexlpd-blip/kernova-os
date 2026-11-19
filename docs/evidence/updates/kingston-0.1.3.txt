@@ -1,0 +1,2 @@
+2026-11-19T12:30:36.4118317+01:00 VERIFIED Imaging utility completed the write and read-back for SHA256 4f265639182cb409d4e22eb3ca8a472eaa69d7a5a5672a56b2d026fdbeed43da
+Kingston DataTraveler 3.0, 61,991,813,120 bytes. Windows safe eject succeeded. Device disappeared from Get-Disk.

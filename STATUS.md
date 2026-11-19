@@ -1,5 +1,13 @@
 # KERNOVA OS development preview
 
+## Local release 0.1.3, 19 November 2026
+
+The 2,380,533,760-byte ISO includes the signed public KERNOVA APT source for Discover. SHA-256 is `4f265639182cb409d4e22eb3ca8a472eaa69d7a5a5672a56b2d026fdbeed43da`. Windows verified the write to a physical Kingston DataTraveler 3.0 by reading it back and safely ejected the stick. [Local ISO](artifacts/20261119T112142Z-preview/kernova-os-0.1.3-amd64.iso) · [Build validation](artifacts/20261119T112142Z-preview/validation.log) · [USB record](docs/evidence/updates/kingston-0.1.3.txt)
+
+In a fresh UEFI Live session, APT used the Debian HTTPS sources and fetched the signed KERNOVA index. Its list of download targets contained no Live-medium URLs. A separate installed 0.1.2 guest received the Plasma update notification and upgraded all four KERNOVA packages to 0.1.3 through Discover after the one-time channel setup. [Live sources](docs/evidence/updates/live-sources-0.1.3.png) · [Discover upgrade](docs/evidence/updates/discover-0.1.3.png) · [Channel setup for older installations](docs/github-updates.md)
+
+Calamares installed 0.1.3 on a fresh 48 GiB virtual disk. After booting that disk with the ISO detached and signing in, `sudo apt-get update --error-on=any` refreshed Debian, Debian Security, Debian Updates and KERNOVA successfully. [Installer finish](docs/evidence/updates/install-0.1.3.png) · [Installed APT refresh](docs/evidence/updates/installed-refresh-0.1.3.png)
+
 ## Local release 0.1.2, 19 November 2026
 
 The installer opens directly from the active local live desktop. In a fresh UEFI guest, opening the desktop icon brought up Calamares without entering credentials. The Users page accepted a new personal password and advanced to the installation summary. The new ISO is 2,380,527,616 bytes. SHA-256: `a9bd4661490ea15a56625fc6432df1b27517cbca2e646aa5052f477a8c401e20`. [ISO](artifacts/20261119T093631Z-preview/kernova-os-0.1.2-amd64.iso) · [Validation](artifacts/20261119T093631Z-preview/validation.log) · [Installer](artifacts/20261119T093631Z-preview/live-evidence/installer/launcher-opens-wizard.png) · [Users page](artifacts/20261119T093631Z-preview/live-evidence/installer/users-personal-password.png)
