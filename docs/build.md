@@ -2,7 +2,7 @@
 
 ## Windows host
 
-This workspace now has a dedicated Debian 13 console VM on D: and a portable QEMU for Windows. For access to that existing builder and its progress log, use the [local guide in Macedonian](windows-builder-mk.md). The following setup procedure also applies to a fresh machine.
+This workspace now has a dedicated Debian 13 console VM on D: and a portable QEMU for Windows. For access to that existing builder and its progress log, use the [local guide in Macedonian](windows-builder.md). The following setup procedure also applies to a fresh machine.
 
 Windows can edit, test portable source, and transfer this project. The privileged stages need a Linux kernel with private mounts, device creation and chroot. This workspace is on NTFS. The host has 12 logical CPUs and about 32 GiB RAM. At the initial check it had about 46 GiB free on C: and 675 GiB free on D:. Windows reported that hardware virtualization was disabled in firmware. The local QEMU builder uses software emulation and its own ext4 filesystem.
 

@@ -2,9 +2,9 @@
 
 Personal Debian 13 amd64 desktop with KDE Plasma. The current local development preview is **0.1.2**. It includes KDE Discover, the KERNOVA Welcome and AI Tools applications, hardware settings, three photographic wallpapers and the graphical Calamares installer. [Preview ISO](artifacts/20261119T093631Z-preview/kernova-os-0.1.2-amd64.iso) · [SHA-256](artifacts/20261119T093631Z-preview/SHA256SUMS) · [Source archive](artifacts/kernova-os-0.1.2-source.tar.gz) · [Build and verification status](STATUS.md)
 
-Почни со [упатството на македонски](START_HERE_MK.md). The detailed results are in [STATUS.md](STATUS.md) and the [verification matrix](docs/verification.md).
+Start with the [quick start guide](START_HERE.md). The detailed results are in [STATUS.md](STATUS.md) and the [verification matrix](docs/verification.md).
 
-[Ажурирања преку Discover за постојните инсталации](docs/github-updates-mk.md)
+[Enable Discover updates on an existing installation](docs/github-updates.md)
 
 ## First build
 

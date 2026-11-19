@@ -16,7 +16,7 @@ The 02:00 UTC ISO booted as a removable USB device under enrolled Debian OVMF an
 
 KDE Discover uses a signed per-user Flathub source. In the preceding full Preview, Chrome, Viber, Telegram and ZapZap were installed and launched through Discover. Large guest downloads completed for Viber and Telegram with an emulated e1000e Ethernet adapter and IPv4-only QEMU NAT. The physical system's network configuration is independent. [Application checks](artifacts/20261119T005030Z-preview/live-evidence/discover-smoke/check.md)
 
-Discover checks for package updates. Connecting a KERNOVA repository on a VPS requires its HTTPS URL and signing-key fingerprint. The Debian tests exercised release signing and rejection of modified metadata. [VPS instructions](docs/vps-updates-mk.md)
+Discover checks for package updates. Connecting a KERNOVA repository on a VPS requires its HTTPS URL and signing-key fingerprint. The Debian tests exercised release signing and rejection of modified metadata. [VPS instructions](docs/vps-updates.md)
 
 ## Foundation installation and hardware checks, 19 November 2026
 
@@ -30,7 +30,7 @@ The original foundation profile omitted the KDE image thumbnail worker. After lo
 
 ## Windows-hosted Debian build
 
-On 19 November 2026 the dedicated Debian 13 amd64 builder finished the first foundation ISO. The builder passed the privileged preflight and all 24 source tests. Validation verified the kernel, initramfs, Live filesystem, package manifest, signed installer inputs, EFI signature tables and two boot entries. Windows verified the SHA-256 after transfer. The builder shut down cleanly. Its 80 GiB disk is at `D:\KERNOVA-VM\debian13-builder\debian13.qcow2`. [Debian transcript](docs/evidence/debian-builder.txt) · [Local builder and Live instructions](docs/windows-builder-mk.md)
+On 19 November 2026 the dedicated Debian 13 amd64 builder finished the first foundation ISO. The builder passed the privileged preflight and all 24 source tests. Validation verified the kernel, initramfs, Live filesystem, package manifest, signed installer inputs, EFI signature tables and two boot entries. Windows verified the SHA-256 after transfer. The builder shut down cleanly. Its 80 GiB disk is at `D:\KERNOVA-VM\debian13-builder\debian13.qcow2`. [Debian transcript](docs/evidence/debian-builder.txt) · [Local builder and Live instructions](docs/windows-builder.md)
 
 The local ISO is 2,117,629,952 bytes. SHA-256 is `52ab0d7191c4c730f3da23651272e5f23d8c660398ae75a64f8a33c54d46942b`. [ISO](artifacts/20261118T231642Z-foundation/kernova-os-0.1.0-amd64.iso) · [Manifest](artifacts/20261118T231642Z-foundation/packages.tsv) · [Build and validation logs](artifacts/20261118T231642Z-foundation)
 
@@ -46,7 +46,7 @@ The local ISO is 2,117,629,952 bytes. SHA-256 is `52ab0d7191c4c730f3da23651272e5
 | B. Desktop | Four Debian package sources, Night and Parallax, Breeze light alternative, default associations, native bilingual Welcome and everyday app selection | Ownership and package availability inspected. Windows source suite passed, including 13 Welcome tests. All six Qt tests passed again at 2×. ShellCheck and desktop-file-validate passed. | Build and inspect the Debian packages; boot the full preview and check real Plasma, login, panel, scaling, apps and devices. |
 | C. Installation | Authenticated Debian Installer inputs, interactive live installer in GRUB, fresh private disk and media-detached QEMU paths, installed-session checks | Verified installer hashes, menu/configuration source, VM argument and storage tests. No virtual disk installation performed. | Install by hand under each firmware profile. Check personal login, bootloader, persistence and removal of live credentials. |
 | D. Maintenance | Isolated package lifecycle test, local update path, APT/security setup, backup/recovery guidance, enforced-key firmware selector | Checked selected dependency names, package ownership and OVMF descriptors. The lifecycle entry point reported its Linux requirement on Windows. | Exercise package install/upgrade/removal, reboot after an actual update, restore a backup and verify independent machine identities. |
-| E. Handoff | Source tarball, Macedonian quick start and evidence matrix | Published the foundation ISO, SHA-256, manifest, build and validation logs locally. | Build and verify the branded preview and its installed system. |
+| E. Handoff | Source tarball, Quick start and evidence matrix | Published the foundation ISO, SHA-256, manifest, build and validation logs locally. | Build and verify the branded preview and its installed system. |
 
 ## Executed evidence
 
