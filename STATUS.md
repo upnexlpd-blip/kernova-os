@@ -1,5 +1,9 @@
 # KERNOVA OS development preview
 
+## Stable package update 0.1.5, 19 November 2026
+
+The Welcome application bundles eight Papirus app icons for offline use. The branding package adds seven photographs, bringing the KERNOVA photo collection to ten 3840×2160 wallpapers. Each wallpaper includes its photographer and source in its KDE metadata. An installed 0.1.4 Plasma VM upgraded through Discover and displayed all eight icons and ten wallpaper previews. [Discover](docs/evidence/artwork-0.1.5/discover.png) · [App catalog](docs/evidence/artwork-0.1.5/welcome-apps.png) · [Desktop shortcuts](docs/evidence/artwork-0.1.5/welcome-shortcuts.png) · [Wallpaper chooser](docs/evidence/artwork-0.1.5/wallpaper-chooser.png)
+
 ## Stable package update 0.1.4, 19 November 2026
 
 Smart Performance 0.1.4 is available from the existing stable APT channel. The five package hashes match the tested GitHub prerelease. The published index was independently verified with the key embedded in 0.1.3. On an installed UEFI guest, APT showed 0.1.3 installed and 0.1.4 available from the stable source. Discover installed all five packages through **Update All**, and dpkg confirmed their versions. [Stable release](https://github.com/upnexlpd-blip/kernova-os/releases/tag/v0.1.4) · [APT origin](docs/evidence/performance/stable-origin.png) · [Discover](docs/evidence/performance/stable-discover.png) · [Installed versions](docs/evidence/performance/stable-installed.png)
