@@ -6,6 +6,8 @@ An installed KERNOVA 0.1.5 Plasma VM previously opened the application chooser f
 
 The test used QEMU on Windows with WHPX, UEFI, two virtual CPUs, 4 GiB RAM and software rendering. The installer SHA-256 was `f061a7fd16ebe682edd45b02d048f068735a4a296c2b2b325246b10e01c748bf`. OpenTTD's Windows MIDI initialization hung in the first candidate. The launcher selects the game's null MIDI driver for OpenTTD. Sound effects, hardware GPU performance and other games remain unverified.
 
+A second installed 0.1.5 VM using the public stable channel received all five 0.1.6 packages in Discover. After **Update All**, the installed package versions and the default Windows executable handler matched the release. The signed stable index and all five published package hashes matched the gameplay-tested build. [Discover update](docs/evidence/windows-games-0.1.6/discover.png) · [Installed versions and default handler](docs/evidence/windows-games-0.1.6/versions.png)
+
 ## Stable package update 0.1.5, 19 November 2026
 
 The Welcome application bundles eight Papirus app icons for offline use. The branding package adds seven photographs, bringing the KERNOVA photo collection to ten 3840×2160 wallpapers. Each wallpaper includes its photographer and source in its KDE metadata. An installed 0.1.4 Plasma VM upgraded through Discover and displayed all eight icons and ten wallpaper previews. [Discover](docs/evidence/artwork-0.1.5/discover.png) · [App catalog](docs/evidence/artwork-0.1.5/welcome-apps.png) · [Desktop shortcuts](docs/evidence/artwork-0.1.5/welcome-shortcuts.png) · [Wallpaper chooser](docs/evidence/artwork-0.1.5/wallpaper-chooser.png)
