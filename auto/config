@@ -55,7 +55,9 @@ def main():
         "--archive-areas": "main non-free-firmware",
         "--parent-archive-areas": "main non-free-firmware",
         "--firmware-chroot": "true",
-        "--firmware-binary": "true",
+        # The graphical Live installer copies the firmware from the Live root.
+        # Avoid a second copy of its .deb archives on the full USB image.
+        "--firmware-binary": "false" if Path("config/includes.binary/kernova-installer/activate").is_file() else "true",
         "--security": "true",
         "--updates": "true",
         "--backports": "false",

@@ -35,6 +35,17 @@ Comment: Application artwork from Papirus icon theme, Papirus/48x48/apps,
  https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
  Application names and logos identify their respective products.
 
+Files: apps/welcome/icons/codex.svg apps/welcome/icons/claude.svg
+Copyright: 2023 LobeHub
+License: Expat
+Comment: Codex and Claude Code icons with explicit intrinsic sizes for Qt.
+ https://github.com/lobehub/lobe-icons/tree/9752d967494e48d8f83f2808feb2b0207bf70997/packages/static-svg/icons
+
+Files: apps/welcome/icons/alpaca.svg
+Copyright: Jeffser and Alpaca contributors
+License: GPL-3
+Comment: https://github.com/Jeffser/Alpaca/tree/98191a03072973243594b8de45f3f0a58476539d/data/icons/hicolor/scalable/apps
+
 Files: branding/KernovaCanyonLight/contents/images/3840x2160.jpg
 Copyright: Ashim D'Silva (photograph); 2026 KERNOVA OS contributors (overlay)
 License: public-domain and Expat

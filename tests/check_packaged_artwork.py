@@ -18,11 +18,12 @@ def main(root):
         assert image.read_bytes() == (source / "branding" / directory.name / "contents/images" / image.name).read_bytes()
         decoded = QImageReader(str(image)).read()
         assert (decoded.width(), decoded.height()) == (3840, 2160), image
-    for name in ("chrome", "viber", "telegram", "whatsapp", "browser", "files", "editor", "terminal"):
+    for name in ("chrome", "viber", "telegram", "whatsapp", "browser", "files", "editor", "terminal",
+                 "codex", "claude", "cursor", "alpaca"):
         icon = share / "kernova/welcome/icons" / f"{name}.svg"
         assert icon.read_bytes() == (source / "apps/welcome/icons" / icon.name).read_bytes()
         assert not QImageReader(str(icon)).read().isNull(), icon
-    print("Verified ten packaged 4K photographs and eight application icons.")
+    print("Verified ten packaged 4K photographs and twelve application icons.")
 
 
 if __name__ == "__main__":

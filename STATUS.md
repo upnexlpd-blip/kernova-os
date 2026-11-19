@@ -1,5 +1,13 @@
 # KERNOVA OS development preview
 
+## Desktop update 0.1.10 and USB release 0.1.8
+
+The 0.1.8 Live image booted into KDE Plasma with SeaBIOS and as a read-only USB device with UEFI. With networking disconnected, Calamares installed to an empty 48 GiB virtual disk. The new account signed in after the USB was detached. All five KERNOVA packages reported version 0.1.8 on disk. The ISO contains 1,301 packages. Both internal checksum lists and the exported ISO SHA-256 were verified. [Completed installation](docs/evidence/usb-0.1.8/offline-install.png) · [Installed versions](docs/evidence/usb-0.1.8/installed-packages.png)
+
+The 0.1.10 package update adds logos to AI Tools and displays installer output in the window. Installed command-line tools offer an **Open in Konsole** action. The Plasma session applies the bottom-right notification default at the next login and retains individual position preferences. A standard desktop notification was tested in an upgraded Wayland session. [AI Tools and notification](docs/evidence/desktop-0.1.10/ai-tools-notification.png)
+
+On the freshly installed 0.1.8 disk, Discover offered all five 0.1.10 packages from the public stable channel. **Update All** installed them in the running session. All five versions were confirmed with `dpkg-query` and `dpkg --audit` reported no pending issues. [Discover update list](docs/evidence/desktop-0.1.10/discover-updates.png)
+
 ## KERNOVA Torrent and Steam startup, 19 November 2026
 
 On an installed KERNOVA Plasma guest (amd64 UEFI, QEMU WHPX, 4 GiB), double-clicking Debian's official 13.7.0 netinst torrent in Dolphin opened the download dialog. The client saved 151 pieces before shutdown. After a fresh boot of the same disk and login, the queue resumed automatically, advanced to 1,563 saved pieces and finished all 3,024. The 756 MiB image matched Debian's published SHA-512. The QEMU process was relaunched after WHPX paused on warm reset. The separate magnet transfer used a local test peer, passed a byte comparison and retained its file when removed. The final icon revision reopened the completed ISO in the same queue. [Before shutdown](docs/evidence/torrent-0.1.7/before-restart.png) · [After login](docs/evidence/torrent-0.1.7/after-restart.png) · [Magnet](docs/evidence/torrent-0.1.7/magnet.png) · [Integrity](docs/evidence/torrent-0.1.7/checksum.png) · [Final client](docs/evidence/torrent-0.1.7/completed.png)

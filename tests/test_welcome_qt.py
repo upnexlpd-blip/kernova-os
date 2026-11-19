@@ -24,6 +24,7 @@ try:
 except ImportError as exc:
     raise unittest.SkipTest(f"PySide6 is unavailable: {exc}") from exc
 
+import ai_tools
 import main as welcome  # noqa: E402
 
 
@@ -255,6 +256,31 @@ class WelcomeQtTests(unittest.TestCase):
             window.apply_info({**SYSTEM, "session": state})
             self.assertEqual(window.start_text.text(), window.t(f"{state}_intro"))
             self.assertEqual(window.info["session"].text(), window.t(f"{state}_session"))
+
+    @unittest.skipUnless(Path("/bin/sh").is_file(), "requires a POSIX shell")
+    def test_ai_install_shows_results_and_allows_retry(self):
+        with patch.dict(os.environ, {"HOME": str(self.directory), "PATH": "/usr/bin:/bin"}):
+            window = ai_tools.AIToolsWindow("en_US")
+            self.addCleanup(window.close)
+            window.show()
+            name, button = window.buttons["codex"]
+            for command, result in (("echo failed; exit 1", "failed"), (
+                'mkdir -p "$HOME/.local/bin"; touch "$HOME/.local/bin/codex"; '
+                'chmod +x "$HOME/.local/bin/codex"; echo ready', "installed"
+            )):
+                with patch.object(ai_tools, "INSTALL", command):
+                    button.click()
+                    self.assertFalse(button.isEnabled())
+                    self.assertTrue(window.progress.isVisible())
+                    self.assertTrue(window.process.waitForFinished(5000))
+                    self.app.processEvents()
+                self.assertEqual(window.status.text(), window.text(result, name=name))
+                self.assertTrue(window.output.toPlainText().strip())
+                self.assertTrue(button.isEnabled())
+            self.assertEqual(button.text(), window.text("launch"))
+            with patch.object(ai_tools.QProcess, "startDetached", return_value=(True, 1)) as launch:
+                button.click()
+                self.assertEqual(launch.call_args.args[1][-1], str(self.directory / ".local/bin/codex"))
 
     def test_root_never_enters_gui(self):
         with patch.object(sys, "argv", ["kernova-welcome"]), patch.object(

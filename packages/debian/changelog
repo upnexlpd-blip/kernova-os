@@ -1,4 +1,4 @@
-kernova-components (0.1.9) trixie; urgency=medium
+kernova-components (0.1.11) trixie; urgency=medium
 
   * Add Kernova Crypto with public USDT spot markets, automatic price refresh,
     candlestick charts, searchable numeric tables and a persistent watchlist.
@@ -6,6 +6,22 @@ kernova-components (0.1.9) trixie; urgency=medium
     rate-limit retry windows.
 
  -- KERNOVA OS contributors <maintainers@kernova.invalid>  Thu, 19 Nov 2026 19:10:00 +0000
+
+kernova-components (0.1.10) trixie; urgency=medium
+
+  * Deliver the notification preference as a layered desktop default,
+    preserving Debian's Plasma configuration and individual preferences.
+  * Include visible AI installation progress, launch controls and app icons.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Thu, 19 Nov 2026 18:59:00 +0000
+
+kernova-components (0.1.9) trixie; urgency=medium
+
+  * Show AI installation progress, results and application icons in Welcome.
+  * Open installed development tools directly from the AI Tools window.
+  * Place Plasma notification popups in the bottom-right corner by default.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Thu, 19 Nov 2026 18:54:00 +0000
 
 kernova-components (0.1.8) trixie; urgency=medium
 
