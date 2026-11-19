@@ -1,3 +1,10 @@
+kernova-components (0.1.15) trixie; urgency=medium
+
+  * Include the native Weather forecast window and city search.
+  * Add a KERNOVA Weather launcher with an opt-in GPS location request.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Thu, 19 Nov 2026 20:24:00 +0000
+
 kernova-components (0.1.14) trixie; urgency=medium
 
   * Select the xcb platform for Viber message notifications at Plasma login.

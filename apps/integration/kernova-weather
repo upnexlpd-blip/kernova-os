@@ -1,0 +1,115 @@
+#!/usr/bin/python3
+"""Select a forecast location on the KERNOVA desktop."""
+import sys
+
+import gi
+
+gi.require_version("Gtk", "4.0")
+gi.require_version("Geoclue", "2.0")
+gi.require_version("GWeather", "4.0")
+from gi.repository import Geoclue, Gio, GLib, Gtk, GWeather
+
+
+class Weather(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.kernova.Weather")
+        self.request = None
+        self.timer = 0
+
+    def do_activate(self):
+        window = self.get_active_window()
+        if window:
+            window.present()
+            return
+        window = Gtk.ApplicationWindow(application=self, title="KERNOVA Weather")
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        for side in ("top", "bottom", "start", "end"):
+            getattr(box, "set_margin_" + side)(24)
+        header = Gtk.Label(label="Local forecast", xalign=0)
+        header.add_css_class("title-1")
+        box.append(header)
+        self.status = Gtk.Label(label="Find the nearest city using system location services or open Weather to choose a city.", xalign=0, wrap=True, max_width_chars=45)
+        box.append(self.status)
+        buttons = Gtk.Box(spacing=8)
+        self.locate = Gtk.Button(label="Use my location")
+        self.locate.add_css_class("suggested-action")
+        self.locate.connect("clicked", self.find_location)
+        buttons.append(self.locate)
+        manual = Gtk.Button(label="Open Weather")
+        manual.connect("clicked", lambda *_: self.open_forecast())
+        buttons.append(manual)
+        box.append(buttons)
+        window.set_child(box)
+        window.present()
+
+    def cancel_location(self):
+        if self.timer:
+            GLib.source_remove(self.timer)
+            self.timer = 0
+        if self.request:
+            self.request.cancel()
+            self.request = None
+
+    def do_shutdown(self):
+        self.cancel_location()
+        Gtk.Application.do_shutdown(self)
+
+    def find_location(self, button):
+        button.set_sensitive(False)
+        self.status.set_label("Finding your location… You can also open Weather and choose a city.")
+        self.request = Gio.Cancellable()
+        self.timer = GLib.timeout_add_seconds(30, self.location_timeout)
+        Geoclue.Simple.new(self.get_application_id(), Geoclue.AccuracyLevel.EXACT,
+                           self.request, self.location_ready, self.request)
+
+    def location_timeout(self):
+        self.timer = 0
+        self.cancel_location()
+        self.status.set_label("Location timed out. Choose a city in Weather or try again.")
+        self.locate.set_sensitive(True)
+        return GLib.SOURCE_REMOVE
+
+    def location_ready(self, source, result, request):
+        if request is not self.request:
+            return
+        self.request = None
+        self.cancel_location()
+        self.locate.set_sensitive(True)
+        try:
+            position = Geoclue.Simple.new_finish(result).get_location()
+            city = (GWeather.Location.get_world().find_nearest_city(position.get_latitude(), position.get_longitude())
+                    if position else None)
+        except GLib.Error:
+            city = None
+        if city is None:
+            self.status.set_label("Location is unavailable. Check location access or choose a city in Weather.")
+            return
+        self.open_forecast(city)
+
+    def open_forecast(self, city=None):
+        self.cancel_location()
+        self.locate.set_sensitive(True)
+        if city is None:
+            method = "Activate"
+            params = GLib.Variant("(a{sv})", ({},))
+        else:
+            method = "ActivateAction"
+            location = GLib.Variant.new_variant(city.serialize())
+            params = GLib.Variant("(sava{sv})", ("show-location", [location], {}))
+        self.get_active_window().get_child().set_sensitive(False)
+        self.get_dbus_connection().call(
+            "org.gnome.Weather", "/org/gnome/Weather", "org.freedesktop.Application",
+            method, params, None, Gio.DBusCallFlags.NONE, 15000, None, self.forecast_opened)
+
+    def forecast_opened(self, connection, result):
+        try:
+            connection.call_finish(result)
+        except GLib.Error:
+            self.get_active_window().get_child().set_sensitive(True)
+            self.status.set_label("Could not open Weather. Try again.")
+            return
+        self.quit()
+
+
+if __name__ == "__main__":
+    sys.exit(Weather().run(sys.argv))

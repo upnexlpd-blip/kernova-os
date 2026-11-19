@@ -44,6 +44,7 @@ Depends: ${misc:Depends},
  gir1.2-gtk-3.0, python3-libtorrent, steam-devices,
  kde-config-flatpak, baloo6, kio-extras,
  kaccounts-integration, kaccounts-providers, signon-ui-qt, signon-ui-service,
+ gnome-weather, gir1.2-geoclue-2.0, gir1.2-gweather-4.0, gir1.2-gtk-4.0,
  firefox-esr, dolphin, konsole, kate, ark, okular, gwenview,
  kde-spectacle, plasma-systemmonitor, vlc
 Recommends: kernova-branding (= ${binary:Version}), kernova-default-settings (= ${binary:Version}), kernova-welcome (= ${binary:Version})

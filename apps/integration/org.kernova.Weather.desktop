@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=KERNOVA Weather
+Comment=Open a local forecast using GPS or choose a city
+Exec=kernova-weather
+Icon=org.gnome.Weather
+Categories=Utility;
+Keywords=Weather;Forecast;GPS;Location;Temperature;
+X-Geoclue-Reason=Find the nearest city for the weather forecast.
