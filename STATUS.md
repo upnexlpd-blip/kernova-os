@@ -4,6 +4,8 @@
 
 On an installed Plasma Wayland guest upgraded from 0.1.15, the panel migration placed the Weather button directly before the clock. The saved Skopje forecast showed 16 degrees in the panel and opened to the same city when clicked. [Panel and forecast](docs/evidence/weather-panel-0.1.16/forecast-and-panel.png)
 
+The stable signed APT index and all five package hashes matched the tested Debian CI artifacts.
+
 ## Desktop weather, 0.1.15
 
 The KERNOVA Weather launcher opens GNOME Weather for a manually chosen city or requests a one-time system location. In an installed Plasma Wayland guest, manual search loaded Berlin. With the GeoClue static test provider reporting coordinates near Skopje, Use my location selected Skopje and loaded the hourly and daily forecasts. The test used the real system location service and online weather provider. Physical GPS hardware was unavailable in the VM. [Hourly forecast](docs/evidence/weather-0.1.15/hourly.png) and [daily forecast](docs/evidence/weather-0.1.15/daily.png).
