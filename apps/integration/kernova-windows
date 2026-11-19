@@ -80,13 +80,19 @@ def main():
             if not path.is_file() or path.suffix.lower() != ".exe":
                 raise ValueError("Choose a local Windows .exe file.")
             arguments = ["--file-forwarding", WINE, "start", "/unix", "@@", str(path), "@@"]
+            name = path.name
         elif len(sys.argv) == 1:
             shortcut = installed_shortcut()
             if not shortcut:
                 return 0
             arguments = [WINE, "start", "/unix", shortcut]
+            name = Path(shortcut).name
         else:
             raise ValueError("Open one Windows installer at a time.")
+        # OpenTTD's Windows MIDI initialization can hang under Wine. Its sound
+        # effects use a separate driver and keep the game's own sound settings.
+        if name.casefold() in {"openttd.exe", "openttd.lnk"}:
+            arguments.extend(["-m", "null"])
         if ensure_wine():
             os.execv(FLATPAK, [FLATPAK, "run", *arguments])
     except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:
