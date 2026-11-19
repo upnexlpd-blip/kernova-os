@@ -143,9 +143,11 @@ def inspect(iso, tmp):
             "packages/defaults/15kernova-refresh": "etc/apt/apt.conf.d/15kernova-refresh",
             "packages/defaults/kernova.sources": "etc/apt/sources.list.d/kernova.sources",
         }
-        for wall in ("KernovaFirstLight", "KernovaOlympicCoast", "KernovaChollaTrail"):
-            relative = wall + "/contents/images/3840x2160.jpg"
-            desktop_files["branding/" + relative] = "usr/share/wallpapers/" + relative
+        for source_file in inputs:
+            if source_file.startswith("branding/Kernova") and source_file.endswith(("/contents/images/3840x2160.jpg", "/metadata.json")):
+                desktop_files[source_file] = "usr/share/wallpapers/" + source_file.removeprefix("branding/")
+            if source_file.startswith("apps/welcome/icons/") and source_file.endswith(".svg"):
+                desktop_files[source_file] = "usr/share/kernova/welcome/icons/" + Path(source_file).name
         for source_file, installed_file in desktop_files.items():
             if source_file in inputs:
                 contents = subprocess.check_output(["unsquashfs", "-cat", rootfs, installed_file])

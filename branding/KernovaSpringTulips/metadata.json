@@ -1,0 +1,18 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaSpringTulips",
+    "Name": "KERNOVA · Spring Tulips",
+    "Name[mk]": "KERNOVA · Пролетни лалиња",
+    "Authors": [
+      {
+        "Name": "Leigh Kendell"
+      },
+      {
+        "Name": "KERNOVA OS contributors"
+      }
+    ],
+    "License": "Public domain photograph, MIT overlay",
+    "Website": "https://unsplash.com/@leighkendell"
+  }
+}

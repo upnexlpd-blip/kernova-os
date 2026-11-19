@@ -1,0 +1,18 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaCanyonLight",
+    "Name": "KERNOVA · Canyon Light",
+    "Name[mk]": "KERNOVA · Светлина во кањонот",
+    "Authors": [
+      {
+        "Name": "Ashim D'Silva"
+      },
+      {
+        "Name": "KERNOVA OS contributors"
+      }
+    ],
+    "License": "Public domain photograph, MIT overlay",
+    "Website": "https://unsplash.com/photos/WeYamle9fDM"
+  }
+}

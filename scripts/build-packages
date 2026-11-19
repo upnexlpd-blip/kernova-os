@@ -45,7 +45,8 @@ def main():
                     "apps/integration/kernova-welcome", "apps/integration/kernova-get-apps",
                     "apps/integration/kernova-app-catalog.sh", "apps/integration/kernova-update-source",
                     "apps/integration/*.desktop",
-                    "apps/performance/*.py", "apps/welcome/*.py", "apps/welcome/locales/*.json"):
+                    "apps/performance/*.py", "apps/welcome/*.py", "apps/welcome/locales/*.json",
+                    "apps/welcome/icons/*"):
         matches = sorted(ROOT.glob(pattern))
         if not matches:
             raise SystemExit(f"Missing required package input {pattern}. Staging tree: {source}")

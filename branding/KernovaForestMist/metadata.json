@@ -1,0 +1,18 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaForestMist",
+    "Name": "KERNOVA · Forest Mist",
+    "Name[mk]": "KERNOVA · Шумска магла",
+    "Authors": [
+      {
+        "Name": "Carmine De Fazio"
+      },
+      {
+        "Name": "KERNOVA OS contributors"
+      }
+    ],
+    "License": "Public domain photograph, MIT overlay",
+    "Website": "https://unsplash.com/photos/3ytjETpQMNY"
+  }
+}

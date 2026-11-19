@@ -1,0 +1,18 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaTasmanianPier",
+    "Name": "KERNOVA · Tasmanian Pier",
+    "Name[mk]": "KERNOVA · Тасманиски кеј",
+    "Authors": [
+      {
+        "Name": "Paul Carmona"
+      },
+      {
+        "Name": "KERNOVA OS contributors"
+      }
+    ],
+    "License": "Public domain photograph, MIT overlay",
+    "Website": "https://unsplash.com/photos/ces8_Bo7bhQ"
+  }
+}

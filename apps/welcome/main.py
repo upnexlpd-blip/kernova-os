@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import sys
 
-from PySide6.QtCore import QLocale, QObject, QProcess, QRunnable, QSettings, Qt, QThreadPool, QUrl, Signal, Slot
+from PySide6.QtCore import QLocale, QObject, QProcess, QRunnable, QSettings, QSize, Qt, QThreadPool, QUrl, Signal, Slot
 from PySide6.QtGui import QDesktopServices, QFont, QIcon
 from PySide6.QtWidgets import (
     QApplication, QCheckBox, QComboBox, QDialog, QFrame, QHBoxLayout, QLabel,
@@ -181,8 +181,11 @@ class WelcomeWindow(QWidget):
             self.autostart.setAccessibleDescription(self.t("save_failed"))
             QMessageBox.warning(self, self.t("title"), self.t("save_failed"))
 
-    def add_action(self, layout: QVBoxLayout, key: str):
+    def add_action(self, layout: QVBoxLayout, key: str, *, app_icon: bool = False):
         button = QPushButton(self.t(key))
+        if app_icon:
+            button.setIcon(QIcon(str(Path(__file__).with_name("icons") / f"{key}.svg")))
+            button.setIconSize(QSize(28, 28))
         button.clicked.connect(lambda checked=False: self.launch(key))
         missing = ACTIONS[key].missing_package()
         if missing is not None:
@@ -245,11 +248,11 @@ class WelcomeWindow(QWidget):
         self.add_action(layout, "software")
         layout.addWidget(label(self.t("apps_text")))
         for key in ("chrome", "viber", "telegram", "whatsapp"):
-            self.add_action(layout, key)
+            self.add_action(layout, key, app_icon=True)
         layout.addWidget(label(self.t("whatsapp_note")))
         layout.addWidget(heading(self.t("installed_apps"), 1.15))
         for key in ("browser", "files", "editor", "terminal"):
-            self.add_action(layout, key)
+            self.add_action(layout, key, app_icon=True)
 
     def add_system_field(self, layout: QVBoxLayout, key: str) -> QLabel:
         name = self.t(key)

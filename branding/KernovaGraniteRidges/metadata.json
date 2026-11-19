@@ -1,0 +1,18 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaGraniteRidges",
+    "Name": "KERNOVA · Granite Ridges",
+    "Name[mk]": "KERNOVA · Гранитни гребени",
+    "Authors": [
+      {
+        "Name": "Benjamin Voros"
+      },
+      {
+        "Name": "KERNOVA OS contributors"
+      }
+    ],
+    "License": "Public domain photograph, MIT overlay",
+    "Website": "https://unsplash.com/photos/yrwpJwDNSHE"
+  }
+}

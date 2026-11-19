@@ -62,6 +62,16 @@ class WelcomeQtTests(unittest.TestCase):
         self.app.processEvents()
         return window
 
+    def test_application_buttons_have_offline_icons_in_both_languages(self):
+        for locale in ("mk_MK", "en_US"):
+            window = self.window(locale)
+            buttons = {button.text(): button for button in window.findChildren(QPushButton)}
+            for key in ("chrome", "viber", "telegram", "whatsapp", "browser", "files", "editor", "terminal"):
+                with self.subTest(locale=locale, app=key):
+                    icon = buttons[window.t(key)].icon()
+                    self.assertFalse(icon.pixmap(28, 28).isNull())
+            window.close()
+
     def test_pages_keyboard_and_compact_geometry(self):
         for locale_name, start in (("en_US", "Getting started"), ("mk_MK", "Први чекори")):
             with self.subTest(locale=locale_name):

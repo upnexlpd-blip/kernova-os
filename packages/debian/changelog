@@ -1,3 +1,10 @@
+kernova-components (0.1.5) trixie; urgency=medium
+
+  * Add offline application icons to Welcome and seven photographic wallpapers
+    with the KERNOVA mark to the Plasma wallpaper chooser.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Thu, 19 Nov 2026 16:00:00 +0000
+
 kernova-components (0.1.4) trixie; urgency=medium
 
   * Add Smart Performance Center with Gaming, Coding, Battery Saver and Maximum

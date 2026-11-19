@@ -27,6 +27,66 @@ Comment: Photograph: Trail at the Cholla Cactus Garden, Hannah Schwalbe / U.S. N
  https://npgallery.nps.gov/AssetDetail/aa2b4feb-4592-4fba-9be5-b2319dcadbf7
  KERNOVA OS contributors cropped the photograph and added the logo.
 
+Files: apps/welcome/icons/*.svg
+Copyright: Papirus Development Team and contributors
+License: GPL-3
+Comment: Application artwork from Papirus icon theme, Papirus/48x48/apps,
+ revision 33d971eb2d0c8454bac58246687de78e58f960c8.
+ https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
+ Application names and logos identify their respective products.
+
+Files: branding/KernovaCanyonLight/contents/images/3840x2160.jpg
+Copyright: Ashim D'Silva (photograph); 2026 KERNOVA OS contributors (overlay)
+License: public-domain and Expat
+Comment: https://unsplash.com/photos/WeYamle9fDM
+ Cropped for the desktop and overlaid with the KERNOVA mark.
+ Public domain source: elementary/wallpapers 5.5.0-debian, debian/copyright.
+
+Files: branding/KernovaEarthOrbit/contents/images/3840x2160.jpg
+Copyright: SpaceX (photograph); 2026 KERNOVA OS contributors (overlay)
+License: public-domain and Expat
+Comment: https://unsplash.com/photos/VBNb52J8Trk
+ Cropped for the desktop and overlaid with the KERNOVA mark.
+ Public domain source: elementary/wallpapers 5.5.0-debian, debian/copyright.
+
+Files: branding/KernovaTasmanianPier/contents/images/3840x2160.jpg
+Copyright: Paul Carmona (photograph); 2026 KERNOVA OS contributors (overlay)
+License: public-domain and Expat
+Comment: https://unsplash.com/photos/ces8_Bo7bhQ
+ Cropped for the desktop and overlaid with the KERNOVA mark.
+ Public domain source: elementary/wallpapers 5.5.0-debian, debian/copyright.
+
+Files: branding/KernovaGraniteRidges/contents/images/3840x2160.jpg
+Copyright: Benjamin Voros (photograph); 2026 KERNOVA OS contributors (overlay)
+License: public-domain and Expat
+Comment: https://unsplash.com/photos/yrwpJwDNSHE
+ Cropped for the desktop and overlaid with the KERNOVA mark.
+ Public domain source: elementary/wallpapers 5.5.0-debian, debian/copyright.
+
+Files: branding/KernovaEvergreen/contents/images/3840x2160.jpg
+Copyright: Pablo García Saldaña (photograph); 2026 KERNOVA OS contributors (overlay)
+License: public-domain and Expat
+Comment: https://unsplash.com/photos/15d_4S2tJsQ
+ Cropped for the desktop and overlaid with the KERNOVA mark.
+ Public domain source: elementary/wallpapers 5.5.0-debian, debian/copyright.
+
+Files: branding/KernovaSpringTulips/contents/images/3840x2160.jpg
+Copyright: Leigh Kendell (photograph); 2026 KERNOVA OS contributors (overlay)
+License: public-domain and Expat
+Comment: https://unsplash.com/@leighkendell
+ Cropped for the desktop and overlaid with the KERNOVA mark.
+ Public domain source: elementary/wallpapers 5.5.0-debian, debian/copyright.
+
+Files: branding/KernovaForestMist/contents/images/3840x2160.jpg
+Copyright: Carmine De Fazio (photograph); 2026 KERNOVA OS contributors (overlay)
+License: public-domain and Expat
+Comment: https://unsplash.com/photos/3ytjETpQMNY
+ Cropped for the desktop and overlaid with the KERNOVA mark.
+ Public domain source: elementary/wallpapers 5.5.0-debian, debian/copyright.
+
+License: GPL-3
+ On Debian systems the full license is in /usr/share/common-licenses/GPL-3.
+
 License: public-domain
  The U.S. National Park Service lists each source photograph as public domain
  with full granting rights. The Expat license applies to the brand artwork.

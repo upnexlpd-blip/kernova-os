@@ -1,0 +1,18 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaEarthOrbit",
+    "Name": "KERNOVA · Earth Orbit",
+    "Name[mk]": "KERNOVA · Земјина орбита",
+    "Authors": [
+      {
+        "Name": "SpaceX"
+      },
+      {
+        "Name": "KERNOVA OS contributors"
+      }
+    ],
+    "License": "Public domain photograph, MIT overlay",
+    "Website": "https://unsplash.com/photos/VBNb52J8Trk"
+  }
+}

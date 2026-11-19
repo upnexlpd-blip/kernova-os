@@ -1,4 +1,5 @@
 apps/welcome/*.py usr/share/kernova/welcome
+apps/welcome/icons/*.svg usr/share/kernova/welcome/icons
 apps/welcome/locales/*.json usr/share/kernova/welcome/locales
 apps/integration/kernova-welcome.desktop usr/share/applications
 apps/integration/kernova-ai-tools.desktop usr/share/applications

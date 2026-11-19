@@ -1,0 +1,18 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaEvergreen",
+    "Name": "KERNOVA · Evergreen",
+    "Name[mk]": "KERNOVA · Зимзелена гранка",
+    "Authors": [
+      {
+        "Name": "Pablo García Saldaña"
+      },
+      {
+        "Name": "KERNOVA OS contributors"
+      }
+    ],
+    "License": "Public domain photograph, MIT overlay",
+    "Website": "https://unsplash.com/photos/15d_4S2tJsQ"
+  }
+}
