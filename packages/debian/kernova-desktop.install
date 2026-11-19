@@ -1,5 +1,8 @@
 apps/integration/kernova-get-apps usr/bin
 apps/integration/kernova-weather usr/bin
+apps/integration/kernova-weather-panel usr/bin
+defaults/plasma/plasmoids/* usr/share/plasma/plasmoids
+defaults/plasma/updates/kernova-add-weather.js usr/share/plasma/shells/org.kde.plasma.desktop/contents/updates
 apps/integration/org.kernova.Weather.desktop usr/share/applications
 apps/integration/kernova-crypto usr/bin
 apps/crypto/*.py usr/share/kernova/crypto

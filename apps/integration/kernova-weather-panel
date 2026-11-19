@@ -1,0 +1,53 @@
+#!/usr/bin/python3
+"""Read the latest saved Weather city or open its forecast."""
+import json
+import os
+import sys
+
+import gi
+
+gi.require_version("GWeather", "4.0")
+from gi.repository import Gio, GLib, GWeather
+
+
+def selected_city():
+    locations = Gio.Settings.new("org.gnome.Weather").get_value("locations")
+    world = GWeather.Location.get_world()
+    for index in range(locations.n_children()):
+        city = world.deserialize(locations.get_child_value(index).get_variant())
+        if city is not None:
+            return city
+    return None
+
+
+def temperature(city):
+    weather = GWeather.Info(
+        location=city, application_id="org.kernova.Weather",
+        contact_info="https://github.com/upnexlpd-blip/kernova-os",
+        enabled_providers=GWeather.Provider.METAR | GWeather.Provider.MET_NO,
+    )
+    loop = GLib.MainLoop()
+
+    def updated(info):
+        valid, value = info.get_value_temp(GWeather.TemperatureUnit.DEFAULT)
+        if info.is_valid() and valid:
+            print(json.dumps({"temperature": f"{value:.0f}°", "city": city.get_city_name() or city.get_name()}))
+        GWeather.Info.store_cache()
+        loop.quit()
+
+    weather.connect("updated", updated)
+    GLib.timeout_add_seconds(25, lambda: (loop.quit(), GLib.SOURCE_REMOVE)[1])
+    weather.update()
+    loop.run()
+
+
+if __name__ == "__main__":
+    city = selected_city()
+    if sys.argv[1:] == ["--open"]:
+        if city is None:
+            os.execl("/usr/bin/kernova-weather", "kernova-weather")
+        location = GLib.Variant.new_variant(city.serialize()).print_(True)
+        os.execl("/usr/bin/gapplication", "gapplication", "action",
+                 "org.gnome.Weather", "show-location", location)
+    elif city is not None:
+        temperature(city)

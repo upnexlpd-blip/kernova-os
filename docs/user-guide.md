@@ -24,7 +24,7 @@ Open **KERNOVA Welcome → Settings** to find Wi-Fi, Ethernet, Bluetooth, displa
 
 ### Weather
 
-Search the application menu for **KERNOVA Weather**. **Use my location** asks the system for a position, including GPS when available, and opens the forecast for the nearest city. **Open Weather** opens the native GNOME Weather window where you can search for a city, revisit saved places, and switch between hourly and daily forecasts. Refreshing the forecast requires internet access.
+Search the application menu for **KERNOVA Weather**. **Use my location** asks the system for a position, including GPS when available, and opens the forecast for the nearest city. **Open Weather** opens the native GNOME Weather window where you can search for a city, revisit saved places, and switch between hourly and daily forecasts. Refreshing the forecast requires internet access. The temperature next to the clock follows the most recently selected saved city. Click it to open that forecast.
 
 ### Update an installed system
 

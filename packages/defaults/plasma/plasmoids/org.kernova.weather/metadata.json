@@ -1,0 +1,13 @@
+{
+  "KPlugin": {
+    "Id": "org.kernova.weather",
+    "Name": "KERNOVA Weather",
+    "Description": "Temperature and forecast for the selected city",
+    "Icon": "weather-clear",
+    "Category": "Environment and Weather",
+    "Version": "1.0",
+    "License": "MIT"
+  },
+  "KPackageStructure": "Plasma/Applet",
+  "X-Plasma-API-Minimum-Version": "6.0"
+}

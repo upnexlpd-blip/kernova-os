@@ -1,3 +1,10 @@
+kernova-components (0.1.16) trixie; urgency=medium
+
+  * Show the selected Weather city's temperature next to the Plasma clock
+    and open its forecast from the panel.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Thu, 19 Nov 2026 20:44:00 +0000
+
 kernova-components (0.1.15) trixie; urgency=medium
 
   * Include the native Weather forecast window and city search.
