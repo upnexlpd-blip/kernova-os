@@ -1,3 +1,10 @@
+kernova-components (0.1.14) trixie; urgency=medium
+
+  * Select the xcb platform for Viber message notifications at Plasma login.
+    Migrate the previous desktop default and retain other personal choices.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Thu, 19 Nov 2026 20:16:00 +0000
+
 kernova-components (0.1.13) trixie; urgency=medium
 
   * Prefer XWayland for Viber's self-positioned message popups in the
