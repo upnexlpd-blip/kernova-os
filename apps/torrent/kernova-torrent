@@ -6,7 +6,7 @@ import time
 
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gio, GLib, Gtk
+from gi.repository import GdkPixbuf, Gio, GLib, Gtk
 
 from transfers import Transfers, identity, parse_source
 
@@ -33,7 +33,8 @@ class Library(Gtk.ApplicationWindow):
         self.items = {}
         self.last_save = time.monotonic()
         header = Gtk.HeaderBar(title="KERNOVA Torrent", show_close_button=True)
-        header.pack_start(Gtk.Image.new_from_icon_name("kernova-torrent", Gtk.IconSize.LARGE_TOOLBAR))
+        logo = "/usr/share/icons/hicolor/48x48/apps/kernova-torrent.png"
+        header.pack_start(Gtk.Image.new_from_pixbuf(GdkPixbuf.Pixbuf.new_from_file_at_scale(logo, 28, 28, True)))
         add = button("Open torrent", self.choose, "document-open-symbolic")
         add.get_style_context().add_class("suggested-action")
         header.pack_end(add)
@@ -78,7 +79,7 @@ class Library(Gtk.ApplicationWindow):
         self.stack = Gtk.Stack()
         self.stack.add_named(scroll, "list")
         empty = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, valign=Gtk.Align.CENTER)
-        empty.pack_start(Gtk.Image.new_from_icon_name("kernova-torrent", Gtk.IconSize.DIALOG), False, False, 0)
+        empty.pack_start(Gtk.Image.new_from_file(logo), False, False, 0)
         empty.pack_start(Gtk.Label(label="Open a torrent file or add a magnet link to start downloading."), False, False, 0)
         self.stack.add_named(empty, "empty")
         self.layout.pack_start(self.stack, True, True, 0)
@@ -359,5 +360,6 @@ class TorrentApp(Gtk.Application):
 
 
 if __name__ == "__main__":
+    GLib.set_prgname("org.kernova.Torrent")
     GLib.set_application_name("KERNOVA Torrent")
     sys.exit(TorrentApp().run(sys.argv))

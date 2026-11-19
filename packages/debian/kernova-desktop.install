@@ -2,6 +2,7 @@ apps/integration/kernova-get-apps usr/bin
 apps/torrent/* usr/share/kernova/torrent
 apps/integration/org.kernova.Torrent.desktop usr/share/applications
 branding/kernova-torrent.svg usr/share/icons/hicolor/scalable/apps
+generated/48x48/apps/kernova-torrent.png usr/share/icons/hicolor/48x48/apps
 defaults/kernova-torrent-resume.desktop etc/xdg/autostart
 apps/integration/kernova-windows usr/bin
 apps/integration/kernova-windows.desktop usr/share/applications

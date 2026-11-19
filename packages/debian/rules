@@ -4,6 +4,8 @@
 	dh $@
 
 override_dh_auto_build:
+	mkdir -p generated/48x48/apps
+	rsvg-convert -w 48 -h 48 -o generated/48x48/apps/kernova-torrent.png branding/kernova-torrent.svg
 	mkdir -p generated/Parallax/contents/images generated/org.kernova.night/contents/previews
 	rsvg-convert -w 3840 -h 2160 -o generated/Parallax/contents/images/3840x2160.png branding/Parallax/parallax.svg
 	rsvg-convert -w 512 -h 288 -o generated/org.kernova.night/contents/previews/preview.png branding/Parallax/parallax.svg
