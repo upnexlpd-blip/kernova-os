@@ -6,16 +6,28 @@ from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
 import unittest
+from email.message import Message
+from threading import Event
+from urllib.error import HTTPError
 from unittest.mock import patch
 
 APP = Path(__file__).resolve().parents[1] / "apps/crypto"
 sys.path.insert(0, str(APP))
-from market_data import MarketError, Ticker, candles, parse_tickers, price
+from market_data import MarketError, Ticker, candles, parse_tickers, price, request_json
 
 
 class MarketDataTests(unittest.TestCase):
     def test_small_prices_are_visible(self):
         self.assertEqual(float(price(0.0000000002)), 0.0000000002)
+
+    def test_long_provider_retry_window_is_honored(self):
+        headers = Message()
+        headers["Retry-After"] = "172800"
+        error = HTTPError("https://example.test", 429, "Rate limit", headers, None)
+        with patch("market_data.urlopen", side_effect=error):
+            with self.assertRaises(MarketError) as caught:
+                request_json("ticker/24hr")
+        self.assertEqual(caught.exception.retry_after, 172800)
 
     def test_only_active_valid_markets_are_shown(self):
         base = dict(symbol="BTCUSDT", lastPrice="100", priceChangePercent="-2",
@@ -84,6 +96,14 @@ class CryptoWindowTests(unittest.TestCase):
         self.window.active_symbol = "ETHUSDT"
         self.window.received("chart:BTCUSDT:24H", [(1000, 10, 12, 8, 11, 5)], None)
         self.assertEqual(self.window.chart.rows, [])
+
+    def test_closing_window_suppresses_late_network_delivery(self):
+        delivered = []
+        task = crypto.Fetch("prices", lambda: self.rows, self.window.stopping)
+        task.signals.finished.connect(lambda *args: delivered.append(args))
+        self.window.close()
+        task.run()
+        self.assertEqual(delivered, [])
 
     def test_rate_limit_keeps_snapshot_and_stops_requests(self):
         self.window.received("prices", self.rows, None)

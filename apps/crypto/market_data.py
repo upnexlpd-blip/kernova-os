@@ -27,7 +27,7 @@ def request_json(path, **parameters):
         return json.loads(data)
     except HTTPError as error:
         retry_after = error.headers.get("Retry-After", "60")
-        delay = min(max(int(retry_after), 60), 86400) if retry_after.isdigit() else 60
+        delay = max(int(retry_after), 60) if retry_after.isdigit() else 60
         if error.code in (418, 429):
             raise MarketError("The data provider requested a pause.", delay) from error
         raise MarketError(f"The data provider returned HTTP {error.code}.", 60) from error

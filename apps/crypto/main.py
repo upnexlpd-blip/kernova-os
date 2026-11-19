@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+from threading import Event
 import time
 
 from PySide6.QtCore import (QAbstractTableModel, QModelIndex, QObject, QPointF, QRectF,
@@ -26,9 +27,10 @@ class Signals(QObject):
 
 
 class Fetch(QRunnable):
-    def __init__(self, key, function):
+    def __init__(self, key, function, stopping):
         super().__init__()
         self.key, self.function = key, function
+        self.stopping = stopping
         self.signals = Signals()
 
     def run(self):
@@ -36,7 +38,12 @@ class Fetch(QRunnable):
             value, error = self.function(), None
         except Exception as reason:
             value, error = None, reason
-        self.signals.finished.emit(self.key, value, error)
+        if not self.stopping.is_set():
+            try:
+                self.signals.finished.emit(self.key, value, error)
+            except RuntimeError:
+                if not self.stopping.is_set():
+                    raise
 
 
 class Markets(QAbstractTableModel):
@@ -166,6 +173,7 @@ class Crypto(QMainWindow):
         self.active_symbol = "BTCUSDT"
         self.period = "24H"
         self.pending = {}
+        self.stopping = Event()
         self.cooldown = 0
         self.chart_at = 0
         self.cache = Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.CacheLocation)) / "markets.json"
@@ -285,6 +293,7 @@ class Crypto(QMainWindow):
         self.load_cache()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.tick)
+        QApplication.instance().aboutToQuit.connect(self.shutdown)
         if autostart:
             self.timer.start(15000)
             QTimer.singleShot(0, self.refresh_all)
@@ -292,7 +301,9 @@ class Crypto(QMainWindow):
     def fetch(self, key, function):
         if key in self.pending or time.monotonic() < self.cooldown:
             return
-        task = Fetch(key, function)
+        if self.stopping.is_set():
+            return
+        task = Fetch(key, function, self.stopping)
         self.pending[key] = task
         task.signals.finished.connect(self.received)
         QThreadPool.globalInstance().start(task)
@@ -357,6 +368,14 @@ class Crypto(QMainWindow):
         if self.snapshot_at and time.time() - self.snapshot_at > 60:
             self.connection.setText("Previous snapshot · waiting for an update")
         self.refresh_all()
+
+    def shutdown(self):
+        self.stopping.set()
+        self.timer.stop()
+
+    def closeEvent(self, event):
+        self.shutdown()
+        super().closeEvent(event)
 
     def update_summary(self):
         row = next((row for row in self.model.rows if row.symbol == self.active_symbol), None)
