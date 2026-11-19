@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""Pack the stock Debian password wordlists for the read-only Calamares medium."""
+import argparse
+import ctypes
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+
+
+# SHA-256 from Debian trixie's signed main binary-amd64 Packages index. amd64
+# and all are represented in the same index. Check bytes before running tools.
+PACKAGES = {
+    "cracklib-runtime": ("2.9.6-5.2+b1", "cfafd7c436357dc8fc0b6c6701c8764cf36b8e2b239cd56b2f16a3d1207a53d6"),
+    "libcrack2": ("2.9.6-5.2+b1", "62cfdabce5cbf25350507185180cc278ee774d2f8bc269d7fe6025b5421858d6"),
+    "wamerican": ("2020.12.07-4", "3b66a8174e8577767aec4c08b8742a2a7551f3a938da351d9aaef13ff0587f1e"),
+}
+
+
+def pack(work):
+    packages = {}
+    tree = work / "debian"
+    output = work / "packed"
+    output.mkdir()
+    for name, (version, expected) in PACKAGES.items():
+        with tempfile.TemporaryDirectory(dir=work) as tmp:
+            subprocess.run(["apt-get", "download", f"{name}={version}"], cwd=tmp, check=True)
+            deb, = Path(tmp).glob("*.deb")
+            actual = hashlib.sha256(deb.read_bytes()).hexdigest()
+            if actual != expected:
+                raise ValueError(f"SHA-256 mismatch for {name} {version}")
+            packages[name] = {"version": version, "sha256": actual}
+            subprocess.run(["dpkg-deb", "--extract", deb, tree], check=True)
+
+    tools = tree / "usr/sbin"
+    library = tree / "usr/lib/x86_64-linux-gnu"
+    words = tree / "usr/share/dict"
+    env = dict(os.environ, LC_ALL="C", LD_LIBRARY_PATH=str(library))
+    prefix = output / "cracklib_dict"
+    formatted = subprocess.check_output([tools / "cracklib-format", words / "cracklib-small",
+                                         words / "american-english"], env=env)
+    subprocess.run([tools / "cracklib-packer", prefix], input=formatted, env=env, check=True)
+
+    # Exercise both outcomes through the same library called by libpwquality.
+    lib = ctypes.CDLL(str(library / "libcrack.so.2"))
+    check = lib.FascistCheck
+    check.argtypes = (ctypes.c_char_p, ctypes.c_char_p)
+    check.restype = ctypes.c_char_p
+    if not check(b"password", os.fsencode(prefix)) or check(b"pQr9!TG8vYL2zsM7wF6X", os.fsencode(prefix)):
+        raise ValueError("The stock Debian library failed to distinguish the two dictionary test inputs.")
+
+    files = {}
+    for suffix in (".hwm", ".pwd", ".pwi"):
+        path = prefix.with_suffix(suffix)
+        if not path.is_file() or not path.stat().st_size:
+            raise ValueError(f"Empty or missing dictionary {path.name}")
+        files[path.name] = hashlib.sha256(path.read_bytes()).hexdigest()
+    manifest = output / "cracklib-dictionary.json"
+    notices = {name: (tree / "usr/share/doc" / name / "copyright").read_text(encoding="utf-8")
+               for name in ("cracklib-runtime", "wamerican")}
+    manifest.write_text(json.dumps({"packages": packages, "files": files, "copyright": notices},
+                                   indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return [*(output / name for name in files), manifest]
+
+
+def main():
+    cli = argparse.ArgumentParser(description=__doc__)
+    cli.add_argument("media_directory", type=Path, help="the ISO's kernova-installer directory")
+    destination = cli.parse_args().media_directory.resolve(strict=True)
+    if not destination.is_dir() or destination.name != "kernova-installer":
+        cli.error("Choose the staging directory named kernova-installer.")
+    with tempfile.TemporaryDirectory(prefix="kernova-cracklib-", dir=destination.parent) as temp:
+        for path in pack(Path(temp)):
+            path.chmod(0o644)
+            path.replace(destination / path.name)
+    print(f"Staged and tested Debian's password dictionary in {destination}")
+
+
+if __name__ == "__main__":
+    main()

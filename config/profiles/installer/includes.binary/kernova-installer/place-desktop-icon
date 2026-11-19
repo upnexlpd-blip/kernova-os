@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+[ "$(id -un)" = kernova-live ] || exit 0
+desktop=$(xdg-user-dir DESKTOP)
+[ -n "$desktop" ] && [ "$desktop" != "$HOME" ] || exit 0
+install -D -m 0755 /usr/share/applications/calamares-install-debian.desktop "$desktop/calamares-install-debian.desktop"

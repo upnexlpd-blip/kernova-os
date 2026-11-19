@@ -1,0 +1,6 @@
+polkit.addRule(function(action, subject) {
+    if (action.id === "org.kernova.live.install" && subject.local && subject.active &&
+        subject.user === "kernova-live") {
+        return polkit.Result.YES;
+    }
+});

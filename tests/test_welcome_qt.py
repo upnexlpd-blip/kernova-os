@@ -17,7 +17,10 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 try:
     from PySide6.QtCore import QEvent, QSettings, Qt, QThreadPool, QTimer
     from PySide6.QtGui import QKeyEvent
-    from PySide6.QtWidgets import QApplication, QDialog, QLabel, QListWidget, QStackedWidget, QTextBrowser
+    from PySide6.QtWidgets import (
+        QApplication, QComboBox, QDialog, QLabel, QListWidget, QPushButton, QScrollArea, QStackedWidget,
+        QTextBrowser,
+    )
 except ImportError as exc:
     raise unittest.SkipTest(f"PySide6 is unavailable: {exc}") from exc
 
@@ -126,6 +129,97 @@ class WelcomeQtTests(unittest.TestCase):
             window.launch("network")
             start.assert_called_once_with("/usr/bin/systemsettings", ["kcm_networkmanagement"])
 
+    def test_settings_selector_opens_native_modules_and_marks_missing_modules(self):
+        with patch("system_info.Action.missing_package", return_value=None) as missing, patch.object(
+            welcome.QProcess, "startDetached", return_value=(True, 42)
+        ) as start:
+            window = self.window("mk_MK")
+            window.findChild(QListWidget).setCurrentRow(welcome.PAGES.index("personalize"))
+            page = window.findChild(QStackedWidget).currentWidget()
+            categories = page.findChild(QComboBox)
+            open_button = self.button(page, window.t("settings_open"))
+            self.assertEqual(categories.count(), len(welcome.SETTINGS_MODULES))
+            for key, (module, _) in welcome.SETTINGS_MODULES.items():
+                with self.subTest(category=key):
+                    categories.setCurrentIndex(categories.findData(key))
+                    self.assertEqual(categories.currentText(), window.t(key))
+                    start.reset_mock()
+                    open_button.click()
+                    start.assert_called_once_with("/usr/bin/systemsettings", [module])
+            missing.return_value = "kaccounts-integration"
+            categories.setCurrentIndex(categories.findData("account_settings"))
+            self.assertFalse(open_button.isEnabled())
+            self.assertEqual(open_button.toolTip(), window.t("requires", package="kaccounts-integration"))
+
+    def test_drivers_show_detected_hardware_and_open_requested_download(self):
+        for locale_name in ("en_US", "mk_MK"):
+            with self.subTest(locale=locale_name), patch(
+                "system_info.Action.missing_package", return_value=None
+            ), patch.object(welcome.QDesktopServices, "openUrl", return_value=True) as open_url:
+                window = self.window(locale_name)
+                window.resize(647, 332)
+                window.apply_info({**SYSTEM, "graphics": "Virtio GPU"})
+                window.findChild(QListWidget).setCurrentRow(welcome.PAGES.index("system"))
+                page = window.findChild(QStackedWidget).currentWidget()
+                self.button(page, window.t("drivers")).click()
+                self.app.processEvents()
+                dialog = window.drivers_dialog
+                self.assertTrue(dialog.isVisible())
+                self.assertEqual(dialog.findChild(QScrollArea).horizontalScrollBar().maximum(), 0)
+                self.assertEqual(window.driver_info["cpu"].text(), SYSTEM["cpu"])
+                self.assertEqual(window.driver_info["graphics"].text(), "Virtio GPU")
+                open_url.assert_not_called()
+                for links in welcome.DRIVER_DOWNLOADS.values():
+                    for key, url in links.items():
+                        self.button(dialog, window.t(key)).click()
+                        self.assertEqual(open_url.call_args.args[0].toString(), url)
+                with patch.object(welcome.QProcess, "startDetached", return_value=(True, 42)) as start:
+                    self.button(dialog, window.t("updates")).click()
+                    start.assert_called_once_with("/usr/bin/plasma-discover", ["--mode", "update"])
+                self.button(dialog, window.t("close")).click()
+                self.assertFalse(dialog.isVisible())
+
+    def test_driver_launcher_selects_system_and_ignores_sign_in_preference(self):
+        self.settings.setValue(welcome.AUTOSTART_KEY, False)
+        window_class = welcome.WelcomeWindow
+        windows = []
+
+        def create_window(*args, **kwargs):
+            window = window_class(*args, **kwargs)
+            windows.append(window)
+            self.addCleanup(window.close)
+            return window
+
+        with patch.object(sys, "argv", ["kernova-welcome", "--drivers"]), patch.object(
+            welcome.os, "geteuid", return_value=1000, create=True
+        ), patch.object(welcome, "QSettings", wraps=QSettings) as settings_type, patch.object(
+            welcome, "QApplication", return_value=self.app
+        ), patch.object(welcome, "WelcomeWindow", side_effect=create_window), patch.object(
+            self.app, "exec", return_value=0
+        ):
+            settings_type.return_value = self.settings
+            self.assertEqual(welcome.main(), 0)
+            window = windows[0]
+            self.assertEqual(window.findChild(QListWidget).currentRow(), welcome.PAGES.index("system"))
+            self.assertTrue(window.drivers_dialog.isVisible())
+            self.assertTrue(QThreadPool.globalInstance().waitForDone(3000))
+
+    def test_get_apps_buttons_launch_the_catalog(self):
+        with patch("system_info.Action.missing_package", return_value=None), patch.object(
+            welcome.QProcess, "startDetached", return_value=(True, 42)
+        ) as start:
+            window = self.window("mk_MK")
+            window.findChild(QListWidget).setCurrentRow(welcome.PAGES.index("apps"))
+            page = window.findChild(QStackedWidget).currentWidget()
+            for key in ("software", "chrome", "viber", "telegram", "whatsapp"):
+                start.reset_mock()
+                self.button(page, window.t(key)).click()
+                start.assert_called_once_with("/usr/bin/kernova-get-apps", [] if key == "software" else [key])
+
+    @staticmethod
+    def button(parent, text):
+        return next(button for button in parent.findChildren(QPushButton) if button.text() == text)
+
     def test_compressed_guide_opens_in_native_reader(self):
         guide = self.directory / "user-guide.md"
         with gzip.open(guide.with_suffix(".md.gz"), "wt", encoding="utf-8") as stream:
@@ -135,7 +229,7 @@ class WelcomeQtTests(unittest.TestCase):
         rendered = []
 
         def read_dialog():
-            dialog = window.findChild(QDialog)
+            dialog = next(dialog for dialog in window.findChildren(QDialog) if dialog.isVisible())
             try:
                 rendered.append(dialog.findChild(QTextBrowser).toPlainText())
             finally:

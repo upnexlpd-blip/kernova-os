@@ -1,0 +1,107 @@
+#!/usr/bin/python3 -I
+"""Configure Debian Calamares in the writable live overlay, before the desktop starts."""
+import json
+import os
+from pathlib import Path
+import shutil
+
+
+def replace_setting(path, old, new):
+    contents = path.read_text()
+    if old not in contents and new.strip() and contents.count(new) == 1:
+        return
+    if contents.count(old) != 1:
+        raise ValueError(f"Unexpected Debian installer setting in {path}: {old!r}")
+    path.write_text(contents.replace(old, new))
+
+
+def configure(root, payload):
+    def install(source, destination, mode=0o644):
+        destination = root / destination
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, destination)
+        destination.chmod(mode)
+
+    cal = root / "etc/calamares"
+    modules = cal / "modules"
+    profile = json.loads((root / "usr/share/kernova/product.json").read_text())
+    branding = cal / "branding/kernova"
+    branding.mkdir(exist_ok=True)
+    name, version = profile["name"], profile["version"]
+    (branding / "branding.desc").write_text(json.dumps({
+        "componentName": "kernova", "welcomeStyleCalamares": True,
+        "windowExpanding": "normal", "windowSize": "800px,580px", "windowPlacement": "center",
+        "sidebar": "widget", "navigation": "widget",
+        "strings": {"productName": name, "shortProductName": name, "version": version,
+                    "shortVersion": version, "versionedName": f"{name} {version}",
+                    "shortVersionedName": name, "bootloaderEntryName": "Debian"},
+        "images": {"productLogo": "logo.svg", "productIcon": "logo.svg", "productWelcome": "logo.svg"},
+        "slideshow": ["logo.svg"],
+        "style": {"SidebarBackground": "#152536", "SidebarText": "#eef7ff",
+                  "SidebarTextCurrent": "#ffffff", "SidebarBackgroundCurrent": "#25475e"}
+    }, indent=2) + "\n")
+    shutil.copyfile(root / "usr/share/icons/hicolor/scalable/apps/kernova-logo.svg", branding / "logo.svg")
+
+    settings = cal / "settings.conf"
+    replace_setting(settings, "\nbranding: debian\n", "\nbranding: kernova\n")
+    replace_setting(settings, "\nprompt-install: false\n", "\nprompt-install: true\n")
+    # Use Calamares' actual target chroot. Debian's process helpers look it up
+    # by parsing mount output, change APT sources, and attempt a network update.
+    # Native mount/shellprocess/umount also release the medium on job failure.
+    replace_setting(settings, "  - dpkg-unsafe-io\n  - sources-media\n  - machineid", "  - machineid")
+    replace_setting(settings, "  - bootloader-config\n  - grubcfg", "  - shellprocess\n  - grubcfg")
+    replace_setting(settings, "  - dpkg-unsafe-io-undo\n  - sources-media-unmount\n  - sources-final\n  - umount",
+                    "  - umount")
+    media_mount = ("\n    - device: /run/live/medium\n      mountPoint: /run/live/medium\n"
+                   "      options: [bind]\n")
+    if media_mount not in (modules / "mount.conf").read_text():
+        with (modules / "mount.conf").open("a") as mount:
+            mount.write(media_mount)
+    (modules / "shellprocess.conf").write_text(
+        "dontChroot: false\ntimeout: 1800\nscript:\n  - /bin/sh /run/live/medium/kernova-installer/install-boot-packages\n")
+    replace_setting(modules / "bootloader.conf", "installEFIFallback: true", "installEFIFallback: false")
+    # Debian's module still installs GRUB to the Debian EFI directory. Keep the
+    # default EFI/BOOT loader on an existing Windows ESP.
+    (modules / "partition.conf").write_text(
+        "initialPartitioningChoice: none\nallowManualPartitioning: true\n"
+        "defaultFileSystemType: ext4\nuserSwapChoices: [none, small]\ninitialSwapChoice: none\n"
+        "efi:\n  mountPoint: /boot/efi\n  recommendedSize: 300MiB\n  minimumSize: 100MiB\n")
+    user_settings = "\ndoAutologin: false\nuser:\n  forbidden_names: [root, nobody, kernova-live]\n"
+    dictpath = "        - dictpath=/run/live/medium/kernova-installer/cracklib_dict\n"
+    if dictpath not in (modules / "users.conf").read_text():
+        replace_setting(modules / "users.conf", "        - minclass=0\n", "        - minclass=0\n" + dictpath)
+    if user_settings not in (modules / "users.conf").read_text():
+        with (modules / "users.conf").open("a") as users:
+            users.write(user_settings)
+    # Only request removal of known packages. The Debian apt backend purges
+    # the listed packages, then autoremoves their orphaned dependencies.
+    (modules / "packages.conf").write_text(
+        "backend: apt\noperations:\n  - remove:\n"
+        "      - calamares-settings-debian\n      - calamares\n      - live-config-systemd\n"
+        "      - live-config\n      - live-boot\n      - live-tools\n")
+    for option in ("showSupportUrl", "showKnownIssuesUrl", "showReleaseNotesUrl"):
+        path = modules / "welcome.conf"
+        lines = path.read_text().splitlines()
+        path.write_text("\n".join(option + ": false" if line.startswith(option + ":") else line
+                                  for line in lines) + "\n")
+
+    install(payload / "kernova-live-install", "usr/libexec/kernova-live-install", 0o755)
+    install(payload / "install.desktop", "usr/share/applications/calamares-install-debian.desktop")
+    # The packaged 13.0.13-1 icon script has a shell syntax error in its
+    # preload loop. Retain the upstream autostart and install the icon as the user.
+    install(payload / "place-desktop-icon", "usr/bin/add-calamares-desktop-icon", 0o755)
+    generic = root / "usr/share/applications/calamares.desktop"
+    if generic.is_file() and "\nNoDisplay=true\n" not in generic.read_text(encoding="utf-8"):
+        with generic.open("a", encoding="utf-8") as entry:
+            entry.write("\nNoDisplay=true\n")
+    install(payload / "install.policy", "usr/share/polkit-1/actions/org.kernova.live.install.policy")
+    # Enable the action last, after installing its fixed root-owned executable.
+    install(payload / "install.rules", "etc/polkit-1/rules.d/49-kernova-live-install.rules")
+
+
+if __name__ == "__main__":
+    medium = Path("/run/live/medium")
+    if (os.geteuid() != 0 or "boot=live" not in Path("/proc/cmdline").read_text().split()
+            or not os.path.ismount(medium) or not (medium / "live/filesystem.squashfs").is_file()):
+        raise SystemExit("The KERNOVA installer can be configured only in the live session.")
+    configure(Path("/"), medium / "kernova-installer")

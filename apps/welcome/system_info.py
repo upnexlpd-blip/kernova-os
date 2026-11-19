@@ -27,14 +27,46 @@ class Action:
         return None
 
 
+SETTINGS_MODULES = {
+    "network": ("kcm_networkmanagement", "plasma-nm"),
+    "bluetooth_settings": ("kcm_bluetooth", "bluedevil"),
+    "display_settings": ("kcm_kscreen", "kscreen"),
+    "sound_settings": ("kcm_pulseaudio", "plasma-pa"),
+    "power_settings": ("kcm_powerdevilprofilesconfig", "powerdevil"),
+    "appearance_settings": ("kcm_lookandfeel", "plasma-workspace"),
+    "wallpaper_settings": ("kcm_wallpaper", "plasma-workspace"),
+    "default_app_settings": ("kcm_componentchooser", "plasma-desktop"),
+    "flatpak_settings": ("kcm_flatpak", "kde-config-flatpak"),
+    "notification_settings": ("kcm_notifications", "plasma-workspace"),
+    "desktop_search_settings": ("kcm_plasmasearch", "plasma-desktop"),
+    "file_search_settings": ("kcm_baloofile", "plasma-desktop"),
+    "web_search_settings": ("kcm_webshortcuts", "kio-extras"),
+    "account_settings": ("kcm_kaccounts", "kaccounts-integration"),
+    "keyboard_settings": ("kcm_keyboard", "plasma-desktop"),
+    "shortcut_settings": ("kcm_keys", "plasma-desktop"),
+    "mouse_settings": ("kcm_mouse", "plasma-desktop"),
+    "touchpad_settings": ("kcm_touchpad", "plasma-desktop"),
+    "workspace_settings": ("kcm_workspace", "plasma-desktop"),
+    "language_settings": ("kcm_regionandlang", "plasma-workspace"),
+    "date_settings": ("kcm_clock", "plasma-desktop"),
+    "accessibility_settings": ("kcm_access", "plasma-desktop"),
+    "user_settings": ("kcm_users", "plasma-workspace"),
+}
+
+
 ACTIONS = {
     "settings": Action(("/usr/bin/systemsettings",), "systemsettings"),
-    "network": Action(
-        ("/usr/bin/systemsettings", "kcm_networkmanagement"),
-        "systemsettings",
-        ("plasma-nm", Path("/usr/share/applications/kcm_networkmanagement.desktop")),
-    ),
-    "software": Action(("/usr/bin/plasma-discover",), "plasma-discover"),
+    **{
+        key: Action(("/usr/bin/systemsettings", module), "systemsettings",
+                    (package, Path(f"/usr/share/applications/{module}.desktop")))
+        for key, (module, package) in SETTINGS_MODULES.items()
+    },
+    "software": Action(("/usr/bin/kernova-get-apps",), "kernova-desktop"),
+    "chrome": Action(("/usr/bin/kernova-get-apps", "chrome"), "kernova-desktop"),
+    "viber": Action(("/usr/bin/kernova-get-apps", "viber"), "kernova-desktop"),
+    "telegram": Action(("/usr/bin/kernova-get-apps", "telegram"), "kernova-desktop"),
+    "whatsapp": Action(("/usr/bin/kernova-get-apps", "whatsapp"), "kernova-desktop"),
+    "updates": Action(("/usr/bin/plasma-discover", "--mode", "update"), "plasma-discover"),
     "info": Action(("/usr/bin/kinfocenter",), "kinfocenter"),
     "browser": Action(("/usr/bin/firefox-esr",), "firefox-esr"),
     "files": Action(("/usr/bin/dolphin",), "dolphin"),

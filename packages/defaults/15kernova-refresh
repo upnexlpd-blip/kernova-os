@@ -1,0 +1,2 @@
+// Debian's apt-daily.timer refreshes metadata. Users choose updates in Discover.
+APT::Periodic::Update-Package-Lists "1";

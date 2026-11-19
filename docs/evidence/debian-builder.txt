@@ -1,0 +1,64 @@
+18 November 2026. Debian 13 build VM on Windows 11, QEMU 11.1.0, TCG.
+Guest console transcript excerpts in original order. Ordinary user: builder.
+Commands: sudo ./scripts/install-prerequisites; ./scripts/preflight; ./scripts/check-source; ./scripts/build-iso foundation
+
+Host Linux 6.12.117+deb13-cloud-amd64, x86_64, 4 logical CPUs
+Project /home/builder/kernova-os; 73.2 GiB available
+Distribution Debian GNU/Linux 13 (trixie)
+Kernel environment 6.12.117+deb13-cloud-amd64
+Virtualization qemu; /dev/kvm accessible False (affects VM test speed)
+RAM 7.8 GiB
+Installed live-build 1:20250505+deb13u1
+Project filesystem ext4
+Archive https://deb.debian.org/debian/dists/trixie/InRelease HTTP 200
+Archive https://deb.debian.org/debian-security/dists/trixie-security/InRelease HTTP 200
+Checking sudo, a private tmpfs mount, a project device node and chroot.
+Preflight passed.
+Compiled 17 Python sources. Found 3 shell entry points.
+Shell syntax and ShellCheck passed.
+desktop-file-validate passed.
+Ran 24 tests in 4.163s
+OK
+Build log /home/builder/kernova-os/build/20261118T212723Z-wxkv6o53-foundation/build.log
+== Builder preflight ==
+Host Linux 6.12.117+deb13-cloud-amd64, x86_64, 4 logical CPUs
+Project /home/builder/kernova-os; 73.2 GiB available
+Distribution Debian GNU/Linux 13 (trixie)
+Kernel environment 6.12.117+deb13-cloud-amd64
+Virtualization qemu; /dev/kvm accessible False (affects VM test speed)
+RAM 7.8 GiB
+Installed live-build 1:20250505+deb13u1
+Project filesystem ext4
+Archive https://deb.debian.org/debian/dists/trixie/InRelease HTTP 200
+Archive https://deb.debian.org/debian-security/dists/trixie-security/InRelease HTTP 200
+Checking sudo, a private tmpfs mount, a project device node and chroot.
+Preflight passed.
+== Generate fresh live-build configuration ==
+== Validate generated settings ==
+== Authenticate and cache Debian Installer ==
+Authenticated Debian Installer kernels and initrds (text and graphical).
+== Build hybrid ISO ==
+I: Valid Release signature (key id 41587F7DB8C774BCCF131416762F67A0B2C39DE4)
+I: Base system installed successfully.
+0 upgraded, 961 newly installed, 0 to remove and 0 not upgraded.
+Need to get 904 MB of archives.
+Fetched 904 MB in 10min 19s (1461 kB/s)
+ISO image produced: 1033999 sectors
+P: Build completed successfully
+Validated kernova-os-0.1.0-amd64.iso (foundation), 1114 installed packages, 16 required package versions, and Debian-authenticated installer files.
+BIOS/UEFI boot records and EFI signature tables are present. Guest boot and enforcement require VM tests.
+Published /home/builder/kernova-os/artifacts/20261118T212723Z-wxkv6o53-foundation/kernova-os-0.1.0-amd64.iso
+
+Windows release: artifacts/20261118T231642Z-foundation/kernova-os-0.1.0-amd64.iso
+Size: 2117629952 bytes
+SHA-256 verified at transfer and visible VM launch: 52ab0d7191c4c730f3da23651272e5f23d8c660398ae75a64f8a33c54d46942b
+The first tar transfer encountered a permission error opening the virtual character device.
+The guest operator granted builder access to that device, verified SHA256SUMS and completed the transfer.
+
+First Live desktop observed 19 November 2026, local Windows time (18 November 23:24 UTC).
+Windows QEMU 11.1.0, SeaBIOS, TCG, 2 virtual CPUs, 4 GiB RAM, VirtIO VGA.
+QMP verified a read-only installation DVD as the single storage medium. No hard disk was attached.
+The first visible launch using DirectSound exited during audio initialization. The retry used the null audio backend.
+GRUB Live system (amd64) booted to the graphical target; Plasma displayed its wallpaper and panel.
+Meta+E opened Dolphin Home. The sidebar displayed the mounted KERNOVA-OS-0.1.0 volume.
+Saved the GRUB, desktop and Dolphin screenshots in the Windows release's live-evidence/ directory.

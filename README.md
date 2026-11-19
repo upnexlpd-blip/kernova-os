@@ -1,8 +1,10 @@
 # KERNOVA OS
 
-Personal Debian 13 amd64 desktop with KDE Plasma, an original Night theme and a native bilingual KERNOVA Welcome application. This repository contains the **0.1.0 development preview build recipe**. The current handoff is source only. ISO construction, desktop boot, interactive installation and post-update boot still need a Debian build VM.
+Personal Debian 13 amd64 desktop with KDE Plasma. The current local development preview is **0.1.2**. It includes KDE Discover, the KERNOVA Welcome and AI Tools applications, hardware settings, three photographic wallpapers and the graphical Calamares installer. [Preview ISO](artifacts/20261119T093631Z-preview/kernova-os-0.1.2-amd64.iso) · [SHA-256](artifacts/20261119T093631Z-preview/SHA256SUMS) · [Source archive](artifacts/kernova-os-0.1.2-source.tar.gz) · [Build and verification status](STATUS.md)
 
 Почни со [упатството на македонски](START_HERE_MK.md). The detailed results are in [STATUS.md](STATUS.md) and the [verification matrix](docs/verification.md).
+
+[Ажурирања преку Discover за постојните инсталации](docs/github-updates-mk.md)
 
 ## First build
 
@@ -16,7 +18,7 @@ sudo ./scripts/install-prerequisites
 ./scripts/build-iso foundation
 ```
 
-Boot the foundation image in a new VM. After Plasma starts, build the branded system with `./scripts/build-iso preview`. Each successful run prints the path to its own ISO and publishes the checksum, package manifest and build evidence together. The intended release filename is `kernova-os-0.1.0-amd64.iso`.
+Boot the foundation image in a new VM. After Plasma starts, build the branded system with `./scripts/build-iso preview`. Each successful run prints the path to its own ISO and publishes the checksum, package manifest and build evidence together. The release filename for 0.1.2 is `kernova-os-0.1.2-amd64.iso`.
 
 | Task | Entry point |
 | --- | --- |

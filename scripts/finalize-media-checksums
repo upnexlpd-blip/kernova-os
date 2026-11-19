@@ -1,0 +1,60 @@
+#!/usr/bin/python3
+"""Record final hashes for files that xorriso modifies while mastering the bootable image."""
+import hashlib
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+
+
+def extract(iso, name, tmp):
+    path = tmp / Path(name).name
+    subprocess.run(["xorriso", "-abort_on", "FAILURE", "-osirrox", "on", "-indev", str(iso),
+                    "-extract", "/" + name, str(path), "-end"], check=True, stdout=subprocess.DEVNULL)
+    return path.read_bytes()
+
+
+def main(iso):
+    if not os.access(iso, os.W_OK):
+        # live-build can return a root-owned image to the ordinary build account.
+        with tempfile.TemporaryDirectory(dir=iso.parent) as stage:
+            writable = Path(stage) / iso.name
+            shutil.copyfile(iso, writable)
+            main(writable)
+            writable.replace(iso)
+        return
+    with tempfile.TemporaryDirectory() as tmp, iso.open("r+b") as image:
+        tmp = Path(tmp)
+        mastered = {name: extract(iso, name, tmp) for name in (".disk/mkisofs", "boot/grub/grub_eltorito")}
+        for algorithm in ("sha256", "md5"):
+            name = algorithm + "sum.txt"
+            original = extract(iso, name, tmp)
+            updated = original
+            for entry, data in mastered.items():
+                checksum = hashlib.new(algorithm, data).hexdigest().encode("ascii")
+                pattern = rb"(?m)^[0-9a-f]{" + str(len(checksum)).encode() + rb"}(?=  \./" + re.escape(entry.encode()) + rb"$)"
+                updated, count = re.subn(pattern, checksum, updated)
+                if count > 1 or (entry == "boot/grub/grub_eltorito" and count != 1):
+                    raise ValueError(f"Unexpected checksum list entry for {entry}")
+            if updated == original:
+                continue
+            report = subprocess.check_output(["xorriso", "-indev", str(iso), "-find", "/" + name,
+                                               "-exec", "report_lba", "--", "-end"], text=True)
+            extents = re.findall(r"File data lba:\s*\d+\s*,\s*(\d+)\s*,\s*\d+\s*,\s*(\d+)\s*,", report)
+            if len(extents) != 1 or int(extents[0][1]) != len(original) or len(updated) != len(original):
+                raise ValueError(f"Unexpected ISO extent for {name}")
+            offset = int(extents[0][0]) * 2048
+            image.seek(offset)
+            if image.read(len(original)) != original:
+                raise ValueError(f"Checksum file {name} differs from its indicated ISO extent")
+            image.seek(offset)
+            image.write(updated)
+            image.flush()
+            print(f"Recorded the mastered boot-file hashes in {name}")
+
+
+if __name__ == "__main__":
+    main(Path(sys.argv[1]).resolve(strict=True))

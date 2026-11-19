@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Build a signed, static APT snapshot from one KERNOVA package build."""
+import argparse
+import os
+from pathlib import Path
+import re
+import subprocess
+import tempfile
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SUITE = "kernova-trixie"
+
+
+def build(packages, destination, fingerprint):
+    if not re.fullmatch(r"(?:[A-F0-9]{40}|[A-F0-9]{64})", fingerprint):
+        raise ValueError("Use the full primary fingerprint of the release signing key.")
+    if destination.exists():
+        raise ValueError("Choose a new snapshot directory.")
+    expected = set((ROOT / "config/profiles/preview.list.chroot").read_text().split())
+    files = sorted(packages.glob("*.deb"))
+    found = set()
+    versions = set()
+    for deb in files:
+        name, version, arch = subprocess.check_output(
+            ["dpkg-deb", "-W", "--showformat=${Package} ${Version} ${Architecture}", deb], text=True).split()
+        if name not in expected or name in found or arch != "all":
+            raise ValueError(f"Unexpected package or architecture: {deb.name}")
+        found.add(name)
+        versions.add(version)
+    if found != expected or len(versions) != 1:
+        raise ValueError("Supply all four KERNOVA packages from one version.")
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=destination.parent) as temporary:
+        stage = Path(temporary)
+        public = stage / "public"
+        conf = stage / "conf"
+        conf.mkdir()
+        (conf / "distributions").write_text(
+            f"Origin: KERNOVA\nLabel: KERNOVA\nSuite: {SUITE}\nCodename: {SUITE}\n"
+            "Architectures: amd64\nComponents: main\nValidFor: 14d\n"
+            f"NotAutomatic: yes\nButAutomaticUpgrades: yes\nSignWith: {fingerprint}\n", encoding="ascii")
+        command = ["reprepro", "--basedir", stage, "--outdir", public]
+        for deb in files:
+            subprocess.run([*command, "--component", "main", "--export=never", "includedeb", SUITE, deb], check=True)
+        subprocess.run([*command, "check", SUITE], check=True)
+        subprocess.run([*command, "export", SUITE], check=True)
+        gpg = ["gpg", "--batch", "--export-options", "export-minimal"]
+        keyring = stage / "signer.gpg"
+        keyring.write_bytes(subprocess.check_output([*gpg, "--export", fingerprint]))
+        records = subprocess.check_output(["gpg", "--batch", "--with-colons", "--show-keys", keyring], text=True)
+        primary = next((row.split(":")[9] for row in records.splitlines() if row.startswith("fpr:")), "")
+        if primary != fingerprint:
+            raise ValueError("Use the primary key fingerprint, including when signing with its subkey.")
+        (public / "kernova-archive-key.asc").write_bytes(
+            subprocess.check_output([*gpg, "--armor", "--export", fingerprint]))
+        subprocess.run(["gpgv", "--keyring", keyring, public / "dists" / SUITE / "InRelease"], check=True)
+        public.rename(destination)
+    print(f"Verified KERNOVA {versions.pop()} snapshot at {destination}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("packages", type=Path)
+    parser.add_argument("destination", type=Path)
+    parser.add_argument("fingerprint")
+    args = parser.parse_args()
+    if hasattr(os, "geteuid") and os.geteuid() == 0:
+        parser.exit(1, "Run as an ordinary release operator.\n")
+    try:
+        build(args.packages.resolve(), args.destination.resolve(), args.fingerprint.upper())
+    except (ValueError, OSError, subprocess.CalledProcessError) as error:
+        parser.exit(1, f"{error}\n")
+
+
+if __name__ == "__main__":
+    main()

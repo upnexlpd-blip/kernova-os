@@ -1,0 +1,49 @@
+#!/usr/bin/python3 -I
+"""Fixed polkit entry point installed in the live overlay by the read-only medium."""
+
+import os
+from pathlib import Path
+import re
+import stat
+import sys
+
+
+def launch_environment(display, authority):
+    if not re.fullmatch(r":[0-9]+(?:\.[0-9]+)?", display):
+        raise ValueError("A local graphical session is required.")
+    return {"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "HOME": "/root", "USER": "root",
+            "LOGNAME": "root", "LANG": "C.UTF-8", "QT_QPA_PLATFORM": "xcb",
+            "DISPLAY": display, "XAUTHORITY": authority}
+
+
+def main():
+    import pwd
+
+    if (len(sys.argv) != 1 or os.geteuid() != 0
+            or os.environ.get("PKEXEC_UID") != str(pwd.getpwnam("kernova-live").pw_uid)
+            or "boot=live" not in Path("/proc/cmdline").read_text().split()
+            or not os.path.ismount("/run/live/medium")
+            or not Path("/run/live/medium/live/filesystem.squashfs").is_file()):
+        sys.exit("Start the installer from the KERNOVA live desktop.")
+    account = pwd.getpwnam("kernova-live")
+    authority = Path(os.environ.get("XAUTHORITY") or (Path(account.pw_dir) / ".Xauthority"))
+    if not authority.is_absolute():
+        sys.exit("The live graphical session has no usable X11 authorization cookie.")
+    # Pin the named inode before checking ownership. Xlib gets a descriptor to
+    # a regular file owned by the invoking user, even if the pathname changes.
+    cookie = os.open(authority, os.O_PATH | os.O_NOFOLLOW)
+    info = os.fstat(cookie)
+    if not stat.S_ISREG(info.st_mode) or info.st_uid != account.pw_uid:
+        sys.exit("The live graphical session has no usable X11 authorization cookie.")
+    os.set_inheritable(cookie, True)
+    env = launch_environment(os.environ.get("DISPLAY", ""), f"/proc/self/fd/{cookie}")
+    os.chdir("/root")
+    # Debian's launcher moves /etc/fstab out of the way for KPMcore. Mask it
+    # only inside this installer's private mount namespace, including on failure.
+    os.execve("/usr/bin/flock", ["flock", "--nonblock", "/run/kernova-live-install.lock",
+              "/usr/bin/unshare", "--mount", "--propagation", "private", "--",
+              "/bin/sh", "-ec", "/usr/bin/mount --bind /dev/null /etc/fstab\nexec /usr/bin/calamares"], env)
+
+
+if __name__ == "__main__":
+    main()

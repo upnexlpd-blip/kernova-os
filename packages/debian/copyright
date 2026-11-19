@@ -5,6 +5,33 @@ Source: Local KERNOVA OS source tree
 Files: *
 Copyright: 2026 KERNOVA OS contributors
 License: Expat
+
+Files: branding/KernovaFirstLight/contents/images/3840x2160.jpg
+Copyright: 2026 KERNOVA OS contributors (brand artwork)
+License: public-domain and Expat
+Comment: Photograph: First Light, Mary Lewandowski / U.S. National Park Service.
+ https://npgallery.nps.gov/AssetDetail/2b8a099d-ca5f-4e3a-bd6e-cf13a5e2cd93
+ KERNOVA OS contributors cropped the photograph and added the logo.
+
+Files: branding/KernovaOlympicCoast/contents/images/3840x2160.jpg
+Copyright: 2026 KERNOVA OS contributors (brand artwork)
+License: public-domain and Expat
+Comment: Photograph: Olympic Coast Sea Stacks, U.S. National Park Service.
+ https://npgallery.nps.gov/AssetDetail/f24a5a69-155d-4519-3e4d-8113c1a7b030
+ KERNOVA OS contributors cropped the photograph and added the logo.
+
+Files: branding/KernovaChollaTrail/contents/images/3840x2160.jpg
+Copyright: 2026 KERNOVA OS contributors (brand artwork)
+License: public-domain and Expat
+Comment: Photograph: Trail at the Cholla Cactus Garden, Hannah Schwalbe / U.S. National Park Service.
+ https://npgallery.nps.gov/AssetDetail/aa2b4feb-4592-4fba-9be5-b2319dcadbf7
+ KERNOVA OS contributors cropped the photograph and added the logo.
+
+License: public-domain
+ The U.S. National Park Service lists each source photograph as public domain
+ with full granting rights. The Expat license applies to the brand artwork.
+
+License: Expat
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights

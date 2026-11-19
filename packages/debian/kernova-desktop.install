@@ -1,0 +1,8 @@
+apps/integration/kernova-get-apps usr/bin
+apps/integration/kernova-update-source usr/bin
+apps/integration/kernova-get-apps.desktop usr/share/applications
+apps/integration/kernova-app-catalog.sh etc/xdg/plasma-workspace/env
+defaults/discoverrc etc/skel/.config
+defaults/15kernova-refresh etc/apt/apt.conf.d
+defaults/flathub.flatpakrepo usr/share/kernova
+defaults/kernova.sources etc/apt/sources.list.d

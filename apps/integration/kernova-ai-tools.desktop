@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=KERNOVA AI Tools
+Name[mk]=KERNOVA Алатки за ВИ
+Comment=Install Codex, Claude Code, Cursor and local AI models
+Comment[mk]=Инсталација на Codex, Claude Code, Cursor и локални модели за ВИ
+Exec=/usr/bin/python3 -B /usr/share/kernova/welcome/ai_tools.py
+TryExec=/usr/bin/python3
+Icon=kernova-logo
+Terminal=false
+Categories=Development;
+Keywords=AI;Codex;Claude;Cursor;Alpaca;

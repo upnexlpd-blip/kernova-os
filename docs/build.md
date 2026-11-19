@@ -2,7 +2,9 @@
 
 ## Windows host
 
-Windows can edit, test portable source, and transfer this project. The privileged stages need a Linux kernel with private mounts, device creation and chroot. This workspace is on NTFS. The inspected host has 12 logical CPUs, about 32 GiB RAM, about 46 GiB free on C: and about 675 GiB free on D:. CPU virtualization extensions exist, but Windows reports them disabled in firmware. No working WSL installation or VM runner was found. The user chose a handoff in this workspace.
+This workspace now has a dedicated Debian 13 console VM on D: and a portable QEMU for Windows. For access to that existing builder and its progress log, use the [local guide in Macedonian](windows-builder-mk.md). The following setup procedure also applies to a fresh machine.
+
+Windows can edit, test portable source, and transfer this project. The privileged stages need a Linux kernel with private mounts, device creation and chroot. This workspace is on NTFS. The host has 12 logical CPUs and about 32 GiB RAM. At the initial check it had about 46 GiB free on C: and 675 GiB free on D:. Windows reported that hardware virtualization was disabled in firmware. The local QEMU builder uses software emulation and its own ext4 filesystem.
 
 Use a Debian 13 amd64 machine or VM you control. For a new VM in your chosen Windows hypervisor, create a new virtual machine with a new, dynamically allocated disk and NAT networking. Start with 4 vCPUs, 8 GiB RAM and 80 GB for one build. Allow more storage (for example 140 GB) if retaining foundation and preview work trees and several installed test guests. Allocate space on a volume with room for the disk to grow. These are development allocations. A hardware-accelerated hypervisor needs virtualization support enabled by the owner. A software-emulated x86 VM can run without it, at a considerable speed cost. An existing Debian machine is another route.
 

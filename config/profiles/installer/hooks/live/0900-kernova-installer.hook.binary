@@ -1,0 +1,16 @@
+#!/usr/bin/python3
+"""Keep the on-medium live-config hook URI intact in the generated GRUB menu."""
+from pathlib import Path
+
+
+menu = Path("boot/grub/grub.cfg")
+correct = "live-config.hooks=file:///run/live/medium/kernova-installer/activate"
+# Debian live-build's binary_grub_cfg collapses repeated slashes in all entries.
+contents = menu.read_text()
+fixed = contents.replace(correct.replace("file:///", "file://"), correct)
+entries = [line.split() for line in fixed.splitlines()]
+live = [words for words in entries if len(words) > 1 and words[0] == "linux" and words[1].startswith("/live/vmlinuz")]
+if not live or any(correct not in words for words in live):
+    raise SystemExit("Missing installer hook in a live Linux command in the GRUB menu")
+if fixed != contents:
+    menu.write_text(fixed)

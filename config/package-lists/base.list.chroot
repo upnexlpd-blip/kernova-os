@@ -30,6 +30,8 @@ powerdevil
 udisks2
 fonts-noto-core
 dolphin
+# Plasma uses the KIO thumbnail worker in the wallpaper picker.
+kio-extras
 konsole
 network-manager
 wpasupplicant
@@ -39,5 +41,13 @@ bluedevil
 pipewire-audio
 plasma-pa
 libgl1-mesa-dri
+amd64-microcode
+intel-microcode
+firmware-amd-graphics
+firmware-intel-graphics
+firmware-nvidia-graphics
 firmware-iwlwifi
 firmware-realtek
+firmware-atheros
+firmware-brcm80211
+firmware-mediatek

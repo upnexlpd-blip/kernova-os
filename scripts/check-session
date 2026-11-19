@@ -9,6 +9,8 @@ import pwd
 import re
 import subprocess
 import sys
+from urllib.error import URLError
+from urllib.request import urlopen
 
 EFI = Path("/sys/firmware/efi")
 LIVE_USER = "kernova-live"
@@ -50,6 +52,13 @@ def main():
     boot_live = "boot=live" in Path("/proc/cmdline").read_text().split()
     check("boot mode", boot_live == is_live, "live" if boot_live else "installed")
     check("account", (user == LIVE_USER) == is_live, "temporary" if user == LIVE_USER else "personal")
+    for path in ("/usr/libexec/kernova-live-install", "/usr/share/polkit-1/actions/org.kernova.live.install.policy",
+                 "/etc/polkit-1/rules.d/49-kernova-live-install.rules",
+                 "/usr/bin/calamares", "/usr/share/applications/calamares-install-debian.desktop"):
+        # Debian restricts ordinary users from listing /etc/polkit-1/rules.d.
+        if os.access(Path(path).parent, os.X_OK) or not path.startswith("/etc/polkit"):
+            present = Path(path).is_file()
+            check(path, present == is_live, "present" if present else "absent")
     if not is_live:
         try:
             pwd.getpwnam(LIVE_USER)
@@ -75,12 +84,33 @@ def main():
     for service in ("sddm", "NetworkManager"):
         code, out = run(["systemctl", "is-active", service])
         check(service, code == 0 and out == "active", out)
+    code, devices = run(["nmcli", "-t", "-f", "TYPE,STATE", "device", "status"])
+    check("NetworkManager devices", code == 0, devices)
+    if code == 0:
+        for medium in ("ethernet", "wifi"):
+            states = [row.partition(":")[2] for row in devices.splitlines()
+                      if row.partition(":")[0] == medium]
+            # An unplugged cable or absent access point can be a working device.
+            checks[medium] = {"result": "Detected" if states else "Not exposed",
+                              "observed": states}
+    radios = list(Path("/sys/class/bluetooth").glob("hci[0-9]*"))
+    if radios:
+        code, out = run(["systemctl", "is-active", "bluetooth"])
+        check("Bluetooth service", code == 0 and out == "active", out)
+    checks["Bluetooth controllers"] = {"result": "Detected" if radios else "Not exposed",
+                                       "observed": len(radios)}
     code, out = run(["systemctl", "--failed", "--no-legend", "--no-pager"])
     check("system services", code == 0 and not out, out or "No failed units")
     code, out = run(["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"])
     check("PipeWire audio sink", code == 0, out)
     code, _ = run(["getent", "ahosts", "deb.debian.org"])
     check("archive DNS", code == 0, "resolved" if code == 0 else "lookup failed")
+    try:
+        with urlopen("https://deb.debian.org/debian/dists/trixie/InRelease", timeout=12) as response:
+            signed = response.readline(128).strip() == b"-----BEGIN PGP SIGNED MESSAGE-----"
+            check("archive HTTPS", response.status == 200 and signed, response.status)
+    except (OSError, URLError) as error:
+        check("archive HTTPS", False, str(error))
     for package in ("kernova-branding", "kernova-default-settings", "kernova-welcome", "kernova-desktop"):
         code, version = run(["dpkg-query", "-W", "-f=${db:Status-Status} ${Version}", package])
         check(package, code == 0 and version == f"installed {info['version']}", version)

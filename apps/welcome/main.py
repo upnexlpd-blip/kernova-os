@@ -6,15 +6,15 @@ import os
 from pathlib import Path
 import sys
 
-from PySide6.QtCore import QLocale, QObject, QProcess, QRunnable, QSettings, Qt, QThreadPool, Signal, Slot
-from PySide6.QtGui import QFont, QIcon
+from PySide6.QtCore import QLocale, QObject, QProcess, QRunnable, QSettings, Qt, QThreadPool, QUrl, Signal, Slot
+from PySide6.QtGui import QDesktopServices, QFont, QIcon
 from PySide6.QtWidgets import (
-    QApplication, QCheckBox, QDialog, QFrame, QHBoxLayout, QLabel,
+    QApplication, QCheckBox, QComboBox, QDialog, QFrame, QHBoxLayout, QLabel,
     QListWidget, QMessageBox, QPushButton, QScrollArea, QStackedWidget,
     QTextBrowser, QVBoxLayout, QWidget,
 )
 
-from system_info import ACTIONS, collect_system_info, language_for, string_mapping
+from system_info import ACTIONS, SETTINGS_MODULES, collect_system_info, language_for, string_mapping
 
 
 LOCALES_DIR = Path(__file__).resolve().parent / "locales"
@@ -25,6 +25,19 @@ ICON_FILE = Path("/usr/share/icons/hicolor/scalable/apps/kernova-logo.svg")
 PAGES = ("start", "personalize", "apps", "system", "help", "credits")
 SYSTEM_FIELDS = ("base", "session", "kernel", "architecture", "cpu", "memory", "graphics")
 AUTOSTART_KEY = "showAtLogin"
+DEBIAN_DOWNLOADS = "https://packages.debian.org/trixie"
+DRIVER_DOWNLOADS = {
+    "cpu": {
+        "amd_microcode": f"{DEBIAN_DOWNLOADS}/amd64/amd64-microcode/download",
+        "intel_microcode": f"{DEBIAN_DOWNLOADS}/amd64/intel-microcode/download",
+    },
+    "graphics": {
+        "amd_firmware": f"{DEBIAN_DOWNLOADS}/all/firmware-amd-graphics/download",
+        "intel_firmware": f"{DEBIAN_DOWNLOADS}/all/firmware-intel-graphics/download",
+        "nvidia_firmware": f"{DEBIAN_DOWNLOADS}/all/firmware-nvidia-graphics/download",
+        "nvidia_guide": "https://wiki.debian.org/NvidiaGraphicsDrivers/",
+    },
+}
 
 
 class Messages:
@@ -69,7 +82,8 @@ class Probe(QRunnable):
 
 
 class WelcomeWindow(QWidget):
-    def __init__(self, settings: QSettings, messages: Messages, product: dict[str, str]):
+    def __init__(self, settings: QSettings, messages: Messages, product: dict[str, str],
+                 initial_page: str = "start"):
         super().__init__()
         self.settings = settings
         self.t = messages
@@ -137,7 +151,7 @@ class WelcomeWindow(QWidget):
             pages.addWidget(scroll)
 
         navigation.currentRowChanged.connect(pages.setCurrentIndex)
-        navigation.setCurrentRow(0)
+        navigation.setCurrentRow(PAGES.index(initial_page))
         navigation.setFocus()
 
         separator = QFrame()
@@ -197,30 +211,108 @@ class WelcomeWindow(QWidget):
         self.add_action(layout, "network")
 
     def build_personalize(self, layout: QVBoxLayout):
-        layout.addWidget(label(self.t("personalize_text")))
         self.add_action(layout, "settings")
+        layout.addWidget(label(self.t("personalize_text")))
+        category = QComboBox()
+        category.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        category.setMinimumContentsLength(12)
+        category_label = label(self.t("settings_category"))
+        category_label.setBuddy(category)
+        category.setAccessibleName(category_label.text())
+        for key in SETTINGS_MODULES:
+            category.addItem(self.t(key), key)
+        layout.addWidget(category_label)
+        layout.addWidget(category)
+        open_category = QPushButton(self.t("settings_open"))
+        open_category.clicked.connect(lambda: self.launch(category.currentData()))
+        layout.addWidget(open_category, alignment=Qt.AlignmentFlag.AlignLeft)
+        unavailable = label("")
+        layout.addWidget(unavailable)
+
+        def update_selection():
+            missing = ACTIONS[category.currentData()].missing_package()
+            reason = self.t("requires", package=missing) if missing else ""
+            open_category.setEnabled(missing is None)
+            open_category.setToolTip(reason)
+            category.setAccessibleDescription(reason)
+            unavailable.setText(reason)
+            unavailable.setVisible(missing is not None)
+
+        category.currentIndexChanged.connect(update_selection)
+        update_selection()
 
     def build_apps(self, layout: QVBoxLayout):
+        self.add_action(layout, "software")
         layout.addWidget(label(self.t("apps_text")))
-        for key in ("browser", "files", "editor", "terminal", "software"):
+        for key in ("chrome", "viber", "telegram", "whatsapp"):
+            self.add_action(layout, key)
+        layout.addWidget(label(self.t("whatsapp_note")))
+        layout.addWidget(heading(self.t("installed_apps"), 1.15))
+        for key in ("browser", "files", "editor", "terminal"):
             self.add_action(layout, key)
 
+    def add_system_field(self, layout: QVBoxLayout, key: str) -> QLabel:
+        name = self.t(key)
+        value = label("…")
+        value.setAccessibleName(name)
+        value.setAccessibleDescription(self.t("loading"))
+        value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse
+                                      | Qt.TextInteractionFlag.TextSelectableByKeyboard)
+        field = QVBoxLayout()
+        field.setSpacing(2)
+        field.addWidget(heading(name, 1))
+        field.addWidget(value)
+        layout.addLayout(field)
+        return value
+
     def build_system(self, layout: QVBoxLayout):
-        self.info = {}
-        for key in SYSTEM_FIELDS:
-            value = label("…")
-            value.setAccessibleDescription(self.t("loading"))
-            value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse
-                                          | Qt.TextInteractionFlag.TextSelectableByKeyboard)
-            name = self.t(key)
-            value.setAccessibleName(name)
-            field = QVBoxLayout()
-            field.setSpacing(2)
-            field.addWidget(heading(name, 1))
-            field.addWidget(value)
-            layout.addLayout(field)
-            self.info[key] = value
+        self.drivers_dialog = self.build_drivers_dialog()
+        drivers = QPushButton(self.t("drivers"))
+        drivers.clicked.connect(self.show_drivers)
+        layout.addWidget(drivers, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.info = {key: self.add_system_field(layout, key) for key in SYSTEM_FIELDS}
         self.add_action(layout, "info")
+
+    def build_drivers_dialog(self) -> QDialog:
+        dialog = QDialog(self)
+        dialog.setWindowTitle(self.t("drivers"))
+        layout = QVBoxLayout(dialog)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setAccessibleName(self.t("drivers"))
+        panel = QWidget()
+        content = QVBoxLayout(panel)
+        content.setSpacing(8)
+        content.addWidget(heading(self.t("drivers"), 1.35))
+        self.driver_info = {key: self.add_system_field(content, key) for key in DRIVER_DOWNLOADS}
+        content.addWidget(label(self.t("drivers_intro")))
+        content.addWidget(label(self.t("drivers_vm")))
+        self.add_action(content, "updates")
+        content.addWidget(heading(self.t("drivers_downloads"), 1.15))
+        content.addWidget(label(self.t("drivers_download_help")))
+        for field, links in DRIVER_DOWNLOADS.items():
+            content.addWidget(heading(self.t(f"{field}_downloads"), 1))
+            for key, url in links.items():
+                button = QPushButton(self.t(key))
+                button.clicked.connect(lambda checked=False, link=url: self.open_driver_link(link))
+                content.addWidget(button, alignment=Qt.AlignmentFlag.AlignLeft)
+        content.addStretch()
+        scroll.setWidget(panel)
+        layout.addWidget(scroll)
+        close = QPushButton(self.t("close"))
+        close.clicked.connect(dialog.accept)
+        layout.addWidget(close, alignment=Qt.AlignmentFlag.AlignRight)
+        return dialog
+
+    @Slot()
+    def show_drivers(self):
+        self.drivers_dialog.resize(min(660, self.width() - 36), self.height() - 30)
+        self.drivers_dialog.open()
+
+    def open_driver_link(self, url: str):
+        if not QDesktopServices.openUrl(QUrl(url)):
+            QMessageBox.warning(self.drivers_dialog, self.t("drivers"), self.t("driver_link_failed"))
 
     @Slot(dict)
     def apply_info(self, results: dict):
@@ -236,6 +328,9 @@ class WelcomeWindow(QWidget):
                 value = self.t("gib", size=size)
             widget.setAccessibleDescription("")
             widget.setText(str(value) if value else self.t("unavailable"))
+            if key in self.driver_info:
+                self.driver_info[key].setAccessibleDescription("")
+                self.driver_info[key].setText(widget.text())
 
     def build_help(self, layout: QVBoxLayout):
         layout.addWidget(label(self.t("help_text")))
@@ -279,7 +374,9 @@ class WelcomeWindow(QWidget):
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--autostart", action="store_true")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--autostart", action="store_true")
+    modes.add_argument("--drivers", action="store_true", help="open CPU and graphics driver downloads")
     args = parser.parse_args()
     system_locale = QLocale.system()
     messages = Messages(next(iter(system_locale.uiLanguages()), system_locale.name()))
@@ -297,10 +394,13 @@ def main() -> int:
     app.setApplicationDisplayName(messages("title"))
     app.setDesktopFileName("kernova-welcome")
     app.setWindowIcon(QIcon.fromTheme(ICON_NAME, QIcon(str(ICON_FILE))))
-    window = WelcomeWindow(settings, messages, string_mapping(PRODUCT_FILE))
+    window = WelcomeWindow(settings, messages, string_mapping(PRODUCT_FILE),
+                           initial_page="system" if args.drivers else "start")
     desktop = app.primaryScreen().availableGeometry()
     window.resize(min(900, desktop.width() - 36), min(570, desktop.height() - 52))
     window.show()
+    if args.drivers:
+        window.show_drivers()
     return app.exec()
 
 

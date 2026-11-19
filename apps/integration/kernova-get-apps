@@ -1,0 +1,65 @@
+#!/usr/bin/python3
+"""Open the KERNOVA app catalog in KDE Discover."""
+import argparse
+import os
+from pathlib import Path
+import sys
+
+
+APPLICATIONS = {
+    "chrome": "com.google.Chrome",
+    "viber": "com.viber.Viber",
+    "telegram": "org.telegram.desktop",
+    "whatsapp": "com.rtosta.zapzap",
+    "alpaca": "com.jeffser.Alpaca",
+}
+
+
+def initialize_catalog(descriptor=Path("/usr/share/kernova/flathub.flatpakrepo")):
+    import fcntl
+
+    state = Path(os.environ.get("XDG_STATE_HOME") or Path.home() / ".local/state") / "kernova"
+    marker = state / "flathub-initialized"
+    if marker.exists():
+        return
+    state.mkdir(mode=0o700, parents=True, exist_ok=True)
+    with (state / "catalog.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if marker.exists():
+            return
+
+        import gi
+        gi.require_version("Flatpak", "1.0")
+        from gi.repository import Flatpak, GLib
+
+        installation = Flatpak.Installation.new_user(None)
+        if not any(remote.get_name() == "flathub" for remote in installation.list_remotes(None)):
+            data = descriptor.read_bytes()
+            remote = Flatpak.Remote.new_from_file("flathub", GLib.Bytes.new(data))
+            remote.set_gpg_verify(True)
+            installation.add_remote(remote, True, None)
+        # Record successful setup separately so removing the source is a lasting choice.
+        marker.touch()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--initialize", action="store_true", help="set up the local catalog source and exit")
+    parser.add_argument("app", nargs="?", choices=APPLICATIONS)
+    args = parser.parse_args()
+    try:
+        initialize_catalog()
+    except Exception as error:
+        # Other installed Discover sources remain available if initialization fails.
+        print(f"KERNOVA could not initialize Flathub: {error}", file=sys.stderr)
+        if args.initialize:
+            return 1
+    if not args.initialize:
+        discover = "/usr/bin/plasma-discover"
+        arguments = ["--application", "appstream:" + APPLICATIONS[args.app]] if args.app else []
+        os.execv(discover, [discover, *arguments])
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

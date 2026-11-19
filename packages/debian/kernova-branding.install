@@ -3,6 +3,12 @@ branding/kernova-logo.svg usr/share/icons/hicolor/scalable/apps
 branding/KernovaNight.colors usr/share/color-schemes
 branding/Parallax/metadata.json usr/share/wallpapers/Parallax
 generated/Parallax/contents/images/3840x2160.png usr/share/wallpapers/Parallax/contents/images
+branding/KernovaFirstLight/metadata.json usr/share/wallpapers/KernovaFirstLight
+branding/KernovaFirstLight/contents/images/3840x2160.jpg usr/share/wallpapers/KernovaFirstLight/contents/images
+branding/KernovaOlympicCoast/metadata.json usr/share/wallpapers/KernovaOlympicCoast
+branding/KernovaOlympicCoast/contents/images/3840x2160.jpg usr/share/wallpapers/KernovaOlympicCoast/contents/images
+branding/KernovaChollaTrail/metadata.json usr/share/wallpapers/KernovaChollaTrail
+branding/KernovaChollaTrail/contents/images/3840x2160.jpg usr/share/wallpapers/KernovaChollaTrail/contents/images
 branding/org.kernova.night/metadata.json usr/share/plasma/look-and-feel/org.kernova.night
 branding/org.kernova.night/contents/defaults usr/share/plasma/look-and-feel/org.kernova.night/contents
 generated/org.kernova.night/contents/previews/preview.png usr/share/plasma/look-and-feel/org.kernova.night/contents/previews

@@ -39,7 +39,10 @@ Depends: ${misc:Depends},
  kscreen, kde-config-screenlocker, libgl1-mesa-dri,
  polkit-kde-agent-1, xdg-desktop-portal-kde, xdg-user-dirs, xdg-utils,
  powerdevil, upower, udisks2, network-manager, wpasupplicant, plasma-nm, bluez, bluedevil,
- pipewire-audio, plasma-pa, plasma-discover, packagekit, pciutils,
+ pipewire-audio, plasma-pa, plasma-discover, plasma-discover-backend-flatpak, flatpak,
+ python3, python3-gi, gir1.2-flatpak-1.0, packagekit, pciutils, curl, gpg,
+ kde-config-flatpak, baloo6, kio-extras,
+ kaccounts-integration, kaccounts-providers, signon-ui-qt, signon-ui-service,
  firefox-esr, dolphin, konsole, kate, ark, okular, gwenview,
  kde-spectacle, plasma-systemmonitor, vlc
 Recommends: kernova-branding (= ${binary:Version}), kernova-default-settings (= ${binary:Version}), kernova-welcome (= ${binary:Version})

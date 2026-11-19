@@ -1,0 +1,40 @@
+[Desktop Entry]
+Type=Application
+Name=App Download
+Name[mk]=Преземање апликации
+GenericName=Software Center
+GenericName[mk]=Центар за софтвер
+Comment=Find and install applications in KDE Discover
+Comment[mk]=Најдете и инсталирајте апликации преку KDE Discover
+Exec=/usr/bin/kernova-get-apps
+Icon=plasmadiscover
+Terminal=false
+Categories=Qt;KDE;System;
+Keywords=Discover;Apps;Software;Download;Store;Flathub;Chrome;Viber;Telegram;WhatsApp;ZapZap;
+Actions=Chrome;Viber;Telegram;WhatsApp;Alpaca;GoogleDownload;
+
+[Desktop Action Chrome]
+Name=Google Chrome
+Exec=/usr/bin/kernova-get-apps chrome
+
+[Desktop Action Viber]
+Name=Viber
+Exec=/usr/bin/kernova-get-apps viber
+
+[Desktop Action Telegram]
+Name=Telegram
+Exec=/usr/bin/kernova-get-apps telegram
+
+[Desktop Action WhatsApp]
+Name=ZapZap for WhatsApp Web (third-party)
+Name[mk]=ZapZap за WhatsApp Web (од независен развивач)
+Exec=/usr/bin/kernova-get-apps whatsapp
+
+[Desktop Action Alpaca]
+Name=Alpaca AI
+Exec=/usr/bin/kernova-get-apps alpaca
+
+[Desktop Action GoogleDownload]
+Name=Download Chrome from Google in Firefox
+Name[mk]=Преземете го Chrome од Google преку Firefox
+Exec=/usr/bin/firefox-esr https://www.google.com/chrome/

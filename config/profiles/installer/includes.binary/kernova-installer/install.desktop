@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=Install KERNOVA OS
+Name[mk]=Инсталирај KERNOVA OS
+GenericName=System Installer
+GenericName[mk]=Инсталатор на системот
+Comment=Choose a disk and create your KERNOVA account
+Comment[mk]=Изберете диск и создајте сметка за KERNOVA
+Exec=/usr/bin/pkexec /usr/libexec/kernova-live-install
+TryExec=/usr/libexec/kernova-live-install
+Icon=kernova-logo
+Categories=System;Qt;
+Keywords=install;Calamares;disk;partition;
+Terminal=false
+StartupWMClass=calamares

@@ -1,0 +1,11 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaOlympicCoast",
+    "Name": "KERNOVA · Olympic Coast",
+    "Name[mk]": "KERNOVA · Олимписки брег",
+    "Authors": [{"Name": "U.S. National Park Service"}, {"Name": "KERNOVA OS contributors"}],
+    "License": "Public domain photograph, MIT overlay",
+    "Website": "https://npgallery.nps.gov/AssetDetail/f24a5a69-155d-4519-3e4d-8113c1a7b030"
+  }
+}

@@ -1,0 +1,26 @@
+#!/bin/sh
+# Calamares shellprocess runs this inside the selected, freshly unpacked target.
+set -eu
+work=$(mktemp -d /run/kernova-boot.XXXXXXXX)
+trap 'rm -rf -- "$work"' EXIT
+chmod 0755 "$work"
+mkdir "$work/lists"
+# Debian live-build composes this local package index from authenticated Debian
+# downloads. Trust only the mounted ISO for this invocation. The target's HTTPS
+# sources, trusted keys and package lists stay independent of this temporary index.
+printf '%s\n' 'deb [trusted=yes] file:/run/live/medium trixie main' > "$work/medium.list"
+media_apt() {
+    DEBIAN_FRONTEND=noninteractive apt-get -o "Dir::Etc::sourcelist=$work/medium.list" \
+        -o Dir::Etc::sourceparts=- -o "Dir::State::lists=$work/lists" "$@"
+}
+media_apt update --error-on=any
+if [ -d /sys/firmware/efi ]; then
+    media_apt --no-install-recommends -y install grub-efi grub-efi-amd64-signed shim-signed efibootmgr
+else
+    media_apt --no-install-recommends -y install grub-pc
+fi
+if [ -f /etc/crypttab ] && grep -Eq '^[[:space:]]*[^#[:space:]]' /etc/crypttab; then
+    printf '%s\n' 'UMASK=0077' > /etc/initramfs-tools/conf.d/initramfs-permissions
+fi
+install -d /etc/default/grub.d
+printf '%s\n' 'GRUB_DISABLE_OS_PROBER=false' > /etc/default/grub.d/30-kernova-os-prober.cfg

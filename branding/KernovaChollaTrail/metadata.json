@@ -1,0 +1,11 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaChollaTrail",
+    "Name": "KERNOVA · Cholla Trail",
+    "Name[mk]": "KERNOVA · Патека низ кактуси",
+    "Authors": [{"Name": "Hannah Schwalbe / U.S. National Park Service"}, {"Name": "KERNOVA OS contributors"}],
+    "License": "Public domain photograph, MIT overlay",
+    "Website": "https://npgallery.nps.gov/AssetDetail/aa2b4feb-4592-4fba-9be5-b2319dcadbf7"
+  }
+}

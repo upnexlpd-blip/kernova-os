@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Drivers
+Name[mk]=Драјвери
+Comment=Find Debian firmware and microcode for your graphics card and processor
+Comment[mk]=Најдете фирмвер и микрокод од Debian за графичката картичка и процесорот
+Exec=/usr/bin/kernova-welcome --drivers
+TryExec=/usr/bin/kernova-welcome
+Icon=preferences-system
+Terminal=false
+Categories=System;
+Keywords=driver;firmware;microcode;CPU;GPU;
+Keywords[mk]=драјвер;фирмвер;микрокод;процесор;графичка картичка;CPU;GPU;

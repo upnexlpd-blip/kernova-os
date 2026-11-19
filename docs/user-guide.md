@@ -1,18 +1,26 @@
 # Your KERNOVA desktop
 
-KERNOVA OS 0.1.0 development preview uses KDE Plasma on Debian 13. Open the application launcher with the Meta key. Search for KERNOVA Welcome to return to this guide. Use the checkbox at the bottom of Welcome to choose whether it opens after sign-in.
+KERNOVA OS uses KDE Plasma on Debian 13. Open the application launcher with the Meta key. Search for KERNOVA Welcome to return to this guide. Use the checkbox at the bottom of Welcome to choose whether it opens after sign-in.
 
 ### Trying the live session
 
 Choose **Live system** in the ISO boot menu to try Plasma. Changes in this session use temporary storage. Copy files you want to keep before powering off. The preview configures automatic live login for `kernova-live`. Debian live-config uses the temporary password `live`. The build requests a live account without administrative privileges.
 
-To test installation in the project VM, restart with the same ISO and choose **Start installer** in the boot menu. Check the displayed disk size, name and proposed partition changes before confirming. The project VM has one new 40 GiB disk with serial KERNOVA-TEST. Use a new personal username, choose a password and complete the installer. Shut down and detach the ISO before starting the installed system. The first installation test is still pending.
+On the preview live desktop open **Install KERNOVA OS** to start the wizard. Choose your language, location, keyboard and disk. **Erase disk** removes the contents of the selected disk. **Install alongside** is offered when an existing partition can be shrunk. Use manual partitioning for space already marked unallocated. On **Users**, choose your own username and password. Review the proposed changes, then confirm. The project test VM has a 40 GiB disk with serial KERNOVA-TEST. Detach the ISO before starting the installed guest. The boot menu also offers Debian’s graphical **Start installer**.
 
 ### Personalize and work
 
 Open System Settings to change colors, fonts, wallpaper, screen scale, or shortcuts. Select Breeze in Colors & Themes → Global Theme for a light desktop. Choose the Colors page to change the palette alone. Quick Settings offers an animation speed slider, including Instant. The default Plasma panel provides an application launcher, task manager, notifications, network, volume, clock and session actions.
 
 Use Dolphin for files, Firefox ESR for browsing, Kate for text, Konsole for the terminal, Ark for archives, Okular for PDFs, Gwenview for images, Spectacle for screenshots, System Monitor for processes and VLC for media. These are the full preview's package selections. Internet access is needed to browse remote sites and refresh software indexes.
+
+Search the Plasma menu for **App Download** to open Discover. Choose a Flathub listing and select **Install**. Applications from this source are installed for your account. You can find **Google Chrome**, **Viber**, **Telegram**, and **ZapZap** there. ZapZap is an independent client for WhatsApp Web. In the Live session, downloads and sign-ins use temporary storage. The App Download launcher's context menu also offers Google's own Chrome download page in Firefox.
+
+Search for **Drivers** to see the processor and graphics hardware detected by Linux. The preview includes AMD and Intel CPU microcode, Mesa, and AMD, Intel and NVIDIA graphics firmware. The download buttons open Debian's pages for the selected hardware. On an installed system use **Discover → Updates** to update the packaged kernel, firmware and graphics components. A QEMU guest shows its virtual graphics adapter. To change the desktop background, right-click an empty area of the desktop, open its wallpaper settings and choose one of the KERNOVA photographs.
+
+Open **AI Tools** from the menu for Codex CLI, Claude Code, Cursor or Alpaca. The first two buttons run the publisher's Linux installer in Konsole under your own account. Cursor offers a Debian x64 package. Alpaca opens in Discover and can download local models. Keep large model files on an installed system with enough free disk space.
+
+Open **KERNOVA Welcome → Settings** to find Wi-Fi, Ethernet, Bluetooth, display, sound, power, appearance, applications, notifications, search and online accounts. To test a physical wireless adapter, boot the Live USB on the computer, join a Wi-Fi network and open a website with Ethernet disconnected. For Bluetooth, pair a device and exercise it, such as playing audio on headphones. Internet through the virtual Ethernet adapter in QEMU tests the VM network.
 
 ### Update an installed system
 

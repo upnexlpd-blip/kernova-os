@@ -30,6 +30,8 @@ def main():
             "live-config.username=kernova-live "
             "live-config.user-default-groups=audio,cdrom,dip,netdev,plugdev,video "
             f"live-config.locales={product['locale']}")
+    if Path("config/includes.binary/kernova-installer/activate").is_file():
+        boot += " live-config.hooks=file:///run/live/medium/kernova-installer/activate"
     archive = "https://deb.debian.org/debian"
     security = "https://deb.debian.org/debian-security"
     options = {

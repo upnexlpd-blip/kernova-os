@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+    "https://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>KERNOVA OS</vendor>
+  <action id="org.kernova.live.install">
+    <description>Open the KERNOVA OS installer</description>
+    <message>Opening the KERNOVA OS installer requires an active local live session.</message>
+    <message xml:lang="mk">Инсталерот на KERNOVA OS се отвора од активната локална Live сесија.</message>
+    <icon_name>kernova-logo</icon_name>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>no</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/kernova-live-install</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
+  </action>
+</policyconfig>

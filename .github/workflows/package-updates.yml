@@ -1,0 +1,73 @@
+name: Publish signed KERNOVA packages
+on:
+  push:
+    branches: [main]
+    paths: [product.json, packages/debian/changelog]
+  schedule:
+    - cron: '27 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: kernova-apt-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'upnexlpd-blip/kernova-os' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: upnexlpd-blip/kernova-linux
+          ref: apt
+          path: build/public-channel
+          ssh-key: ${{ secrets.KERNOVA_APT_DEPLOY_KEY }}
+      - name: Build new packages or reuse the published version for renewal
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' product.json)
+          published=$(cat build/public-channel/version 2>/dev/null || echo 0)
+          if dpkg --compare-versions "$version" gt "$published"; then
+            docker run --rm -v "$PWD:/source" -w /source debian:trixie bash -euc '
+              apt-get update
+              apt-get install -y --no-install-recommends build-essential fakeroot debhelper dh-sequence-python3 python3 librsvg2-bin desktop-file-utils
+              setpriv --reuid "$1" --regid "$2" --clear-groups env HOME=/tmp python3 scripts/build-packages artifacts/debs
+            ' bash "$(id -u)" "$(id -g)"
+          elif [[ "$version" == "$published" ]]; then
+            mkdir -p artifacts/debs
+            for pkg in $(cat config/profiles/preview.list.chroot); do
+              mapfile -t files < <(find build/public-channel/pool -name "${pkg}_${version}_all.deb" -type f)
+              [[ ${#files[@]} == 1 ]]
+              cp "${files[0]}" artifacts/debs/
+            done
+          else
+            echo "Refusing a release older than the public channel" >&2
+            exit 1
+          fi
+          sudo apt-get update -qq
+          sudo apt-get install -y reprepro
+      - name: Sign, verify and publish the repository
+        shell: bash
+        env:
+          SIGNING_KEY: ${{ secrets.KERNOVA_SIGNING_SUBKEY }}
+        run: |
+          set -euo pipefail
+          export GNUPGHOME=$(mktemp -d)
+          trap 'gpgconf --kill gpg-agent; rm -rf "$GNUPGHOME"' EXIT
+          printf '%s\n' "$SIGNING_KEY" | gpg --batch --import
+          unset SIGNING_KEY
+          python3 scripts/build-update-repo artifacts/debs artifacts/snapshot 7656A706E55A3F68686DE0FDB9EF5C29B22041E8
+          repo=build/public-channel
+          rsync -a artifacts/snapshot/ "$repo/"
+          install -m644 packages/defaults/kernova.sources "$repo/kernova.sources"
+          jq -r .version product.json > "$repo/version"
+          git -C "$repo" add -- pool dists kernova-archive-key.asc kernova.sources version
+          git -C "$repo" -c user.name='KERNOVA release' -c user.email='maintainers@kernova.invalid' commit -m "Publish signed package indexes for $(cat "$repo/version")"
+          git -C "$repo" push origin HEAD:apt

@@ -1,0 +1,22 @@
+Types: deb
+URIs: https://raw.githubusercontent.com/upnexlpd-blip/kernova-linux/apt
+Suites: kernova-trixie
+Components: main
+Architectures: amd64
+Signed-By:
+ -----BEGIN PGP PUBLIC KEY BLOCK-----
+ .
+ mDMEav7PWBYJKwYBBAHaRw8BAQdAYY1GMN7c+/jSGBu45jYjsdAyPlYaPdST5qWg
+ /EsyaBS0KUtFUk5PVkEgQXJjaGl2ZSA8YXJjaGl2ZUBrZXJub3ZhLmludmFsaWQ+
+ iJAEExYKADgWIQR2VqcG5Vo/aGht4P2571wpsiBB6AUCav7PWAIbAQULCQgHAgYV
+ CgkICwIEFgIDAQIeAQIXgAAKCRC571wpsiBB6B32AQDQLKtFSAp/YCBQLxikHIp/
+ jFDF27iqRQY1+rAa19gLjQEA09ayxjvHaw14XEgEgCKMYWESsH2n6rfaNNhwDPLk
+ 9gC4MwRq/s9YFgkrBgEEAdpHDwEBB0BF1v0flHQeXzHBjmbzS4oFzcbrs5291/pk
+ /AuRgQY4r4j1BBgWCgAmFiEEdlanBuVaP2hobeD9ue9cKbIgQegFAmr+z1gCGwIF
+ CQWjmoAAgQkQue9cKbIgQeh2IAQZFgoAHRYhBGloqWNgDTukkmimkIiq8uGbKSjS
+ BQJq/s9YAAoJEIiq8uGbKSjSVMMA/0gmNGomfW1ep4+ubPm9lxAROaR0v/gm8R3s
+ JKwF/7tCAQDaZ4r/hLgQWx/rp9MI8eTmqp4Tt7+0DMB8XyhRCJIeAmL2AQDNQR9D
+ alGrGY5pC8YZi95ZpPGhgOmxrjxw4oeJOwwnvgD9HX6f3FOKoqxmbZo0y8bnprXB
+ KGXhpmYvKlH+24GjZgA=
+ =Ak9H
+ -----END PGP PUBLIC KEY BLOCK-----

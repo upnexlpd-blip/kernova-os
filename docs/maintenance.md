@@ -38,7 +38,7 @@ dpkg-query -W 'kernova-*'
 
 Use `./scripts/test-packages` in the dedicated builder for a disposable mmdebstrap lifecycle test. It builds a lower test version, installs it into a fresh trixie root, changes user preferences and a conffile, upgrades and exercises removal/purge. It checks package ownership, an unaffected existing home and continued desktop dependencies. It requires working unprivileged user namespaces with UID/GID ranges. If the host blocks this, run it on a suitable dedicated builder, and record the actual failure. Run a separate real desktop reboot test after updating the guest.
 
-Before remote delivery, define a dedicated repository signing key and offline recovery/rotation procedure, create Packages and Release/InRelease with validity periods, publish signed repository metadata over HTTPS and pin the suite. Install a KERNOVA archive keyring at a dedicated path and scope the source stanza with Signed-By. Plan an overlap for old/new keys and a revocation and rollback channel. No publishing or production key creation is part of this local preview.
+For VPS delivery, the release operator builds a signed repository snapshot and the client administrator enrolls the verified public key through a scoped APT source. Discover then reports available system upgrades in Plasma. The preview ships the enrollment tool and daily metadata-refresh setting. Activation requires a real HTTPS repository and an independently verified key fingerprint. [VPS release and enrollment instructions in Macedonian](vps-updates-mk.md)
 
 ## Recovery
 

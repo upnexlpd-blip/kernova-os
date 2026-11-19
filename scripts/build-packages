@@ -42,7 +42,9 @@ def main():
         shutil.copytree(ROOT / "packages" / directory, source / directory)
     shutil.copytree(ROOT / "branding", source / "branding")
     for pattern in ("product.json", "LICENSE", "docs/user-guide.md", "scripts/check-session",
-                    "apps/integration/kernova-welcome", "apps/integration/*.desktop",
+                    "apps/integration/kernova-welcome", "apps/integration/kernova-get-apps",
+                    "apps/integration/kernova-app-catalog.sh", "apps/integration/kernova-update-source",
+                    "apps/integration/*.desktop",
                     "apps/welcome/*.py", "apps/welcome/locales/*.json"):
         matches = sorted(ROOT.glob(pattern))
         if not matches:

@@ -2,6 +2,7 @@
 """Inspect the ISO, embedded filesystem and installer against the release bundle."""
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -119,11 +120,78 @@ def inspect(iso, tmp):
     if profile == "preview":
         vendor = {"kernova-desktop", "kernova-welcome", "kernova-branding", "kernova-default-settings"}
         required.update(vendor)
+        if "packages_sha256" in metadata:
+            filenames = {f"{name}_{product['version']}_all.deb" for name in vendor}
+            require(set(metadata["packages_sha256"]) == filenames, "Incomplete KERNOVA update packages")
+            for filename in sorted(filenames):
+                require(digest(bundle / "packages" / filename) == metadata["packages_sha256"][filename],
+                        f"Update package checksum mismatch: {filename}")
         require(not vendor & removed, "Installer removes a vendor package from the target")
         for name in vendor:
             require(name in packages and packages[name]["Version"] == product["version"],
                     f"Unexpected release version of {name}")
         require(json.loads(cat("usr/share/kernova/product.json")) == product, "Wrong vendor identity")
+        media_inputs = "config/profiles/installer/includes.binary/"
+        inputs = metadata["source_sha256"]
+        desktop_files = {
+            "apps/integration/kernova-get-apps.desktop": "usr/share/applications/kernova-get-apps.desktop",
+            "apps/integration/kernova-drivers.desktop": "usr/share/applications/kernova-drivers.desktop",
+            "apps/integration/kernova-ai-tools.desktop": "usr/share/applications/kernova-ai-tools.desktop",
+            "packages/defaults/flathub.flatpakrepo": "usr/share/kernova/flathub.flatpakrepo",
+            "packages/defaults/15kernova-refresh": "etc/apt/apt.conf.d/15kernova-refresh",
+        }
+        for wall in ("KernovaFirstLight", "KernovaOlympicCoast", "KernovaChollaTrail"):
+            relative = wall + "/contents/images/3840x2160.jpg"
+            desktop_files["branding/" + relative] = "usr/share/wallpapers/" + relative
+        for source_file, installed_file in desktop_files.items():
+            if source_file in inputs:
+                contents = subprocess.check_output(["unsquashfs", "-cat", rootfs, installed_file])
+                require(hashlib.sha256(contents).hexdigest() == inputs[source_file],
+                        f"Installed desktop file differs from release input: {installed_file}")
+        if media_inputs + "kernova-installer/activate" in inputs:
+            if "scripts/stage-installer-dictionary" in inputs:
+                dictionary = json.loads(extract("/kernova-installer/cracklib-dictionary.json").read_text())
+                require(dictionary == metadata.get("installer_dictionary"), "Password dictionary inventory mismatch")
+                require({"cracklib-runtime", "libcrack2", "wamerican"} == dictionary["packages"].keys(),
+                        "Missing Debian password dictionary inputs")
+                for package in dictionary["packages"].values():
+                    require(package.get("version") and re.fullmatch(r"[0-9a-f]{64}", package["sha256"]),
+                            "Incomplete password dictionary package provenance")
+                require(dictionary["files"].keys() == {"cracklib_dict.hwm", "cracklib_dict.pwi", "cracklib_dict.pwd"},
+                        "Incomplete installer password dictionary")
+                for filename, expected_hash in dictionary["files"].items():
+                    require(digest(extract("/kernova-installer/" + filename)) == expected_hash,
+                            f"Password dictionary checksum failed for {filename}")
+            # Older preview bundles retain their original set of validation checks.
+            require("live-config.hooks=file:///run/live/medium/kernova-installer/activate" in menu,
+                    "Live boot menu does not activate the installer on the read-only medium")
+            required.update(("calamares", "calamares-settings-debian", "squashfs-tools", "dosfstools",
+                             "ntfs-3g", "os-prober", "pkexec"))
+            require({"calamares", "calamares-settings-debian"} <= removed,
+                    "Boot-menu installer keeps the graphical installer on disk")
+            require("os-prober" not in removed, "Installed GRUB loses its OS detection tool")
+            for relative in ("kernova-installer/activate", "kernova-installer/install.desktop",
+                             "kernova-installer/install.policy", "kernova-installer/install.rules",
+                             "kernova-installer/kernova-live-install", "kernova-installer/place-desktop-icon",
+                             "kernova-installer/install-boot-packages",
+                             "live/config.conf.d/kernova-installer.conf"):
+                require(digest(extract("/" + relative)) == inputs[media_inputs + relative],
+                        f"Unexpected graphical installer media input {relative}")
+            source = cat("etc/calamares/modules/unpackfs.conf")
+            require('/run/live/medium/live/filesystem.squashfs' in source and 'sourcefs: "squashfs"' in source,
+                    "Calamares must install from the pristine SquashFS")
+            sequence = cat("etc/calamares/settings.conf")
+            for module in ("partition", "users", "summary", "unpackfs", "bootloader-config", "bootloader", "packages"):
+                require(f"\n  - {module}\n" in sequence, f"Missing Calamares module {module}")
+            pool = output("xorriso", "-indev", iso, "-find", "/pool", "-type", "f", "-name", "*.deb",
+                          "-exec", "echo", "--", "-end")
+            for package in ("grub-pc", "grub-pc-bin", "grub-efi", "grub-efi-amd64", "grub-efi-amd64-signed",
+                            "shim-signed", "efibootmgr"):
+                require(re.search(rf"/{package}_[^/\s]+\.deb", pool), f"Missing offline boot package {package}")
+            listing = output("unsquashfs", "-l", rootfs)
+            for live_only in ("usr/libexec/kernova-live-install", "etc/polkit-1/rules.d/49-kernova-live-install.rules",
+                              "usr/share/polkit-1/actions/org.kernova.live.install.policy"):
+                require(f"squashfs-root/{live_only}\n" not in listing, f"Live authorization baked into {live_only}")
         # Validate each dependency group of the project's metapackage against
         # actual dpkg state, including alternatives if the application list changes.
         for group in packages["kernova-desktop"]["Depends"].split(","):

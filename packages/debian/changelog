@@ -1,5 +1,27 @@
+kernova-components (0.1.3) trixie; urgency=medium
+
+  * Enable the public signed KERNOVA updates channel in Discover.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Thu, 19 Nov 2026 10:00:00 +0000
+
+kernova-components (0.1.2) trixie; urgency=medium
+
+  * Open the installer directly from the local live desktop.
+  * Explain personal account creation in Welcome and the installed guide.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Thu, 19 Nov 2026 09:14:00 +0000
+
+kernova-components (0.1.1) trixie; urgency=medium
+
+  * Integrate interactive Live installation and signed update enrollment.
+  * Refresh package indexes for desktop update notifications.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Thu, 19 Nov 2026 00:35:00 +0000
+
 kernova-components (0.1.0) trixie; urgency=medium
 
   * Initial development preview with Plasma settings, artwork and Welcome.
+  * Add signed Flathub applications in Discover, CPU and graphics firmware
+    downloads, and three photographic desktop backgrounds.
 
  -- KERNOVA OS contributors <maintainers@kernova.invalid>  Wed, 18 Nov 2026 12:00:00 +0000

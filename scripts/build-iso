@@ -73,12 +73,17 @@ def run(profile, run_dir, log):
     inputs = source_hashes()
     shutil.copytree(ROOT / "auto", work / "auto")
     shutil.copytree(ROOT / "config", work / "config", ignore=shutil.ignore_patterns("profiles"))
+    if profile == "preview":
+        shutil.copytree(ROOT / "config/profiles/installer", work / "config", dirs_exist_ok=True)
     shutil.copy2(ROOT / "product.json", work / "product.json")
     (work / ".kernova-work").touch()
     command("Generate fresh live-build configuration", ["lb", "config"])
     command("Validate generated settings", ["lb", "config", "noauto", "--ignore-system-defaults", "--validate"])
     product = json.loads((work / "product.json").read_text())
     if profile == "preview":
+        dictionary = work / "config/includes.binary/kernova-installer"
+        command("Prepare the installer's offline password dictionary",
+                [sys.executable, SCRIPTS / "stage-installer-dictionary", dictionary], ROOT)
         shutil.copy2(ROOT / "config/profiles/preview.list.chroot", work / "config/package-lists")
         command("Build KERNOVA Debian packages as ordinary user",
                 [SCRIPTS / "build-packages", work / "config/packages.chroot"], ROOT)
@@ -104,6 +109,7 @@ def run(profile, run_dir, log):
         raise ValueError(f"Live-build did not produce {raw.name}")
     # Same mounted project filesystem by preflight. Rename avoids another ISO copy.
     raw.rename(iso)
+    command("Record final checksums for mastered GRUB files", [sys.executable, SCRIPTS / "finalize-media-checksums", iso], ROOT)
     shutil.copy2(work / f"{stem}.packages", stage / "packages.tsv")
     (stage / "SHA256SUMS").write_text(f"{digest(iso)}  {iso.name}\n")
     shutil.copy2(work / "config-options.json", stage / "config-options.json")
@@ -120,6 +126,13 @@ def run(profile, run_dir, log):
     metadata = {"product": product, "profile": profile, "completed_utc": datetime.now(timezone.utc).isoformat(),
                 "source_revision": revision(), "host_tools": dict(line.split("\t") for line in versions.splitlines()),
                 "source_sha256": inputs}
+    if profile == "preview":
+        metadata["installer_dictionary"] = json.loads((dictionary / "cracklib-dictionary.json").read_text())
+        packages = stage / "packages"
+        packages.mkdir()
+        for deb in sorted((work / "config/packages.chroot").glob("*.deb")):
+            shutil.copy2(deb, packages / deb.name)
+        metadata["packages_sha256"] = {deb.name: digest(deb) for deb in sorted(packages.glob("*.deb"))}
     (stage / "build.json").write_text(json.dumps(metadata, indent=2) + "\n")
     with (stage / "validation.log").open("x") as evidence:
         command("Validate release candidate", [SCRIPTS / "validate-iso", iso], ROOT, evidence)
