@@ -1,3 +1,11 @@
+kernova-components (0.1.8) trixie; urgency=medium
+
+  * Offer voluntary installation reporting in Welcome with an explicit consent
+    step and a configured HTTPS registration service.
+  * Support idempotent submissions and user-requested report withdrawal.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Thu, 19 Nov 2026 17:35:00 +0000
+
 kernova-components (0.1.7) trixie; urgency=medium
 
   * Add KERNOVA Torrent with file and magnet integration, per-account transfer

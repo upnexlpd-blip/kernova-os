@@ -95,5 +95,7 @@
   "requires": "Requires the {package} package.",
   "launch_failed": "{app} could not start. Check that the related package is installed.",
   "ordinary_user": "Open KERNOVA Welcome from a regular desktop account.",
-  "close": "Close"
+  "close": "Close",
+  "installation_reporting": "Installation report",
+  "installation_reporting_intro": "Help us count installations by sharing an optional installation report."
 }
