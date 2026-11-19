@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Windows Programs
+Comment=Install Windows games and open installed programs
+Exec=kernova-windows %f
+Icon=applications-games
+Terminal=false
+Categories=Game;
+MimeType=application/vnd.microsoft.portable-executable;

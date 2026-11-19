@@ -44,6 +44,7 @@ def main():
     for pattern in ("product.json", "LICENSE", "docs/user-guide.md", "scripts/check-session",
                     "apps/integration/kernova-welcome", "apps/integration/kernova-get-apps",
                     "apps/integration/kernova-app-catalog.sh", "apps/integration/kernova-update-source",
+                    "apps/integration/kernova-windows",
                     "apps/integration/*.desktop",
                     "apps/performance/*.py", "apps/welcome/*.py", "apps/welcome/locales/*.json",
                     "apps/welcome/icons/*"):

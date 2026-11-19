@@ -1,0 +1,99 @@
+#!/usr/bin/python3
+"""Launch Windows installers and installed Start Menu shortcuts as the current user."""
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+from PySide6.QtCore import QProcess, Qt
+from PySide6.QtWidgets import QApplication, QInputDialog, QMessageBox, QProgressDialog
+
+
+WINE = "org.winehq.Wine//stable"
+FLATPAK = "/usr/bin/flatpak"
+TITLE = "KERNOVA Windows Programs"
+
+
+def ensure_wine():
+    if subprocess.run([FLATPAK, "info", "--user", WINE], capture_output=True).returncode == 0:
+        return True
+    subprocess.run(["/usr/bin/kernova-get-apps", "--initialize"], check=True)
+    dialog = QProgressDialog(
+        "Downloading Windows support from Flathub for this account…",
+        "Cancel", 0, 0, None)
+    dialog.setWindowTitle(TITLE)
+    dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+    dialog.setMinimumDuration(0)
+    process = QProcess()
+    process.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
+    tail = ""
+
+    def progress():
+        nonlocal tail
+        tail = (tail + bytes(process.readAllStandardOutput()).decode(errors="replace"))[-4096:]
+        lines = tail.strip().splitlines()
+        if lines:
+            dialog.setLabelText("Installing Windows support from Flathub…\n" + lines[-1][:110])
+
+    process.readyReadStandardOutput.connect(progress)
+    process.finished.connect(dialog.accept)
+    process.start(FLATPAK, ["install", "--user", "--noninteractive", "-y", "flathub", WINE])
+    if not process.waitForStarted():
+        raise RuntimeError(process.errorString())
+    dialog.exec()
+    if dialog.wasCanceled():
+        process.kill()
+        process.waitForFinished()
+        return False
+    progress()
+    if process.exitCode() or process.exitStatus() != QProcess.ExitStatus.NormalExit:
+        raise RuntimeError(tail.strip() or "Windows support could not be installed. Try again when online.")
+    return True
+
+
+def installed_shortcut():
+    data = Path.home() / ".var/app/org.winehq.Wine/data"
+    drive = data / "wine/drive_c"
+    roots = [drive / "ProgramData/Microsoft/Windows/Start Menu/Programs"]
+    roots.extend(drive.glob("users/*/AppData/Roaming/Microsoft/Windows/Start Menu/Programs"))
+    shortcuts = {}
+    for root in roots:
+        for path in root.rglob("*"):
+            if path.is_file() and path.suffix.lower() == ".lnk":
+                label = path.relative_to(root).with_suffix("").as_posix()
+                shortcuts[label] = "/var/data/" + path.relative_to(data).as_posix()
+    if not shortcuts:
+        QMessageBox.information(None, TITLE, "Open a Windows installer (.exe) in Dolphin first. "
+                                "Programs that create Start Menu shortcuts will appear here.")
+        return None
+    choice, ok = QInputDialog.getItem(None, TITLE, "Open an installed Windows program:",
+                                      sorted(shortcuts, key=str.casefold), 0, False)
+    return shortcuts[choice] if ok else None
+
+
+def main():
+    app = QApplication(sys.argv[:1])
+    app.setApplicationName(TITLE)
+    try:
+        if len(sys.argv) == 2:
+            path = Path(sys.argv[1]).resolve(strict=True)
+            if not path.is_file() or path.suffix.lower() != ".exe":
+                raise ValueError("Choose a local Windows .exe file.")
+            arguments = ["--file-forwarding", WINE, "start", "/unix", "@@", str(path), "@@"]
+        elif len(sys.argv) == 1:
+            shortcut = installed_shortcut()
+            if not shortcut:
+                return 0
+            arguments = [WINE, "start", "/unix", shortcut]
+        else:
+            raise ValueError("Open one Windows installer at a time.")
+        if ensure_wine():
+            os.execv(FLATPAK, [FLATPAK, "run", *arguments])
+    except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:
+        QMessageBox.warning(None, TITLE, str(error))
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

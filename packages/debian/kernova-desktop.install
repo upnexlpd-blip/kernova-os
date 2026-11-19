@@ -1,4 +1,7 @@
 apps/integration/kernova-get-apps usr/bin
+apps/integration/kernova-windows usr/bin
+apps/integration/kernova-windows.desktop usr/share/applications
+defaults/kde-mimeapps.list etc/xdg
 apps/integration/kernova-update-source usr/bin
 apps/integration/kernova-get-apps.desktop usr/share/applications
 apps/integration/kernova-app-catalog.sh etc/xdg/plasma-workspace/env
