@@ -1,5 +1,9 @@
 # KERNOVA OS development preview
 
+## Welcome edition comparison, 0.1.17
+
+On 20 November 2026 the [Debian 13 validation run](https://github.com/upnexlpd-blip/kernova-os/actions/runs/44751573713) built and checked the English proposal page in Welcome. Keyboard navigation and compact layouts passed in both supported locales. The [stable publisher](https://github.com/upnexlpd-blip/kernova-os/actions/runs/44751986093) delivered all five packages. An independent check verified the signed InRelease, its package index and the five downloaded hashes against the tested packages. The Welcome module and ribbon matched the source. The [comparison screenshot](docs/evidence/welcome-pro-0.1.17/comparison.png) comes from the extracted stable package running in Qt on Windows, in English at 900 × 570.
+
 ## Weather beside the Plasma clock, 0.1.16
 
 On an installed Plasma Wayland guest upgraded from 0.1.15, the panel migration placed the Weather button directly before the clock. The saved Skopje forecast showed 16 degrees in the panel and opened to the same city when clicked. [Panel and forecast](docs/evidence/weather-panel-0.1.16/forecast-and-panel.png)
