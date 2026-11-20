@@ -1,7 +1,7 @@
 {
   "name": "KERNOVA OS",
   "slug": "kernova-os",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "channel": "development preview",
   "suite": "trixie",
   "architecture": "amd64",

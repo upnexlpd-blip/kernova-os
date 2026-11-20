@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 from system_info import ACTIONS, SETTINGS_MODULES, collect_system_info, language_for, string_mapping
+from pro_comparison import TITLE as PRO_TITLE, WINDOW_STYLE as PRO_STYLE, build_comparison
 
 
 LOCALES_DIR = Path(__file__).resolve().parent / "locales"
@@ -22,7 +23,7 @@ PRODUCT_FILE = Path("/usr/share/kernova/product.json")
 GUIDE_FILE = Path("/usr/share/doc/kernova-welcome/user-guide.md")
 ICON_NAME = "kernova-logo"
 ICON_FILE = Path("/usr/share/icons/hicolor/scalable/apps/kernova-logo.svg")
-PAGES = ("start", "personalize", "apps", "system", "help", "credits")
+PAGES = ("start", "personalize", "apps", "pro", "system", "help", "credits")
 SYSTEM_FIELDS = ("base", "session", "kernel", "architecture", "cpu", "memory", "graphics")
 AUTOSTART_KEY = "showAtLogin"
 DEBIAN_DOWNLOADS = "https://packages.debian.org/trixie"
@@ -97,6 +98,7 @@ class WelcomeWindow(QWidget):
             release += f" · {channel}"
 
         title = self.t("title")
+        self.setObjectName("kernovaWelcome")
         self.setWindowTitle(title)
         self.setMinimumSize(590, 320)
         root = QVBoxLayout(self)
@@ -112,7 +114,9 @@ class WelcomeWindow(QWidget):
         identity = QVBoxLayout()
         identity.setSpacing(3)
         identity.addWidget(heading(title, 1.65))
-        identity.addWidget(label(self.t("identity", name=name, release=release)))
+        identity_text = self.t("identity", name=name, release=release)
+        identity_label = label(identity_text)
+        identity.addWidget(identity_label)
         header.addLayout(identity, 1)
         root.addLayout(header)
 
@@ -120,9 +124,10 @@ class WelcomeWindow(QWidget):
         body.setSpacing(16)
         navigation = QListWidget()
         navigation.setAccessibleName(self.t("navigate"))
+        page_names = [PRO_TITLE if page == "pro" else self.t(page) for page in PAGES]
         navigation.setSpacing(4)
         navigation.setFixedWidth(max(
-            navigation.fontMetrics().horizontalAdvance(self.t(page)) for page in PAGES
+            navigation.fontMetrics().horizontalAdvance(page_name) for page_name in page_names
         ) + 46)
         body.addWidget(navigation)
         pages = QStackedWidget()
@@ -134,23 +139,34 @@ class WelcomeWindow(QWidget):
             if path.is_file()
         ), None)
 
-        for page in PAGES:
-            navigation.addItem(self.t(page))
+        for page, page_name in zip(PAGES, page_names):
+            navigation.addItem(page_name)
             scroll = QScrollArea()
             scroll.setWidgetResizable(True)
             scroll.setFrameShape(QFrame.Shape.NoFrame)
-            scroll.setAccessibleName(self.t(page))
+            scroll.setAccessibleName(page_name)
             panel = QWidget()
             layout = QVBoxLayout(panel)
             layout.setContentsMargins(6, 2, 13, 8)
             layout.setSpacing(12)
-            layout.addWidget(heading(self.t(page), 1.35))
-            getattr(self, f"build_{page}")(layout)
+            if page == "pro":
+                scroll.setObjectName("proScroll")
+                panel.setObjectName("proPage")
+                build_comparison(layout)
+            else:
+                layout.addWidget(heading(page_name, 1.35))
+                getattr(self, f"build_{page}")(layout)
             layout.addStretch()
             scroll.setWidget(panel)
             pages.addWidget(scroll)
 
-        navigation.currentRowChanged.connect(pages.setCurrentIndex)
+        def select_page(row):
+            is_pro = row == PAGES.index("pro")
+            self.setStyleSheet(PRO_STYLE if is_pro else "")
+            identity_label.setText(name if is_pro else identity_text)
+            pages.setCurrentIndex(row)
+
+        navigation.currentRowChanged.connect(select_page)
         navigation.setCurrentRow(PAGES.index(initial_page))
         navigation.setFocus()
 

@@ -1,3 +1,9 @@
+kernova-components (0.1.17) trixie; urgency=medium
+
+  * Add the English Kernova 2.0 Pro proposal and edition comparison to Welcome.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Fri, 20 Nov 2026 14:10:00 +0000
+
 kernova-components (0.1.16) trixie; urgency=medium
 
   * Show the selected Weather city's temperature next to the Plasma clock

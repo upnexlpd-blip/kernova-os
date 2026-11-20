@@ -79,7 +79,10 @@ class WelcomeQtTests(unittest.TestCase):
                 window = self.window(locale_name)
                 navigation = window.findChild(QListWidget)
                 pages = window.findChild(QStackedWidget)
-                self.assertEqual(navigation.count(), 6)
+                self.assertEqual(navigation.count(), 7)
+                self.assertEqual(navigation.item(3).text(), "Kernova 2.0 Pro")
+                pro_page = pages.widget(3)
+                self.assertIn("€29 one-time", [item.text() for item in pro_page.findChildren(QLabel)])
                 self.assertEqual(navigation.currentItem().text(), start)
                 release = window.t("preview_release", version=self.product["version"])
                 self.assertIn(

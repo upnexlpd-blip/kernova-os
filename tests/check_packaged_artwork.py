@@ -23,7 +23,10 @@ def main(root):
         icon = share / "kernova/welcome/icons" / f"{name}.svg"
         assert icon.read_bytes() == (source / "apps/welcome/icons" / icon.name).read_bytes()
         assert not QImageReader(str(icon)).read().isNull(), icon
-    print("Verified ten packaged 4K photographs and twelve application icons.")
+    ribbon = share / "kernova/welcome/icons/pro-ribbon.jpg"
+    assert not QImageReader(str(ribbon)).read().isNull(), ribbon
+    assert (share / "kernova/welcome/pro_comparison.py").is_file()
+    print("Verified ten packaged 4K photographs, twelve application icons and the Pro comparison artwork.")
 
 
 if __name__ == "__main__":
