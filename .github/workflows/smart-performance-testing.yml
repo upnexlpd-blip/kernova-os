@@ -20,7 +20,7 @@ jobs:
         run: |
           docker run --rm -v "$PWD:/source" -w /source debian:trixie bash -euc '
             apt-get update
-            apt-get install -y --no-install-recommends build-essential fakeroot debhelper dh-sequence-python3 librsvg2-bin desktop-file-utils python3-pyside6.qtwidgets qt6-svg-plugins python3-dbus python3-gi gir1.2-glib-2.0 shellcheck reprepro gnupg gpgv ca-certificates
+            apt-get install -y --no-install-recommends build-essential fakeroot debhelper dh-sequence-python3 librsvg2-bin desktop-file-utils python3-pyside6.qtwidgets qt6-svg-plugins python3-dbus python3-gi gir1.2-glib-2.0 nodejs shellcheck reprepro gnupg gpgv ca-certificates
             for tool in reprepro gpg gpgconf gpgv dpkg-deb apt-cache apt-get; do command -v "$tool"; done
             test "$1" -ne 0
             mkdir -p /tmp/builder
@@ -28,6 +28,7 @@ jobs:
             runuser_cmd=(setpriv --reuid "$1" --regid "$2" --clear-groups env HOME=/tmp/builder)
             "${runuser_cmd[@]}" python3 scripts/check-source
             "${runuser_cmd[@]}" python3 scripts/build-packages artifacts/debs
+            node tests/window_tools.js
             apt-get --simulate install /source/artifacts/debs/*.deb
             bash scripts/test-performance-package
             dpkg-deb -x artifacts/debs/kernova-branding_*_all.deb /tmp/artwork

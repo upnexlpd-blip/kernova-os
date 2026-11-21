@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.kernova.WindowTemplates
+Exec=/usr/bin/python3 -B /usr/share/kernova/window-tools/service.py

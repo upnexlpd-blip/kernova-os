@@ -5,7 +5,7 @@ test -r /tmp/expected-version
 test -d /tmp/older && test -d /tmp/current
 export DEBIAN_FRONTEND=noninteractive LC_ALL=C
 version=$(cat /tmp/expected-version)
-packages='kernova-branding kernova-default-settings kernova-welcome kernova-performance kernova-desktop'
+packages='kernova-branding kernova-default-settings kernova-welcome kernova-performance kernova-desktop kernova-window-tools'
 core='kernova-desktop plasma-workspace plasma-desktop kwin-wayland sddm firefox-esr'
 skel=/etc/skel/.config/kdeglobals
 newhome=/home/kernova-new
@@ -50,6 +50,7 @@ test -r /usr/share/plasma/look-and-feel/org.kernova.night/contents/layouts/org.k
 desktop-file-validate /usr/share/applications/kernova-welcome.desktop /etc/xdg/autostart/kernova-welcome-autostart.desktop
 kpackagetool6 --type Plasma/LookAndFeel --show org.kernova.night
 kpackagetool6 --type Wallpaper/Images --show Parallax
+kpackagetool6 --type KWin/Script --show org.kernova.windowtools
 python3 -c 'from PySide6 import QtCore, QtGui, QtWidgets'
 python3 - "$version" <<'PY'
 import configparser

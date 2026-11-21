@@ -121,6 +121,8 @@ def inspect(iso, tmp):
         vendor = {"kernova-desktop", "kernova-welcome", "kernova-branding", "kernova-default-settings"}
         if tuple(int(n) for n in product["version"].split(".")) >= (0, 1, 4):
             vendor.add("kernova-performance")
+        if tuple(int(n) for n in product["version"].split(".")) >= (0, 1, 22):
+            vendor.add("kernova-window-tools")
         required.update(vendor)
         if "packages_sha256" in metadata:
             filenames = {f"{name}_{product['version']}_all.deb" for name in vendor}

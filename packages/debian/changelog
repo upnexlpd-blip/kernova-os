@@ -1,3 +1,10 @@
+kernova-components (0.1.22) UNRELEASED; urgency=medium
+
+  * Package opt-in KERNOVA Window Tools for KWin with ordered presets,
+    reusable local layout templates and one-step session undo.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Sat, 21 Nov 2026 22:00:00 +0100
+
 kernova-components (0.1.21) trixie; urgency=medium
 
   * Deliver Connect phone, on-demand System Help and adaptive power management

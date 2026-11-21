@@ -1,0 +1,5 @@
+generated/org.kernova.windowtools usr/share/kwin/scripts
+apps/window-tools/store.py usr/share/kernova/window-tools
+apps/window-tools/service.py usr/share/kernova/window-tools
+apps/window-tools/org.kernova.WindowTemplates.service usr/share/dbus-1/services
+docs/window-tools.md usr/share/doc/kernova-window-tools

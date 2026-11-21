@@ -7,6 +7,9 @@ override_dh_installsystemd:
 	dh_installsystemd -pkernova-performance --name=kernova-adaptive
 
 override_dh_auto_build:
+	mkdir -p generated/org.kernova.windowtools/contents/code
+	cp -r apps/window-tools/org.kernova.windowtools/. generated/org.kernova.windowtools/
+	cat apps/window-tools/layout.js apps/window-tools/kwin.js apps/window-tools/operations.js > generated/org.kernova.windowtools/contents/code/main.js
 	mkdir -p generated/48x48/apps
 	rsvg-convert -w 48 -h 48 -o generated/48x48/apps/kernova-torrent.png branding/kernova-torrent.svg
 	mkdir -p generated/Parallax/contents/images generated/org.kernova.night/contents/previews

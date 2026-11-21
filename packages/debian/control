@@ -47,7 +47,7 @@ Depends: ${misc:Depends},
  gnome-weather, librsvg2-common, gir1.2-geoclue-2.0, gir1.2-gweather-4.0, gir1.2-gtk-4.0,
  firefox-esr, dolphin, konsole, kate, ark, okular, gwenview,
  kde-spectacle, plasma-systemmonitor, vlc
-Recommends: kernova-branding (= ${binary:Version}), kernova-default-settings (= ${binary:Version}), kernova-welcome (= ${binary:Version})
+Recommends: kernova-branding (= ${binary:Version}), kernova-default-settings (= ${binary:Version}), kernova-welcome (= ${binary:Version}), kernova-window-tools (= ${binary:Version})
 Description: KDE Plasma desktop and everyday applications for KERNOVA
  Keeps the Wayland session, display manager, device integration and everyday
  applications installed independently of the optional KERNOVA appearance.
@@ -62,3 +62,11 @@ Description: Smart Performance Center and system updates for KERNOVA
  scheduling. Supported hardware power profiles last for the workload lifetime.
  Review package versions and history and open Discover to install updates.
  Includes on-demand network, audio, disk, package and power diagnostics.
+
+Package: kernova-window-tools
+Architecture: all
+Section: kde
+Depends: ${misc:Depends}, kwin-common (>= 4:6.3), plasma-workspace, python3, python3-dbus, python3-gi, gir1.2-glib-2.0
+Description: KERNOVA Window Tools for KWin
+ Arrange selected windows with two presets, eight reusable layout templates
+ and one-step undo. Enable the extension in Plasma's KWin Scripts settings.
