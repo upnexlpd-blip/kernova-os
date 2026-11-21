@@ -2,21 +2,21 @@ Origin: KERNOVA
 Label: KERNOVA
 Suite: kernova-trixie-testing
 Codename: kernova-trixie-testing
-Date: Sat, 21 Nov 2026 19:53:39 UTC
-Valid-Until: Sat, 05 Dec 2026 19:53:39 UTC
+Date: Sat, 21 Nov 2026 20:03:13 UTC
+Valid-Until: Sat, 05 Dec 2026 20:03:13 UTC
 Architectures: amd64
 Components: main
 NotAutomatic: yes
 ButAutomaticUpgrades: yes
 MD5Sum:
- 4445dc6a4a3328964539e95ca158bf44 5805 main/binary-amd64/Packages
- bd2934bbaac05b90193590791b0671b4 2319 main/binary-amd64/Packages.gz
+ 0ffe72e2ac2beaf8822cffba5b6178ba 5957 main/binary-amd64/Packages
+ a797af1e41d8b8c17a9dfee6b25dc832 2328 main/binary-amd64/Packages.gz
  7b6bb3823c1f44433a517bfe370354d0 143 main/binary-amd64/Release
 SHA1:
- 5cb8323cc63efd7de6e6ce396a5ef58265dd2cd5 5805 main/binary-amd64/Packages
- eb4d6e4fa668fe3a5e7e4dc89e409891f9e24fae 2319 main/binary-amd64/Packages.gz
+ 0d81370060e5930c6d9a9893e1016dc783a9d0a6 5957 main/binary-amd64/Packages
+ f5d49458c97cca94847f12dddc01b62b7b09bccb 2328 main/binary-amd64/Packages.gz
  7065a0b425c137eb64dbe019eca3f208c504f5d1 143 main/binary-amd64/Release
 SHA256:
- 2bc4f50a383830daf3051e2ef15adbdcc2726fb66f786d379cddfb025cfddc7c 5805 main/binary-amd64/Packages
- df1a84efa69f7ad2056b627f374d15fc1b422639986ca2f306bc591ce01ca2dd 2319 main/binary-amd64/Packages.gz
+ fcece0d0302de423c948185344717c19d9d3f6b110fefc475416a4b50d573c97 5957 main/binary-amd64/Packages
+ 2aa84bb68693f3e45d4bed175494eaec696e34eb372d408bd222069bddb8e4b3 2328 main/binary-amd64/Packages.gz
  64836a1aca0db99e658a8db9fc08f3d7c0fbce2fefe94acbc41650e9505fc3ed 143 main/binary-amd64/Release
