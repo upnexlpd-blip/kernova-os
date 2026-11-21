@@ -32,7 +32,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          version=$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' product.json)
+          version=$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+([+]stable[1-9][0-9]*)?$"))' product.json)
           published=$(cat build/public-channel/version 2>/dev/null || echo 0)
           manifest="packages/releases/$version.sha256"
           if dpkg --compare-versions "$version" gt "$published" && [[ -f "$manifest" ]]; then

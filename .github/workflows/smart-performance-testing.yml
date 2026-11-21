@@ -60,7 +60,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          version=$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' product.json)
+          version=$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+([+]stable[1-9][0-9]*)?$"))' product.json)
           tag="testing-v$version"
           key=A009D55DF827E04759C2F2637FB7AAA29B49472F
           export GNUPGHOME=$(mktemp -d)

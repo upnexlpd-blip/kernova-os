@@ -2,6 +2,10 @@
 
 KERNOVA 0.1.3 includes the public signing key and package source. In an installed Plasma session, Discover periodically checks for updates and shows a notification when a newer package is available. Open **Discover â†’ Updates** to review and install it. A GitHub account is unnecessary.
 
+## Window Tools 0.1.23
+
+On a standard installed KERNOVA desktop, open **Discover → Updates → Refresh → Update All** and authenticate if prompted. The stable desktop package version `0.1.23+stable1` installs Window Tools automatically. Enable it under **System Settings → Window Management → KWin Scripts → KERNOVA Window Tools → Apply**. See the [Window Tools guide](window-tools.md) for the layouts, templates and Undo.
+
 ## Connect phone, System Help and adaptive power in 0.1.21
 
 Open **Discover → Updates → Refresh → Update All**. In **KERNOVA Welcome → Getting started → Connect phone**, allow Plasma to share the screen and input devices. On the same home network, enter Krfb’s address and desktop sharing password in RealVNC Viewer, then accept the incoming connection on the computer. Turn off **Enable Desktop Sharing** in Krfb to end the session. The desktop-side checks passed on Plasma Wayland. RealVNC Viewer checks on physical Android and iPhone devices are pending.

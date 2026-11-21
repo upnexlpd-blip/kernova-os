@@ -119,9 +119,10 @@ def inspect(iso, tmp):
                    "firmware-iwlwifi firmware-realtek".split())
     if profile == "preview":
         vendor = {"kernova-desktop", "kernova-welcome", "kernova-branding", "kernova-default-settings"}
-        if tuple(int(n) for n in product["version"].split(".")) >= (0, 1, 4):
+        upstream_version = tuple(int(n) for n in product["version"].split("+", 1)[0].split("."))
+        if upstream_version >= (0, 1, 4):
             vendor.add("kernova-performance")
-        if tuple(int(n) for n in product["version"].split(".")) >= (0, 1, 22):
+        if upstream_version >= (0, 1, 22):
             vendor.add("kernova-window-tools")
         required.update(vendor)
         if "packages_sha256" in metadata:

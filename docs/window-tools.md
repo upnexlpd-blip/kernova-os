@@ -1,10 +1,10 @@
 # KERNOVA Window Tools for KWin
 
-The 0.1.23 testing candidate targets the KERNOVA Debian 13 Plasma Wayland session, KWin and Plasma 6.3.6, and Qt 6.8.2. Native Wayland and Xwayland clients share the compositor's logical coordinate system. The installed image also contains a Plasma X11 session file. KERNOVA's session check targets Wayland.
+Window Tools 0.1.23 targets the KERNOVA Debian 13 Plasma Wayland session, KWin and Plasma 6.3.6, and Qt 6.8.2. Native Wayland and Xwayland clients share the compositor's logical coordinate system.
 
 ## Installation and activation
 
-On a machine with the KERNOVA testing APT source already configured, run `sudo apt update`, check `apt policy kernova-window-tools`, then install `sudo apt install kernova-window-tools=0.1.23`. The desktop metapackage recommends this optional package. In testing, PackageKit updated the five previously installed packages and needed a separate `pkcon install kernova-window-tools` for first installation. Once Window Tools is installed, open **Discover → Updates → Refresh → Update All** for subsequent versions. For first-time enrollment, use the source-file verification and installation commands in the [testing channel guide](https://github.com/upnexlpd-blip/kernova-os/blob/f439d92307b1d7b28e90da7acd097b9d6558dbd5/docs/smart-performance.md#install-on-an-existing-kernova-013-testing-desktop).
+On an installed KERNOVA desktop with the stable update source, open **Discover → Updates → Refresh → Update All**. Upgrading `kernova-desktop` to `0.1.23+stable1` installs the matching Window Tools package in the same transaction. The script starts disabled on first installation and retains existing users' preferences.
 
 Open **System Settings → Window Management → KWin Scripts**, check **KERNOVA Window Tools**, then **Apply**. The settings button beside the script selects the gap (default 8 logical pixels) and one of eight numbered template slots. After saving the dialog, use **Extensions → KERNOVA Window Tools → Reload saved settings** in a window's title-bar menu. The on-screen message confirms the effective gap and slot. System Settings → Keyboard → Shortcuts → KWin lists actions under **KERNOVA Window Tools**. All bindings start unassigned. If the script was already running during an upgrade, uncheck it and click **Apply**, then check it and click **Apply** to load the new code immediately. This starts a fresh selection and undo history.
 
@@ -25,7 +25,7 @@ An on-demand user session D-Bus service stores each numbered slot in `$XDG_DATA_
 
 **Undo last layout** restores positions and frame sizes for the last changed layout. Closing a window, interacting with its frame, changing its desktop/activity, or changing its work area can invalidate its entry. When a window or rule refuses a placement, the extension attempts rollback only for frames it still owns and reports the count. A rejected preflight preserves a preceding undo. Starting another geometry operation replaces it.
 
-Disable the checkbox and click **Apply** to stop immediately. Remove the optional package with `sudo apt remove kernova-window-tools`. If removing during a session, disable it first to unload the running script. The package has no login hook or privileged runtime service. Package updates retain KWin preferences and ordinary removal retains templates.
+To stop Window Tools, clear its checkbox in KWin Scripts and click **Apply**. This keeps the desktop metapackage, templates and shortcut settings installed. Removing the required Window Tools package would also remove the KERNOVA desktop metapackage.
 
 Known automatic tilers (Krohnkite, Bismuth, Polonium, Karousel, kwin-tiling) block actions while loaded. Choose which to enable in KWin Scripts. Other third-party scripts and custom rules may also control geometry.
 

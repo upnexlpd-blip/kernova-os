@@ -1,3 +1,10 @@
+kernova-components (0.1.23+stable1) trixie; urgency=medium
+
+  * Require Window Tools in the desktop metapackage so Discover installs it
+    when updating an existing desktop. Activation stays under user control.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Sat, 21 Nov 2026 22:30:00 +0100
+
 kernova-components (0.1.23) UNRELEASED; urgency=medium
 
   * Locate the native settings dialog through the Plasma 6 plugin namespace
