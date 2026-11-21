@@ -1,5 +1,9 @@
 # KERNOVA OS development preview
 
+## Window Tools 0.1.23 on stable
+
+Discover now installs Window Tools automatically with the standard KERNOVA desktop update `0.1.23+stable1`. An installed 0.1.21 guest received all six packages through **Update All** on the public stable channel. First installation preserves KWin settings and leaves activation to the user. See the [Discover screenshot and signed upgrade record](docs/evidence/window-tools-v1/stable.md).
+
 ## Discover delivery of phone control, System Help and adaptive power in 0.1.21
 
 On 21 November 2026 the [stable publisher](https://github.com/upnexlpd-blip/kernova-os/actions/runs/44939384862) delivered all five packages. The stable InRelease signature, signed index and downloaded package hashes were verified against the archive key and the successful Debian build. The [package checksums](packages/releases/0.1.21.sha256) matched the tested artifacts byte for byte.
