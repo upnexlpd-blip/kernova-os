@@ -28,6 +28,14 @@ Open **AI Tools** from the menu for Codex CLI, Claude Code, Cursor or Alpaca. On
 
 Open **KERNOVA Welcome → Settings** to find Wi-Fi, Ethernet, Bluetooth, display, sound, power, appearance, applications, notifications, search and online accounts. To test a physical wireless adapter, boot the Live USB on the computer, join a Wi-Fi network and open a website with Ethernet disconnected. For Bluetooth, pair a device and exercise it, such as playing audio on headphones. Internet through the virtual Ethernet adapter in QEMU tests the VM network.
 
+### Control the desktop from a phone
+
+Connect the phone to the same trusted home network as the computer. Open **KERNOVA Welcome → Getting started → Connect phone**. If Plasma asks which screen to share, select the screen you want to control and allow sharing.
+
+In **RealVNC Viewer** on Android or iPhone, add a direct connection using the computer’s Wi-Fi or Ethernet IP address and the port shown in Krfb. Enter Krfb’s **desktop sharing password**. On the computer, allow remote control and accept the incoming connection. Leave **Enable Unattended Access** unchecked so each connection asks for approval.
+
+Turn off **Enable Desktop Sharing** in Krfb to disconnect the phone and stop accepting connections. Closing the window can leave Krfb in the system tray. Use this feature on a trusted LAN because a direct VNC session can carry screen and keyboard data without encryption.
+
 ### Weather
 
 Search the application menu for **KERNOVA Weather**. **Use my location** asks the system for a position, including GPS when available, and opens the forecast for the nearest city. **Open Weather** opens the native GNOME Weather window where you can search for a city, revisit saved places, and switch between hourly and daily forecasts. Refreshing the forecast requires internet access. The temperature next to the clock follows the most recently selected saved city. Click it to open that forecast.

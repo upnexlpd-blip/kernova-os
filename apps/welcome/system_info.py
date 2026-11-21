@@ -55,6 +55,7 @@ SETTINGS_MODULES = {
 
 
 ACTIONS = {
+    "connect_phone": Action(("/usr/bin/krfb",), "krfb"),
     "settings": Action(("/usr/bin/systemsettings",), "systemsettings"),
     **{
         key: Action(("/usr/bin/systemsettings", module), "systemsettings",

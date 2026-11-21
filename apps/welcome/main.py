@@ -228,6 +228,8 @@ class WelcomeWindow(QWidget):
         layout.addWidget(self.start_heading)
         layout.addWidget(self.start_text)
         self.add_action(layout, "network")
+        self.add_action(layout, "connect_phone")
+        layout.addWidget(label(self.t("connect_phone_help")))
         layout.addWidget(label(self.t("installation_reporting_intro")))
         self.add_registration_action(layout)
 

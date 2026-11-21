@@ -1,3 +1,16 @@
+kernova-components (0.1.21) trixie; urgency=medium
+
+  * Deliver Connect phone, on-demand System Help and adaptive power management
+    together through the stable desktop update channel.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Sat, 21 Nov 2026 20:00:00 +0100
+
+kernova-components (0.1.20) UNRELEASED; urgency=medium
+
+  * Add on-demand phone control of the active Plasma desktop to Welcome.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Sat, 21 Nov 2026 19:00:00 +0100
+
 kernova-components (0.1.19) trixie; urgency=medium
 
   * Add the on-demand System Help CLI and verified default-output unmute.

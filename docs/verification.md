@@ -68,6 +68,17 @@ For each runtime record, save the ISO SHA-256, profile, guest name, firmware mod
 
 Use [the update and recovery procedure](maintenance.md) for an actual package-changing APT or local package update. Save the before/after manifest and APT history, reboot with the ISO detached, rerun the checker and reopen the persistent file. A successful update requires a working login and desktop with the user's settings preserved after reboot.
 
+### Phone control over the home LAN
+
+Test RealVNC Viewer on **Android** and **iPhone** separately against an installed Plasma Wayland session. Record the Kernova, Krfb, OS and viewer versions and the outcome for each device. Both device checks are pending.
+
+On 21 November 2026, an installed amd64 QEMU guest running KERNOVA 0.1.20 and Debian Krfb 4:25.04.2-1 passed the desktop-side checks with vncdotool 1.2.0-2 over loopback. The installed Welcome button opened Krfb and Plasma requested screen and input access. An invalid VNC challenge response failed. Declining a valid invitation yielded no frame. After acceptance, the viewer received the test window, selected a list item, scrolled the list and entered a character. Disabling sharing cut off the client and closed the listener. With sharing enabled again and Plasma set to restore the previous session, a desktop reboot followed by login left Krfb stopped and port 5900 closed. WHPX paused at warm reset, so the same guest disk was started again to complete the boot. Local QA transcripts are in `build/phone-qa/before-reboot.qa` and `build/phone-qa/installed.qa`.
+
+1. Open Welcome and check that sharing is off. Choose **Connect phone**, select the monitor if prompted, and use its local address and displayed desktop sharing password.
+2. Try a wrong password. Then enter the correct one and decline the incoming request. Both attempts must leave the desktop inaccessible.
+3. Reconnect and approve remote control. Open a folder, scroll a long listing and type into Kate. Confirm the same actions on the computer.
+4. Turn off **Enable Desktop Sharing** during the connection. Confirm the phone disconnects and cannot reconnect. Re-enable sharing, reconnect with fresh approval, and reboot while sharing is active. After login, verify the phone cannot reconnect until sharing is started again.
+
 ### Hardware compatibility
 
 | Hardware or behavior | Exact proposed or observed target | State |
