@@ -1,0 +1,46 @@
+#!/bin/bash
+# Execute only in a disposable Debian 13 systemd guest with the previous package installed.
+set -euo pipefail
+candidate=$(realpath "$1")
+old=$(dpkg-query -W -f='${Version}' kernova-performance)
+[[ $old != 0.1.18 ]]
+echo "Upgrade baseline: kernova-performance $old"
+sample() {
+    python3 - "$1" <<'PY'
+import pathlib,time,os,sys
+pid=int(sys.argv[1])
+def ticks():
+    f=pathlib.Path("/proc/stat").read_text().splitlines()[0].split()[1:9]
+    return sum(map(int,f)),int(f[3])+int(f[4])
+def own():
+    if not pid:return 0
+    f=pathlib.Path(f"/proc/{pid}/stat").read_text().rsplit(")",1)[1].split()
+    return int(f[11])+int(f[12])
+start=time.monotonic();a,b=ticks();x=own();time.sleep(60);c,d=ticks()
+print("elapsed_s", round(time.monotonic()-start,2),"system_busy_pct",round(100*(1-(d-b)/(c-a)),3),
+      "service_cpu_pct",round(100*(own()-x)/os.sysconf("SC_CLK_TCK")/(time.monotonic()-start),3))
+if pid:print(next(l for l in pathlib.Path(f"/proc/{pid}/status").read_text().splitlines() if l.startswith("VmRSS:")))
+PY
+}
+sample 0
+apt-get -y --no-install-recommends install "$candidate"
+systemctl is-active kernova-adaptive
+kernova-adaptive status --json
+kernova-adaptive auto on
+kernova-adaptive status --json | python3 -c 'import json,sys; assert json.load(sys.stdin)["enabled"]'
+dpkg -i "$candidate"
+sleep 2
+kernova-adaptive status --json | python3 -c 'import json,sys; assert json.load(sys.stdin)["enabled"]'
+kernova-adaptive auto off
+kernova-adaptive report --json
+systemctl stop kernova-adaptive
+systemctl start kernova-adaptive
+sleep 3
+sample "$(systemctl show kernova-adaptive -p MainPID --value)"
+dpkg --remove kernova-performance
+test -e /var/lib/private/kernova-adaptive/settings.json
+test -e /etc/kernova/adaptive.json
+dpkg --purge kernova-performance
+test ! -e /etc/kernova/adaptive.json
+test ! -e /var/lib/private/kernova-adaptive/settings.json
+echo 'Adaptive lifecycle passed'
