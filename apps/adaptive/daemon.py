@@ -162,6 +162,8 @@ class Service:
         if not aggregate:
             devices = [self.props(self.up, path, UP + ".Device") for path in db.EnumerateDevices(timeout=3)]
             batteries = [v for v in devices if v.get("Type") == 2 and v.get("IsPresent") and v.get("PowerSupply")]
+            if not batteries:
+                raise ValueError("no present system battery")
             if len(batteries) != 1:
                 raise ValueError("no unambiguous system battery")
             device = batteries[0]
@@ -193,8 +195,6 @@ class Service:
         props = self.props(owner, PP_PATH, PP)
         status["profiles"] = [str(v["Profile"]) for v in props["Profiles"]]
         status["effective_profile"] = str(props["ActiveProfile"])
-        if self.policy.effective is None:
-            self.policy.effective = status["effective_profile"]
         if getattr(self, "validated", None) != owner:
             xml = self.interface(owner, PP_PATH, "org.freedesktop.DBus.Introspectable").Introspect(timeout=3)
             api = ET.fromstring(xml).find(f"interface[@name='{PP}']")
@@ -209,6 +209,9 @@ class Service:
             raise ValueError("power-saver profile unavailable")
         status["capabilities"] = ["HoldProfile", "ReleaseProfile", "ProfileReleased"]
         holds = props["ActiveProfileHolds"]
+        # Reconcile a transition even when a signal was invalidated or missed.
+        if status["effective_profile"] != self.policy.effective:
+            self.policy.changed(status["effective_profile"], any(h.get("ApplicationId") == APP for h in holds))
         return bool(holds) and (self.policy.cookie is None or len(holds) > 1 or
                                 holds[0].get("ApplicationId") != APP)
 

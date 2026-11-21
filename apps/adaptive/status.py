@@ -41,6 +41,13 @@ def pressure(root=Path("/proc/pressure")):
     return result
 
 
+def read_status():
+    status = json.loads((RUN / "status.json").read_text())
+    if not isinstance(status, dict):
+        raise ValueError("invalid service status")
+    return status
+
+
 def main():
     parser = argparse.ArgumentParser(prog="kernova-adaptive")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -63,7 +70,7 @@ def main():
             parser.exit(1, f"Service control unavailable: {exc}\n")
         return
     try:
-        status = json.loads((RUN / "status.json").read_text())
+        status = read_status()
     except (OSError, ValueError):
         status = {"state": "UNAVAILABLE", "reason": "service status unavailable"}
     if args.cmd == "report":

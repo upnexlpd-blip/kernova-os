@@ -70,3 +70,24 @@ class AdapterTests(unittest.TestCase):
         self.s.refresh()
         self.hold.assert_called_once()
         self.assertIn("threshold", self.s.last_status["reason"])
+
+    def test_provider_poll_honors_manual_choice_after_missed_signal(self):
+        s = self.s
+        del s.provider  # Exercise the real provider reader with a simulated bus.
+        s.owner = s.validated = ":1.50"
+        s.bus = Mock()
+        s.bus.get_name_owner.return_value = s.owner
+        s.interface = Mock()
+        s.interface.return_value.GetConnectionUnixProcessID.return_value = 100
+        s.manager = Mock()
+        s.manager.GetUnitByPID.return_value = "/provider"
+        s.props = Mock(side_effect=lambda dest, path, iface: (
+            {"Id": "power-profiles-daemon.service"} if path == "/provider" else
+            {"ActiveState": "inactive"} if iface == daemon.SD + ".Unit" else
+            {"ActiveProfile": "balanced", "Profiles": [{"Profile": "power-saver"}], "ActiveProfileHolds": []}))
+        s.policy.changed("power-saver", True)
+        s.refresh()
+        self.assertTrue(s.policy.override)
+        s.policy.save.assert_called_once_with(True, True)
+        self.hold.assert_not_called()
+        self.assertEqual(s.last_status["state"], "EXTERNAL_OVERRIDE")

@@ -4,7 +4,7 @@ set -euo pipefail
 packages=$(realpath "$1")
 candidate=("$packages"/kernova-performance_*_all.deb)
 old=$(dpkg-query -W -f='${Version}' kernova-performance)
-[[ $old != 0.1.18 ]]
+dpkg --compare-versions "$old" lt "$(dpkg-deb -f "${candidate[0]}" Version)"
 echo "Upgrade baseline: kernova-performance $old"
 sample() {
     python3 - "$1" <<'PY'
@@ -33,6 +33,7 @@ probe=$(realpath tests/probe_adaptive_guest.py)
 probe_status=0
 runuser -u kernova-adaptive -- /usr/bin/python3 -B "$probe" disconnect || probe_status=$?
 /usr/bin/python3 -B "$probe" external || probe_status=$?
+powerprofilesctl set balanced
 kernova-adaptive auto on
 kernova-adaptive status --json | python3 -c 'import json,sys; assert json.load(sys.stdin)["enabled"]'
 powerprofilesctl set power-saver

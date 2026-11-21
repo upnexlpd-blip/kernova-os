@@ -28,7 +28,7 @@ Use the matching bios or secure argument for those guests. Keep the diff even wh
 
 ## Local KERNOVA package updates
 
-Update product.json and packages/debian/changelog together. Build **all four** packages as an ordinary user with `./scripts/build-packages build/updated-debs` in the builder. Transfer just those .deb files and their hashes to an empty folder in the installed test guest. Compare the transferred hashes. From that folder review and apply the local update using normal APT.
+Update product.json and packages/debian/changelog together. Build **all five** packages as an ordinary user with `./scripts/build-packages build/updated-debs` in the builder. Transfer just those .deb files and their hashes to an empty folder in the installed test guest. Compare the transferred hashes. From that folder review and apply the local update using normal APT.
 
 ```sh
 apt --simulate install ./kernova-*.deb

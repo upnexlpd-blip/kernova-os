@@ -43,3 +43,5 @@ The verify job builds and tests the source on Debian trixie. The existing releas
 Upstream references: [power-profiles-daemon hold lifecycle](https://upower.pages.freedesktop.org/power-profiles-daemon/gdbus-org.freedesktop.UPower.PowerProfiles.html), [UPower](https://upower.freedesktop.org/docs/), [Linux PSI](https://docs.kernel.org/accounting/psi.html).
 
 See the [Debian guest results and idle measurements](evidence/adaptive-0.1.18.md).
+
+The [0.1.19 installed-system validation](evidence/system-help-0.1.19.md) covers upgrading a persistent desktop, preserving manual override across reboot and installing System Help. For a system without the optional power-profiles-daemon provider, the engine reports UNAVAILABLE. The supported provider in these tests was Debian's 0.30 series. While the service is running, its refresh also checks for a changed effective profile when a transition signal was missed.

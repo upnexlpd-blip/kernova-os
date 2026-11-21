@@ -2,6 +2,12 @@
 
 KERNOVA OS uses KDE Plasma on Debian 13. Open the application launcher with the Meta key. Search for KERNOVA Welcome to return to this guide. Use the checkbox at the bottom of Welcome to choose whether it opens after sign-in.
 
+### System Help
+
+Open Konsole in your Plasma session and run `kernova-doctor scan`. The command reads local network, playback, package, root filesystem and Adaptive Engine state. Use `kernova-doctor scan --json` for a structured report, or `kernova-doctor check audio` for just the selected output. The other areas are `network`, `updates`, `disk` and `adaptive`. An optional `kernova-doctor check network --online` also contacts Debian over HTTPS with a four-second timeout.
+
+If the default output is muted, run `kernova-doctor fix audio.unmute`. Match the output number to `wpctl status` and type `yes` to confirm. The command checks the selected output again, clears mute and reads the result. Play a local sound to verify the speakers or headphones.
+
 ### Trying the live session
 
 Choose **Live system** in the ISO boot menu to try Plasma. Changes in this session use temporary storage. Copy files you want to keep before powering off. The preview configures automatic live login for `kernova-live`. Debian live-config uses the temporary password `live`. The build requests a live account without administrative privileges.

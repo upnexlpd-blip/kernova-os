@@ -1,3 +1,10 @@
+kernova-components (0.1.19) trixie; urgency=medium
+
+  * Add the on-demand System Help CLI and verified default-output unmute.
+  * Honor external power profile transitions discovered during refresh.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Sat, 21 Nov 2026 19:00:00 +0100
+
 kernova-components (0.1.18) trixie; urgency=medium
 
   * Add opt-in low-battery profile holds and local pressure diagnostics.

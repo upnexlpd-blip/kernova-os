@@ -1,5 +1,9 @@
 # KERNOVA OS development preview
 
+## System Help 0.1.19 candidate
+
+`kernova-performance` includes `kernova-doctor`. Run it on demand from Konsole. The only repair clears mute on the confirmed default playback output. The adaptive service also recognizes an external profile transition found on refresh after a missed signal. See the [installed-system test record](docs/evidence/system-help-0.1.19.md) and [desktop guide](docs/user-guide.md).
+
 ## Adaptive Engine 0.1.18 candidate
 
 The performance package adds an observation-first system service and offline CLI. See the [policy, configuration and installation guide](docs/adaptive-engine.md). Testing-archive publication and stable promotion use the existing release controls.
