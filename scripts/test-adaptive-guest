@@ -21,6 +21,8 @@ start=time.monotonic();a,b=ticks();x=own();time.sleep(60);c,d=ticks()
 print("elapsed_s", round(time.monotonic()-start,2),"system_busy_pct",round(100*(1-(d-b)/(c-a)),3),
       "service_cpu_pct",round(100*(own()-x)/os.sysconf("SC_CLK_TCK")/(time.monotonic()-start),3))
 if pid:print(next(l for l in pathlib.Path(f"/proc/{pid}/status").read_text().splitlines() if l.startswith("VmRSS:")))
+mem={k:int(v.split()[0]) for k,v in (l.split(":",1) for l in pathlib.Path("/proc/meminfo").read_text().splitlines())}
+print("guest_used_KiB",mem["MemTotal"]-mem["MemAvailable"])
 PY
 }
 sample 0
@@ -32,9 +34,15 @@ systemd-run --quiet --wait --pipe --uid=kernova-adaptive /usr/bin/python3 -B "$p
 /usr/bin/python3 -B "$probe" external
 kernova-adaptive auto on
 kernova-adaptive status --json | python3 -c 'import json,sys; assert json.load(sys.stdin)["enabled"]'
+powerprofilesctl set power-saver
+sleep 1
+kernova-adaptive status --json | python3 -c 'import json,sys; assert json.load(sys.stdin)["external_override"]'
+powerprofilesctl set balanced
 dpkg -i "${candidate[0]}"
 sleep 2
-kernova-adaptive status --json | python3 -c 'import json,sys; assert json.load(sys.stdin)["enabled"]'
+kernova-adaptive status --json | python3 -c 'import json,sys; s=json.load(sys.stdin); assert s["enabled"] and s["external_override"]'
+kernova-adaptive auto on
+kernova-adaptive status --json | python3 -c 'import json,sys; assert not json.load(sys.stdin)["external_override"]'
 kernova-adaptive auto off
 kernova-adaptive report --json
 systemctl stop kernova-adaptive

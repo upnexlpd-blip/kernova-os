@@ -96,7 +96,13 @@ class Service:
         return int(self.backend.HoldProfile("power-saver", "Low system battery", APP, timeout=5))
 
     def release(self, cookie):
-        self.backend.ReleaseProfile(dbus.UInt32(cookie), timeout=5)
+        try:
+            self.backend.ReleaseProfile(dbus.UInt32(cookie), timeout=5)
+        except dbus.DBusException:
+            # Dropping our private connection also removes any surviving hold.
+            self.loop.quit()
+            GLib.idle_add(self.stop)
+            raise
 
     def names(self, name, old, new):
         if name == PP:
@@ -145,9 +151,11 @@ class Service:
         self.refresh()
         return True
 
-    def inputs(self):
+    def inputs(self, status):
         self.up = self.bus.get_name_owner(UP)
         root = self.props(self.up, UP_PATH, UP)
+        if "OnBattery" in root:
+            status["on_battery"] = bool(root["OnBattery"])
         db = self.interface(self.up, UP_PATH, UP)
         device = self.props(self.up, db.GetDisplayDevice(timeout=3), UP + ".Device")
         aggregate = device.get("IsPresent") and device.get("Type") == 2
@@ -220,7 +228,7 @@ class Service:
         try:
             if self.suspended:
                 raise ValueError("suspended")
-            s["on_battery"], s["percentage"] = self.inputs()
+            s["on_battery"], s["percentage"] = self.inputs(s)
         except (dbus.DBusException, ValueError, KeyError, TypeError) as exc:
             reasons.append("battery: " + str(exc))
         try:
@@ -232,12 +240,14 @@ class Service:
         except dbus.DBusException as exc:
             p.denied = str(exc)
             p.state, p.reason = "UNAVAILABLE", p.denied
-            if exc.get_dbus_name() not in ("org.freedesktop.DBus.Error.AccessDenied",
-                                            "org.freedesktop.PolicyKit1.Error.NotAuthorized") and "denied" not in str(exc).lower():
+            if exc.get_dbus_name() in ("org.freedesktop.DBus.Error.NoReply",
+                                       "org.freedesktop.DBus.Error.Disconnected",
+                                       "org.freedesktop.DBus.Error.Timeout"):
                 # An ambiguous method reply can leave an unknown hold. Disconnect this client.
                 self.loop.quit()
                 GLib.idle_add(self.stop)
         s.update(enabled=p.enabled, external_override=p.override, state=p.state, reason=p.reason,
+                 unavailable_reasons=reasons + ([p.denied] if p.denied else []),
                  requested_profile="power-saver" if p.cookie is not None else None, owns_hold=p.cookie is not None)
         if s != self.last_status:
             if (s["state"], s["reason"]) != (self.last_status.get("state"), self.last_status.get("reason")):
