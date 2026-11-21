@@ -41,3 +41,5 @@ systemctl status kernova-adaptive
 The verify job builds and tests the source on Debian trixie. The existing release process signs testing metadata in its protected publishing environment. Deployment from testing requires the configured testing source and an actually published candidate. Stable promotion is a separate release decision.
 
 Upstream references: [power-profiles-daemon hold lifecycle](https://upower.pages.freedesktop.org/power-profiles-daemon/gdbus-org.freedesktop.UPower.PowerProfiles.html), [UPower](https://upower.freedesktop.org/docs/), [Linux PSI](https://docs.kernel.org/accounting/psi.html).
+
+See the [Debian guest results and idle measurements](evidence/adaptive-0.1.18.md).
