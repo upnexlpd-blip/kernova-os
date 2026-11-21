@@ -25,6 +25,8 @@
   "installed_apps": "Desktop shortcuts",
   "settings": "System Settings",
   "network": "Wi-Fi and Network",
+  "connect_phone": "Connect phone",
+  "connect_phone_help": "Choose Share if Plasma asks for screen and input access. On the same home network, enter Krfb’s address, port and desktop sharing password in RealVNC Viewer on Android or iPhone. Accept the connection on the computer. Leave unattended access off. To disconnect, turn off “Enable Desktop Sharing” in Krfb.",
   "bluetooth_settings": "Bluetooth",
   "display_settings": "Display",
   "sound_settings": "Sound",

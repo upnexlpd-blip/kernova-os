@@ -1,0 +1,3 @@
+[General]
+# Plasma's Wayland fallback uses the desktop ID, and XSMP uses the executable.
+excludeApps=org.kde.krfb.desktop,org.kde.krfb,krfb

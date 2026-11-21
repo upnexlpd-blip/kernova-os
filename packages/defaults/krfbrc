@@ -1,0 +1,3 @@
+[Security]
+# Require the desktop user's approval when a sharing session starts.
+allowUnattendedAccess[$i]=false

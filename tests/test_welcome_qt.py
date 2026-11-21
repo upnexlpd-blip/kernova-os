@@ -135,6 +135,19 @@ class WelcomeQtTests(unittest.TestCase):
             ):
                 welcome.main()
 
+    def test_phone_sharing_starts_only_when_requested(self):
+        for locale_name in ("en_US", "mk_MK"):
+            with self.subTest(locale=locale_name), patch(
+                "system_info.Action.missing_package", return_value=None
+            ), patch.object(welcome.QProcess, "startDetached", return_value=(True, 42)) as start:
+                window = self.window(locale_name)
+                page = window.findChild(QStackedWidget).currentWidget()
+                self.assertIn(window.t("connect_phone_help"), [item.text() for item in page.findChildren(QLabel)])
+                start.assert_not_called()
+                self.button(page, window.t("connect_phone")).click()
+                start.assert_called_once_with("/usr/bin/krfb", [])
+                window.close()
+
     def test_fixed_action_passes_separate_program_and_arguments(self):
         window = self.window("en_US")
         with patch("system_info.Action.missing_package", return_value=None), patch.object(
