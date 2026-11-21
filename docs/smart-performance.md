@@ -1,5 +1,7 @@
 # Smart Performance 0.1.4 testing release
 
+For battery-triggered temporary holds and local pressure reports in the 0.1.18 candidate, see the [Adaptive Engine guide](adaptive-engine.md).
+
 Smart Performance 0.1.4 has been approved for the standard stable channel. Installed 0.1.3 users can follow the [stable update instructions](github-updates.md). The following procedure records the earlier opt-in test.
 
 ## Install on an existing KERNOVA 0.1.3 testing desktop

@@ -7,7 +7,6 @@ Type=notify
 ExecStart=/usr/bin/python3 -B /usr/share/kernova/adaptive/daemon.py
 Restart=always
 RestartSec=5s
-DynamicUser=yes
 User=kernova-adaptive
 RuntimeDirectory=kernova-adaptive
 StateDirectory=kernova-adaptive

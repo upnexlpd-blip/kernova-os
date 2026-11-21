@@ -42,9 +42,9 @@ systemctl start kernova-adaptive
 sleep 3
 sample "$(systemctl show kernova-adaptive -p MainPID --value)"
 dpkg --remove kernova-welcome kernova-performance
-test -e /var/lib/private/kernova-adaptive/settings.json
+test -e /var/lib/kernova-adaptive/settings.json
 test -e /etc/kernova/adaptive.json
 dpkg --purge kernova-performance
 test ! -e /etc/kernova/adaptive.json
-test ! -e /var/lib/private/kernova-adaptive/settings.json
+test ! -e /var/lib/kernova-adaptive/settings.json
 echo 'Adaptive lifecycle passed'
