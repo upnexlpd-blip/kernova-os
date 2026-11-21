@@ -1,7 +1,8 @@
 #!/bin/bash
 # Execute only in a disposable Debian 13 systemd guest with the previous package installed.
 set -euo pipefail
-candidate=$(realpath "$1")
+packages=$(realpath "$1")
+candidate=("$packages"/kernova-performance_*_all.deb)
 old=$(dpkg-query -W -f='${Version}' kernova-performance)
 [[ $old != 0.1.18 ]]
 echo "Upgrade baseline: kernova-performance $old"
@@ -23,12 +24,15 @@ if pid:print(next(l for l in pathlib.Path(f"/proc/{pid}/status").read_text().spl
 PY
 }
 sample 0
-apt-get -y --no-install-recommends install "$candidate"
+apt-get -y --no-remove --no-install-recommends install "$packages"/*.deb
 systemctl is-active kernova-adaptive
 kernova-adaptive status --json
+probe=$(realpath tests/probe_adaptive_guest.py)
+systemd-run --quiet --wait --pipe --uid=kernova-adaptive /usr/bin/python3 -B "$probe" disconnect
+/usr/bin/python3 -B "$probe" external
 kernova-adaptive auto on
 kernova-adaptive status --json | python3 -c 'import json,sys; assert json.load(sys.stdin)["enabled"]'
-dpkg -i "$candidate"
+dpkg -i "${candidate[0]}"
 sleep 2
 kernova-adaptive status --json | python3 -c 'import json,sys; assert json.load(sys.stdin)["enabled"]'
 kernova-adaptive auto off
@@ -37,7 +41,7 @@ systemctl stop kernova-adaptive
 systemctl start kernova-adaptive
 sleep 3
 sample "$(systemctl show kernova-adaptive -p MainPID --value)"
-dpkg --remove kernova-performance
+dpkg --remove kernova-welcome kernova-performance
 test -e /var/lib/private/kernova-adaptive/settings.json
 test -e /etc/kernova/adaptive.json
 dpkg --purge kernova-performance

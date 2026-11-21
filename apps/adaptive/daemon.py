@@ -59,6 +59,10 @@ class Service:
         self.manager.Subscribe(timeout=3)
         self.sd = self.bus.get_name_owner(SD)
         self.refresh()
+        address = os.environ.get("NOTIFY_SOCKET")
+        if address:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as notify:
+                notify.sendto(b"READY=1", address.replace("@", "\0", 1) if address.startswith("@") else address)
         GLib.timeout_add_seconds(60, self.watchdog)
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, self.stop)
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, self.stop)
