@@ -183,7 +183,7 @@ class Service:
         status["effective_profile"] = str(props["ActiveProfile"])
         if self.policy.effective is None:
             self.policy.effective = status["effective_profile"]
-        if not getattr(self, "validated", None) == owner:
+        if getattr(self, "validated", None) != owner:
             xml = self.interface(owner, PP_PATH, "org.freedesktop.DBus.Introspectable").Introspect(timeout=3)
             api = ET.fromstring(xml).find(f"interface[@name='{PP}']")
             if api is None or any(api.find(f"{kind}[@name='{name}']") is None for kind, name in
@@ -196,7 +196,9 @@ class Service:
         if "power-saver" not in status["profiles"]:
             raise ValueError("power-saver profile unavailable")
         status["capabilities"] = ["HoldProfile", "ReleaseProfile", "ProfileReleased"]
-        return any(h.get("ApplicationId") != APP for h in props["ActiveProfileHolds"])
+        holds = props["ActiveProfileHolds"]
+        return bool(holds) and (self.policy.cookie is None or len(holds) > 1 or
+                                holds[0].get("ApplicationId") != APP)
 
     def refresh(self):
         p = self.policy

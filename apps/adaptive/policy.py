@@ -33,6 +33,7 @@ class Policy:
 
     def reset_owner(self):
         self.cookie = self.expected = self.denied = None
+        self.early_releases = None
         self.latched = False
         self.effective = self.before = None
 
@@ -40,8 +41,8 @@ class Policy:
         if self.cookie is not None:
             cookie = self.cookie
             self.expected = (self.before, False)
-            self.release(cookie)
             self.cookie = None
+            self.release(cookie)
 
     def external(self):
         if self.enabled and not self.override:
@@ -59,6 +60,9 @@ class Policy:
             self.external()
 
     def released(self, cookie):
+        if self.early_releases is not None:
+            self.early_releases.add(cookie)
+            return
         if cookie == self.cookie:
             self.cookie = None
             self.external()
@@ -87,7 +91,21 @@ class Policy:
             elif self.cookie is None:
                 self.before = self.effective
                 self.expected = ("power-saver", True)
-                self.cookie = self.acquire()
+                self.early_releases = set()
+                try:
+                    cookie = self.acquire()
+                    revoked = cookie in self.early_releases
+                finally:
+                    self.early_releases = None
+                if revoked:
+                    self.external()
+                else:
+                    self.cookie = cookie
+                    if self.override:
+                        self.drop()
+                if self.override:
+                    self.state, self.reason = "EXTERNAL_OVERRIDE", "external change during acquisition"
+                    return
             self.state = "AUTO"
             self.reason = ("another client holds a profile" if competing else
                            "low battery" if self.latched else "monitoring power")

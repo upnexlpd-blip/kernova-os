@@ -73,6 +73,23 @@ class PolicyTests(unittest.TestCase):
         self.assertTrue(self.p.override)
         self.assertEqual(self.events.count(("release", 71)), 1)
 
+    def test_revocation_before_reply(self):
+        def revoked():
+            self.p.released(19)
+            return 19
+        self.p.acquire = revoked
+        self.p.configure(True)
+        self.sample(10)
+        self.assertTrue(self.p.override)
+        self.assertIsNone(self.p.cookie)
+
+    def test_expected_release_callback_before_reply(self):
+        self.p.configure(True)
+        self.sample(9)
+        self.p.release = self.p.released
+        self.sample(26)
+        self.assertFalse(self.p.override)
+
     def test_backend_restart_and_shutdown(self):
         self.p.configure(True)
         self.sample(11)
