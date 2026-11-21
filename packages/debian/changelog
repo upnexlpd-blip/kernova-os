@@ -1,3 +1,9 @@
+kernova-components (0.1.18) trixie; urgency=medium
+
+  * Add opt-in low-battery profile holds and local pressure diagnostics.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Sat, 21 Nov 2026 17:00:00 +0100
+
 kernova-components (0.1.17) trixie; urgency=medium
 
   * Add the English Kernova 2.0 Pro proposal and edition comparison to Welcome.

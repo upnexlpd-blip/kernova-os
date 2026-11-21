@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+if [ "$1" = purge ]; then
+    dir=/var/lib/private/kernova-adaptive
+    rm -f "$dir/settings.json" "$dir/settings.new"
+    if [ -d "$dir" ]; then rmdir --ignore-fail-on-non-empty "$dir"; fi
+    if [ -L /var/lib/kernova-adaptive ] && [ ! -d "$dir" ]; then
+        rm -f /var/lib/kernova-adaptive
+    fi
+fi
+#DEBHELPER#

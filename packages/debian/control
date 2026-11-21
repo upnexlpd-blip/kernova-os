@@ -55,7 +55,7 @@ Description: KDE Plasma desktop and everyday applications for KERNOVA
 Package: kernova-performance
 Architecture: all
 Section: kde
-Depends: ${misc:Depends}, python3, python3-pyside6.qtwidgets, apt
+Depends: ${misc:Depends}, python3, python3-pyside6.qtwidgets, apt, python3-dbus, python3-gi, gir1.2-glib-2.0
 Suggests: power-profiles-daemon, plasma-discover
 Description: Smart Performance Center and system updates for KERNOVA
  Launch a workload with Gaming, Coding, Battery Saver or Maximum Performance

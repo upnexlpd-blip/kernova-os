@@ -3,6 +3,9 @@
 %:
 	dh $@
 
+override_dh_installsystemd:
+	dh_installsystemd -pkernova-performance --name=kernova-adaptive
+
 override_dh_auto_build:
 	mkdir -p generated/48x48/apps
 	rsvg-convert -w 48 -h 48 -o generated/48x48/apps/kernova-torrent.png branding/kernova-torrent.svg
@@ -26,5 +29,6 @@ override_dh_compress:
 	dh_compress -Xuser-guide.md
 
 execute_after_dh_fixperms:
+	chmod 755 debian/kernova-performance/usr/share/kernova/adaptive/status.py
 	chmod 755 debian/kernova-desktop/usr/share/kernova/torrent/kernova-torrent
 	chmod 755 debian/kernova-performance/usr/share/kernova/performance/*.py

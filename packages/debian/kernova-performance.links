@@ -1,2 +1,3 @@
+usr/share/kernova/adaptive/status.py usr/bin/kernova-adaptive
 usr/share/kernova/performance/center.py usr/bin/kernova-performance
 usr/share/kernova/performance/profiles.py usr/bin/kernova-performance-run

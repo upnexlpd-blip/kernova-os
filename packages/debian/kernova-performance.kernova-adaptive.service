@@ -1,0 +1,27 @@
+[Unit]
+Description=KERNOVA Adaptive Engine
+After=dbus.service
+
+[Service]
+ExecStart=/usr/bin/python3 -B /usr/share/kernova/adaptive/daemon.py
+Restart=always
+RestartSec=5s
+DynamicUser=yes
+User=kernova-adaptive
+RuntimeDirectory=kernova-adaptive
+StateDirectory=kernova-adaptive
+StateDirectoryMode=0700
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target

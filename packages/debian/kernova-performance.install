@@ -1,3 +1,6 @@
+defaults/adaptive.json etc/kernova
+defaults/49-kernova-adaptive.rules usr/share/polkit-1/rules.d
+apps/adaptive/*.py usr/share/kernova/adaptive
 apps/performance/*.py usr/share/kernova/performance
 apps/integration/kernova-performance.desktop usr/share/applications
 apps/integration/kernova-update-center.desktop usr/share/applications
