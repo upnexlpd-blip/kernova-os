@@ -1,5 +1,11 @@
 # KERNOVA OS development preview
 
+## Discover delivery of phone control, System Help and adaptive power in 0.1.21
+
+On 21 November 2026 the [stable publisher](https://github.com/upnexlpd-blip/kernova-os/actions/runs/44939384862) delivered all five packages. The stable InRelease signature, signed index and downloaded package hashes were verified against the archive key and the successful Debian build. The [package checksums](packages/releases/0.1.21.sha256) matched the tested artifacts byte for byte.
+
+On an installed Debian 13 amd64 Plasma guest with KERNOVA 0.1.17, PackageKit offered and installed all five 0.1.21 updates from the public stable channel. The resulting desktop included Krfb and the Welcome action, the System Help executable and the active adaptive power service. Desktop sharing was off after the upgrade. Physical Android and iPhone checks are pending. [Upgrade transcript](docs/evidence/discover-0.1.21/stable-upgrade.txt)
+
 ## System Help 0.1.19 candidate
 
 `kernova-performance` includes `kernova-doctor`. Run it on demand from Konsole. The only repair clears mute on the confirmed default playback output. The adaptive service also recognizes an external profile transition found on refresh after a missed signal. See the [installed-system test record](docs/evidence/system-help-0.1.19.md) and [desktop guide](docs/user-guide.md).

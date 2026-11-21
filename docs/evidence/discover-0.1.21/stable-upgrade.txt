@@ -1,0 +1,44 @@
+Initial installed versions
+kernova-branding	0.1.17
+kernova-default-settings	0.1.17
+kernova-desktop	0.1.17
+kernova-performance	0.1.17
+kernova-welcome	0.1.17
+kernova-welcome:
+  Installed: 0.1.17
+  Candidate: 0.1.21
+  Version table:
+     0.1.21 100
+        100 https://raw.githubusercontent.com/upnexlpd-blip/kernova-linux/apt kernova-trixie/main amd64 Packages
+ *** 0.1.17 100
+        100 /var/lib/dpkg/status
+Normal       kernova-branding-0.1.21.all (kernova-kernova-trixie-main)
+Normal       kernova-default-settings-0.1.21.all (kernova-kernova-trixie-main)
+Normal       kernova-desktop-0.1.21.all (kernova-kernova-trixie-main)
+Normal       kernova-performance-0.1.21.all (kernova-kernova-trixie-main)
+Normal       kernova-welcome-0.1.21.all (kernova-kernova-trixie-main)
+Get:1 https://raw.githubusercontent.com/upnexlpd-blip/kernova-linux/apt kernova-trixie/main amd64 kernova-branding all 0.1.21 [16.3 MB]
+Get:2 https://raw.githubusercontent.com/upnexlpd-blip/kernova-linux/apt kernova-trixie/main amd64 kernova-default-settings all 0.1.21 [10.9 kB]
+Get:3 https://raw.githubusercontent.com/upnexlpd-blip/kernova-linux/apt kernova-trixie/main amd64 kernova-desktop all 0.1.21 [1685 kB]
+Get:4 https://raw.githubusercontent.com/upnexlpd-blip/kernova-linux/apt kernova-trixie/main amd64 kernova-performance all 0.1.21 [22.0 kB]
+Get:5 https://raw.githubusercontent.com/upnexlpd-blip/kernova-linux/apt kernova-trixie/main amd64 kernova-welcome all 0.1.21 [68.7 kB]
+Fetched 18.1 MB in 5s (3965 kB/s)
+W: Download is performed unsandboxed as root as file '/tmp/tmp.Q64ktDswkN/kernova-branding_0.1.21_all.deb' couldn't be accessed by user '_apt'. - pkgAcquire::Run (13: Permission denied)
+kernova-branding_0.1.21_all.deb: OK
+kernova-default-settings_0.1.21_all.deb: OK
+kernova-desktop_0.1.21_all.deb: OK
+kernova-performance_0.1.21_all.deb: OK
+kernova-welcome_0.1.21_all.deb: OK
+kernova-branding	0.1.21
+kernova-default-settings	0.1.21
+kernova-desktop	0.1.21
+kernova-performance	0.1.21
+kernova-welcome	0.1.21
+krfb	4:25.04.2-1
+active
+usage: kernova-doctor [-h] {scan,check,fix} ...
+
+On-demand local diagnostics for the KERNOVA desktop.
+        self.add_action(layout, "connect_phone")
+    "connect_phone": Action(("/usr/bin/krfb",), "krfb"),
+Signed stable channel: PackageKit offered all five updates, installed 0.1.21, phone sharing off by default.
