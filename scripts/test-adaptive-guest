@@ -30,7 +30,7 @@ apt-get -y --no-remove --no-install-recommends install "$packages"/*.deb
 systemctl is-active kernova-adaptive
 kernova-adaptive status --json
 probe=$(realpath tests/probe_adaptive_guest.py)
-systemd-run --quiet --wait --pipe --uid=kernova-adaptive /usr/bin/python3 -B "$probe" disconnect
+runuser -u kernova-adaptive -- /usr/bin/python3 -B "$probe" disconnect
 /usr/bin/python3 -B "$probe" external
 kernova-adaptive auto on
 kernova-adaptive status --json | python3 -c 'import json,sys; assert json.load(sys.stdin)["enabled"]'

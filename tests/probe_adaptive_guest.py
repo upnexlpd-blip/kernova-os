@@ -25,6 +25,7 @@ def main():
     DBusGMainLoop(set_as_default=True)
     service = Service.__new__(Service)
     service.bus = dbus.SystemBus(private=True)
+    service.bus.set_exit_on_disconnect(False)
     service.manager = service.interface(SD, SD_PATH, SD + ".Manager")
     service.owner = None
     service.queue = lambda: None
@@ -40,10 +41,12 @@ def main():
     p.configure(True)
     p.evaluate(True, 19, (20, 25))
     until(lambda: p.effective == "power-saver")
+    print("Acquired low-battery hold", flush=True)
     assert p.cookie and not p.override
     p.evaluate(False, 19, (20, 25))
     until(lambda: p.effective == "balanced")
     assert not p.override and p.cookie is None
+    print("Confirmed AC release", flush=True)
     p.evaluate(True, 19, (20, 25))
     until(lambda: p.effective == "power-saver")
     observer = dbus.SystemBus(private=True)
