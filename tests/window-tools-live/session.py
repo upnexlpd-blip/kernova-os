@@ -183,8 +183,24 @@ def run():
     click("wtqa.CloseTwo")
     act("Side",.9)
     assert "Two" not in frames() and near(frames()["Three"],before["Three"])
+    group = "Script-" + PLUGIN
+    for key,value in [("Gap","18"),("TemplateSlot","5")]:
+        subprocess.run(["kwriteconfig6","--file","kwinrc","--group",group,"--key",key,value],check=True)
+    act("Reload",.8)
+    select("Three","One")
+    act("Side",.9)
+    boxes = frames()
+    assert abs(boxes["One"][0] - boxes["Three"][0] - boxes["Three"][2] - 18) <= 2, boxes
+    act("Save",.7)
+    templates = dbus.Interface(bus.get_object("org.kernova.WindowTemplates","/Templates"), "org.kernova.WindowTemplates")
+    assert len(json.loads(templates.Load("5"))["value"]["slots"]) == 2
+    act("Delete")
+    assert not json.loads(templates.Load("5"))["ok"]
+    for key in ["Gap","TemplateSlot"]:
+        subprocess.run(["kwriteconfig6","--file","kwinrc","--group",group,"--key",key,"--delete"],check=True)
+    act("Reload",.8)
     activation(False)
-    print("PASS: ordered presets, duplicate, both protocols, saved slot reapply, full/partial undo, fixed window, closed slot, KWin reconfigure",flush=True)
+    print("PASS: ordered presets, both protocols, template reload, full/partial undo, refusal, closed slot, native settings reload",flush=True)
 
 if __name__ == "__main__":
     clients=[]

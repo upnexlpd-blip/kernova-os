@@ -44,7 +44,7 @@ const actions = [
     ["Clear","Clear selection"], ["Inspect","Show selection order"],
     ["Side","Side by Side"], ["Coding","Coding layout"], ["Undo","Undo last layout"],
     ["Save","Save selection to template"], ["Load","Apply template"], ["List","List saved templates"],
-    ["Delete","Delete template"]
+    ["Delete","Delete template"], ["Reload","Reload saved settings"]
 ];
 const templateBus = "org.kernova.WindowTemplates";
 const tilers = ["krohnkite","bismuth","polonium","karousel","kwin-tiling"];
@@ -59,6 +59,12 @@ deadline.timeout.connect(() => {
 function finish(token) {
     if (pending === token) { deadline.stop(); pending = null; }
 }
+options.configChanged.connect(() => {
+    if (pending && pending.reload) {
+        finish(pending);
+        feedback("Gap " + setting("Gap",8,0,64) + " logical pixels. Template " + configuredSlot() + ".");
+    }
+});
 function invoke(id, w, slot) {
     if (operation || pending) return feedback("A Window Tools action is in progress.");
     const token = {desktop:workspace.currentDesktop, activity:workspace.currentActivity};
@@ -76,6 +82,11 @@ function invoke(id, w, slot) {
     }
     function done(message) { finish(token); if (message) feedback(message); }
     function execute() {
+        if (id === "Reload") {
+            token.reload = true;
+            callDBus("org.kde.KWin","/KWin","org.kde.KWin","reconfigure");
+            return;
+        }
         if (id === "Clear") { selection = []; return done("Selection cleared."); }
         if (id === "Inspect") {
             const escaped = value => String(value).slice(0,55).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");

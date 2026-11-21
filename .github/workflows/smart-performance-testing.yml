@@ -78,7 +78,7 @@ jobs:
               # Renew metadata using the exact bytes users already installed.
               revision=$(cat "$work/repo/revision")
               git fetch origin "$revision"
-              git diff --quiet "$revision" "$GITHUB_SHA" -- apps branding config packages product.json scripts/build-packages scripts/check-session docs/user-guide.md LICENSE
+              git diff --quiet "$revision" "$GITHUB_SHA" -- apps branding config packages product.json scripts/build-packages scripts/check-session docs/user-guide.md docs/window-tools.md LICENSE
               gh release download "$tag" --dir "$work/manifest" -p SHA256SUMS -p SHA256SUMS.asc
               gpg --batch --verify "$work/manifest/SHA256SUMS.asc" "$work/manifest/SHA256SUMS"
               cp "$work/repo"/pool/main/k/kernova-components/*_"$version"_all.deb artifacts/debs/

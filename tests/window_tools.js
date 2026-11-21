@@ -38,12 +38,12 @@ function fixture() {
         start() { this.running=true; }
         stop() { this.running=false; }
     }
-    const output={name:"A"}, desktop={id:1};
+    const output={name:"A",geometry:bounds,devicePixelRatio:1}, desktop={id:1};
     const ws={screens:[output],currentDesktop:desktop,currentActivity:"a",clientArea:() => bounds};
     for (const kind of ["screensChanged","currentDesktopChanged","currentActivityChanged","windowRemoved"]) ws[kind]=new Signal();
     const shortcuts={}, messages=[], flags={};
     let menu;
-    const ctx=vm.createContext({QTimer:Timer,KWin:{MaximizeArea:1},workspace:ws,
+    const ctx=vm.createContext({QTimer:Timer,KWin:{MaximizeArea:1},workspace:ws,options:{configChanged:new Signal()},
         readConfig:(key,defaultValue)=>defaultValue,
         registerUserActionsMenu:fn=>{menu=fn;},
         registerShortcut:(key,title,shortcut,fn)=>{assert.equal(shortcut,""); shortcuts[key]=fn;},
@@ -112,6 +112,14 @@ test("Ineligible windows, fixed minimum, conflicts, closed slot and ambiguous co
     f.ws.screens.push({name:"A"});
     assert.throws(()=>vm.runInContext('uniqueOutput("A")',f.ctx),/Reconnect/);
     assert.throws(()=>vm.runInContext('uniqueOutput("missing")',f.ctx),/Reconnect/);
+});
+test("Overlapping connectors cannot claim the same frame center",()=>{
+    const f=fixture(), a=f.window(0), b=f.window(20);
+    f.ws.screens.push({name:"B",geometry:bounds,devicePixelRatio:1.25});
+    const initial=a.frameGeometry;
+    f.act("Add",a); f.act("Add",b); f.act("Side"); f.settle();
+    assert.deepEqual(a.frameGeometry,initial);
+    assert.match(f.messages.at(-1),/overlapping outputs/);
 });
 test("Closing or interacting during an asynchronous request never moves the surviving user's frame back",()=>{
     const f=fixture(),a=f.window(0),b=f.window(20);

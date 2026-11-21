@@ -42,13 +42,24 @@ function makeEntry(w, output, target) {
     const before = copyRect(w.frameGeometry);
     const from = {output:w.output, area:area(w.output)};
     const to = {output, area:area(output)};
-    if (!inside(before, from.area,tolerance(from.output))) throw Error("Move the entire starting frame inside its work area so Undo is possible.");
+    checkLocation(from.output, before, tolerance(from.output));
     checkFit(w, output, target);
     return {w, from, to, before, target, desktop:workspace.currentDesktop,
         activity:workspace.currentActivity, expected:target, reached:false, lost:false, links:[]};
 }
+function checkLocation(output, target, rounding) {
+    if (!inside(target, area(output),rounding)) throw Error("Place the whole frame inside its output work area.");
+    const cx = target.x + target.width / 2;
+    const cy = target.y + target.height / 2;
+    const owners = workspace.screens.filter(o => {
+        const g = o.geometry;
+        return cx >= g.x && cx < g.x + g.width && cy >= g.y && cy < g.y + g.height;
+    });
+    if (owners.length !== 1 || owners[0] !== output)
+        throw Error("Separate overlapping outputs in Display Configuration before placing this frame.");
+}
 function checkFit(w, output, target, rounding = 0) {
-    if (!inside(target, area(output),rounding)) throw Error("The frame would fall outside the work area.");
+    checkLocation(output, target, rounding);
     if (w.output !== output && !w.moveableAcrossScreens) throw Error("A window cannot move between these outputs.");
     const width = target.width - (w.frameGeometry.width - w.clientGeometry.width);
     const height = target.height - (w.frameGeometry.height - w.clientGeometry.height);
