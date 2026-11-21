@@ -2,6 +2,12 @@
 
 KERNOVA 0.1.3 includes the public signing key and package source. In an installed Plasma session, Discover periodically checks for updates and shows a notification when a newer package is available. Open **Discover â†’ Updates** to review and install it. A GitHub account is unnecessary.
 
+## Connect phone, System Help and adaptive power in 0.1.21
+
+Open **Discover → Updates → Refresh → Update All**. In **KERNOVA Welcome → Getting started → Connect phone**, allow Plasma to share the screen and input devices. On the same home network, enter Krfb’s address and desktop sharing password in RealVNC Viewer, then accept the incoming connection on the computer. Turn off **Enable Desktop Sharing** in Krfb to end the session. The desktop-side checks passed on Plasma Wayland. RealVNC Viewer checks on physical Android and iPhone devices are pending.
+
+Run `kernova-doctor scan` for system diagnostics and `kernova-adaptive status` to inspect adaptive power management. Automatic low-battery profile changes are opt-in.
+
 ## KERNOVA Torrent and Steam startup in 0.1.7
 
 Open **Discover > Updates > Refresh**, then select **Update All**. To start a download, double-click a torrent in Dolphin or open a magnet link and select **Download**. Find **KERNOVA Torrent** in the application menu to view progress, change speed limits, pause a transfer or open its folder. After signing back in, unfinished downloads resume automatically. Removing a transfer keeps its downloaded files.
