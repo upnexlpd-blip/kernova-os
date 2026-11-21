@@ -30,8 +30,9 @@ apt-get -y --no-remove --no-install-recommends install "$packages"/*.deb
 systemctl is-active kernova-adaptive
 kernova-adaptive status --json
 probe=$(realpath tests/probe_adaptive_guest.py)
-runuser -u kernova-adaptive -- /usr/bin/python3 -B "$probe" disconnect
-/usr/bin/python3 -B "$probe" external
+probe_status=0
+runuser -u kernova-adaptive -- /usr/bin/python3 -B "$probe" disconnect || probe_status=$?
+/usr/bin/python3 -B "$probe" external || probe_status=$?
 kernova-adaptive auto on
 kernova-adaptive status --json | python3 -c 'import json,sys; assert json.load(sys.stdin)["enabled"]'
 powerprofilesctl set power-saver
@@ -56,3 +57,4 @@ dpkg --purge kernova-performance
 test ! -e /etc/kernova/adaptive.json
 test ! -e /var/lib/kernova-adaptive/settings.json
 echo 'Adaptive lifecycle passed'
+exit "$probe_status"
