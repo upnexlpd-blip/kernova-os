@@ -1,5 +1,9 @@
 # KERNOVA OS development preview
 
+## Space wallpapers in 0.1.25 on stable
+
+The signed stable channel delivers 0.1.25 through Discover. The branding package adds five 4K wallpapers featuring Earth, Mars, the Moon, Jupiter and Saturn. A Debian 13 guest upgraded from 0.1.24 through PackageKit and verified all five installed images. [Release and upgrade evidence](docs/evidence/wallpapers-0.1.25.md)
+
 ## Performance and stability update 0.1.24 on stable
 
 The signed stable channel delivers 0.1.24 through Discover. An installed 0.1.23+stable1 desktop received all six updates through PackageKit and cold-booted into Plasma Wayland. Login helpers and the Performance Center returned sooner in the local audit, and Adaptive Engine stayed running with damaged settings. [Audit and stable delivery record](docs/evidence/system-audit-0.1.24.md)
