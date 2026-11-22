@@ -265,6 +265,8 @@ class WelcomeQtTests(unittest.TestCase):
         QTimer.singleShot(0, read_dialog)
         window.show_guide()
         self.assertIn("Sample content from the bundled guide.", rendered[0])
+        self.app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+        self.assertFalse(window.findChildren(QTextBrowser))
 
     def test_installed_and_unknown_states_display_truthful_status(self):
         window = self.window("en_US")

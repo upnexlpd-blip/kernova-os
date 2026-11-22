@@ -114,7 +114,8 @@ class DoctorTests(unittest.TestCase):
         with patch.object(doctor, "command", return_value="active"):
             for reasons, expected in ((["battery: no present system battery"], "NOT_APPLICABLE"),
                                       (["battery: no present system battery", "backend: denied"], "UNKNOWN"),
-                                      (["configuration: invalid thresholds"], "PROBLEM")):
+                                      (["configuration: invalid thresholds"], "PROBLEM"),
+                                      (["configuration: cannot load saved automation settings"], "PROBLEM")):
                 with patch.object(doctor, "read_status", return_value=dict(state="UNAVAILABLE", enabled=False,
                                   external_override=False, unavailable_reasons=reasons)):
                     self.assertEqual(doctor.check("adaptive.policy").status, expected)

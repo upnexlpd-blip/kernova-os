@@ -7,13 +7,17 @@ import sys
 import gi
 
 gi.require_version("GWeather", "4.0")
-from gi.repository import Gio, GLib, GWeather
+from gi.repository import Gio, GLib
 
 
 def selected_city():
     locations = Gio.Settings.new("org.gnome.Weather").get_value("locations")
+    count = locations.n_children()
+    if not count:
+        return None
+    from gi.repository import GWeather
     world = GWeather.Location.get_world()
-    for index in range(locations.n_children()):
+    for index in range(count):
         city = world.deserialize(locations.get_child_value(index).get_variant())
         if city is not None:
             return city
@@ -21,6 +25,7 @@ def selected_city():
 
 
 def temperature(city):
+    from gi.repository import GWeather
     weather = GWeather.Info(
         location=city, application_id="org.kernova.Weather",
         contact_info="https://github.com/upnexlpd-blip/kernova-os",

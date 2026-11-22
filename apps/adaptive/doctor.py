@@ -168,7 +168,7 @@ def adaptive():
         if reasons == ["battery: no present system battery"]:
             return "NOT_APPLICABLE", evidence, "UPower has no present system battery."
         if isinstance(reasons, list) and any(isinstance(r, str) and r.startswith("configuration:") for r in reasons):
-            return "PROBLEM", "The engine rejected its configuration.", "The adaptive thresholds could not be loaded."
+            return "PROBLEM", "The engine rejected its configuration.", "Check its thresholds and saved automation settings."
         raise Unavailable("The engine reports UNAVAILABLE. Power or provider data could not be validated.")
     if state == "EXTERNAL_OVERRIDE" and enabled and override:
         return "OK", evidence, "Automation is yielding to a manual profile choice."

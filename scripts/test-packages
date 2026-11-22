@@ -18,7 +18,8 @@ def build_fixture(target, version):
     fixture.mkdir()
     for name in ("packages", "branding", "apps"):
         shutil.copytree(ROOT / name, fixture / name, ignore=shutil.ignore_patterns("__pycache__"))
-    for name in ("LICENSE", "config/profiles/preview.list.chroot", "scripts/build-packages", "scripts/check-session", "docs/user-guide.md"):
+    for name in ("LICENSE", "config/profiles/preview.list.chroot", "scripts/build-packages", "scripts/check-session",
+                 "docs/user-guide.md", "docs/window-tools.md"):
         dest = fixture / name
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / name, dest)
@@ -65,7 +66,9 @@ def main():
     log = job / "lifecycle.log"
     print(f"Running isolated APT checks, including desktop dependencies. Log: {log}", flush=True)
     with log.open("wb") as stream:
-        result = subprocess.run(command, cwd=job, stdout=stream, stderr=subprocess.STDOUT)
+        # A full Plasma installation exceeds the default tmpfs on a 4 GiB guest.
+        result = subprocess.run(command, cwd=job, env=dict(os.environ, TMPDIR=os.environ.get("TMPDIR") or "/var/tmp"),
+                                stdout=stream, stderr=subprocess.STDOUT)
     if result.returncode:
         sys.stderr.write("\n".join(log.read_text(errors="replace").splitlines()[-25:]) + "\n")
         raise SystemExit(f"mmdebstrap package lifecycle failed ({result.returncode}). Evidence: {log}")

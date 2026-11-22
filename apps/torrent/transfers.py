@@ -5,6 +5,7 @@ import sqlite3
 import time
 
 import libtorrent as lt
+from queue_state import has_pending, queue_path
 
 
 def parse_source(source):
@@ -29,10 +30,9 @@ def identity(params):
 
 class Transfers:
     def __init__(self):
-        home = Path(os.environ.get("XDG_STATE_HOME") or Path.home() / ".local/state")
-        root = home / "kernova-torrent"
-        root.mkdir(mode=0o700, parents=True, exist_ok=True)
-        self.db = sqlite3.connect(root / "queue.sqlite")
+        path = queue_path()
+        path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        self.db = sqlite3.connect(path)
         self.db.row_factory = sqlite3.Row
         self.db.executescript("""
             CREATE TABLE IF NOT EXISTS transfers (
@@ -42,6 +42,7 @@ class Transfers:
         """)
         self.session = None
         self.handles = {}
+        self.save_requests = {}
         self.errors = {}
 
     def start(self):
@@ -65,7 +66,7 @@ class Transfers:
         return self.db.execute("SELECT id, folder, paused, complete FROM transfers ORDER BY rowid").fetchall()
 
     def pending(self):
-        return self.db.execute("SELECT 1 FROM transfers WHERE NOT paused AND NOT complete LIMIT 1").fetchone()
+        return has_pending(self.db)
 
     def attach(self, row):
         item = self.db.execute("SELECT source,resume FROM transfers WHERE id=?", (row["id"],)).fetchone()
@@ -107,7 +108,7 @@ class Transfers:
             self.attach(self.db.execute("SELECT * FROM transfers WHERE id=?", (key,)).fetchone())
         elif paused:
             handle.pause()
-            handle.save_resume_data(lt.save_resume_flags_t.save_info_dict)
+            self.request_save(handle)
         else:
             handle.clear_error()
             handle.resume()
@@ -118,6 +119,7 @@ class Transfers:
         handle = self.handles.pop(key, None)
         if handle is not None:
             self.session.remove_torrent(handle)
+            self.save_requests.pop(handle, None)
         self.errors.pop(key, None)
 
     def limit(self):
@@ -129,37 +131,49 @@ class Transfers:
         with self.db:
             self.db.execute("INSERT OR REPLACE INTO settings VALUES ('limit',?)", (value,))
 
+    def request_save(self, handle, changed_only=False):
+        flags = lt.save_resume_flags_t.save_info_dict
+        if changed_only:
+            flags |= lt.save_resume_flags_t.only_if_modified
+        handle.save_resume_data(flags)
+        self.save_requests[handle] = self.save_requests.get(handle, 0) + 1
+
     def collect(self):
-        saved = set()
+        keys = None
+        updates = []
         for alert in self.session.pop_alerts():
             if isinstance(alert, (lt.save_resume_data_alert, lt.save_resume_data_failed_alert,
                                   lt.torrent_finished_alert, lt.metadata_received_alert)):
-                key = next((k for k, h in self.handles.items() if h == alert.handle), None)
+                if keys is None:
+                    keys = {handle: key for key, handle in self.handles.items()}
+                key = keys.get(alert.handle)
                 if key is None:
                     continue
                 if isinstance(alert, lt.save_resume_data_alert):
-                    with self.db:
-                        self.db.execute("UPDATE transfers SET resume=? WHERE id=?",
-                                        (lt.write_resume_data_buf(alert.params), key))
-                    saved.add(key)
-                elif isinstance(alert, lt.save_resume_data_failed_alert):
-                    saved.add(key)
+                    updates.append((lt.write_resume_data_buf(alert.params), key))
+                elif not isinstance(alert, lt.save_resume_data_failed_alert):
+                    self.request_save(alert.handle)
+                    continue
+                remaining = self.save_requests.get(alert.handle, 0) - 1
+                if remaining > 0:
+                    self.save_requests[alert.handle] = remaining
                 else:
-                    alert.handle.save_resume_data(lt.save_resume_flags_t.save_info_dict)
-        return saved
+                    self.save_requests.pop(alert.handle, None)
+        if updates:
+            with self.db:
+                self.db.executemany("UPDATE transfers SET resume=? WHERE id=?", updates)
 
-    def checkpoint(self):
+    def checkpoint(self, changed_only=True):
         for handle in self.handles.values():
-            handle.save_resume_data(lt.save_resume_flags_t.save_info_dict)
+            self.request_save(handle, changed_only)
 
     def close(self):
         if self.session:
             self.collect()
             self.session.pause()
-            self.checkpoint()
-            pending = set(self.handles)
+            self.checkpoint(changed_only=False)
             deadline = time.monotonic() + 3
-            while pending and time.monotonic() < deadline:
+            while self.save_requests and time.monotonic() < deadline:
                 self.session.wait_for_alert(100)
-                pending -= self.collect()
+                self.collect()
         self.db.close()

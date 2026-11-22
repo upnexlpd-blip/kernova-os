@@ -1,3 +1,10 @@
+kernova-components (0.1.24) UNRELEASED; urgency=medium
+
+  * Reduce repeated work at desktop login and during background refreshes.
+  * Keep the Performance Center responsive while it queries system services.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Sun, 22 Nov 2026 12:00:00 +0100
+
 kernova-components (0.1.23+stable1) trixie; urgency=medium
 
   * Require Window Tools in the desktop metapackage so Discover installs it

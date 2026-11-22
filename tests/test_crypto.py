@@ -97,6 +97,19 @@ class CryptoWindowTests(unittest.TestCase):
         self.window.received("chart:BTCUSDT:24H", [(1000, 10, 12, 8, 11, 5)], None)
         self.assertEqual(self.window.chart.rows, [])
 
+    def test_rapid_market_selections_only_request_first_and_latest_chart(self):
+        with patch.object(crypto.QThreadPool, "globalInstance") as pool:
+            for index in range(25):
+                self.window.active_symbol = f"COIN{index}USDT"
+                self.window.fetch_chart()
+            self.assertEqual(pool.return_value.start.call_count, 1)
+            self.window.received("chart:COIN0USDT:24H", [], None)
+            self.assertEqual(pool.return_value.start.call_count, 2)
+            self.assertEqual(list(self.window.pending), ["chart:COIN24USDT:24H"])
+            chart = [(1000, 10, 12, 8, 11, 5)]
+            self.window.received("chart:COIN24USDT:24H", chart, None)
+            self.assertEqual(self.window.chart.rows, chart)
+
     def test_featured_market_opens_when_hidden_by_search(self):
         self.window.received("prices", self.rows, None)
         self.window.search.setText("BTC")
@@ -118,11 +131,13 @@ class CryptoWindowTests(unittest.TestCase):
 
     def test_closing_window_suppresses_late_network_delivery(self):
         delivered = []
-        task = crypto.Fetch("prices", lambda: self.rows, self.window.stopping)
+        fetch = unittest.mock.Mock(return_value=self.rows)
+        task = crypto.Fetch("prices", fetch, self.window.stopping)
         task.signals.finished.connect(lambda *args: delivered.append(args))
         self.window.close()
         task.run()
         self.assertEqual(delivered, [])
+        fetch.assert_not_called()
 
     def test_rate_limit_keeps_snapshot_and_stops_requests(self):
         self.window.received("prices", self.rows, None)

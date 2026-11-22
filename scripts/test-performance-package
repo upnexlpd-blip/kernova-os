@@ -13,10 +13,14 @@ python3 - <<'PY'
 import sys
 sys.path.insert(0,"/usr/share/kernova/performance")
 from center import QApplication, Center
+from PySide6.QtCore import QThreadPool
 app = QApplication([])
 win = Center()
 assert win.mode.count() == 4
 win.tabs.setCurrentIndex(1)
+assert QThreadPool.globalInstance().waitForDone(15000)
+app.processEvents()
+assert win.refresh.isEnabled()
 assert win.history.toPlainText()
 PY
 # Actually interrupt dpkg between unpack and configure, then recover its pending state.

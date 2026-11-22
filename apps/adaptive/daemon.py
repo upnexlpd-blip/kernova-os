@@ -36,10 +36,7 @@ class Service:
         self.last_status = {}
         self.delay = 1
         self.retry = None
-        settings = json.loads(STATE.read_text()) if STATE.exists() else {"enabled": False, "override": False}
-        if any(type(settings.get(k)) is not bool for k in ("enabled", "override")):
-            raise ValueError("invalid persistent automation settings")
-        self.policy = Policy(self.hold, self.release, self.save, **settings)
+        self.policy = self.load_policy()
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         self.sock.setblocking(False)
         control = RUN / "control"
@@ -73,8 +70,26 @@ class Service:
     def props(self, dest, path, iface):
         return self.interface(dest, path, PROPS).GetAll(iface, timeout=3)
 
+    def load_policy(self):
+        self.settings_issue = None
+        try:
+            settings = json.loads(STATE.read_text())
+            if (not isinstance(settings, dict) or settings.keys() != {"enabled", "override"}
+                    or any(type(value) is not bool for value in settings.values())
+                    or settings["override"] and not settings["enabled"]):
+                raise ValueError("invalid automation settings")
+        except FileNotFoundError:
+            settings = {}
+        except (ValueError, OSError) as exc:
+            self.settings_issue = ("configuration: cannot load saved automation settings; "
+                                   "use kernova-adaptive auto off or on to reset them")
+            logging.warning("Could not load saved automation settings: %s", exc)
+            settings = {}
+        return Policy(self.hold, self.release, self.save, **settings)
+
     def save(self, enabled, override):
         atomic(STATE, {"enabled": enabled, "override": override})
+        self.settings_issue = None
 
     def command(self, fd, condition):
         data, address = self.sock.recvfrom(32)
@@ -120,7 +135,12 @@ class Service:
             if "ActiveProfile" in changes:
                 holds = changes.get("ActiveProfileHolds")
                 ours = None if holds is None else any(h.get("ApplicationId") == APP for h in holds)
-                self.policy.changed(str(changes["ActiveProfile"]), ours)
+                profile = str(changes["ActiveProfile"])
+                # A provider can notify the profile before publishing the hold list.
+                # Resolve our expected transition from the full snapshot in provider().
+                expected = self.policy.expected
+                if ours is not None or expected is None or profile != expected[0]:
+                    self.policy.changed(profile, ours)
             self.queue()
         elif sender == self.up or (sender == self.sd and path.rsplit("/", 1)[-1] in
                                     ("tlp_2eservice", "tuned_2eservice", "auto_2dcpufreq_2eservice",
@@ -219,7 +239,7 @@ class Service:
         p = self.policy
         s = dict(backend=None, capabilities=[], profiles=[], effective_profile=None, on_battery=None,
                  percentage=None, enter_threshold=None, exit_threshold=None)
-        reasons = []
+        reasons = [self.settings_issue] if self.settings_issue else []
         competing = False
         try:
             settings = json.loads(CONFIG.read_text())
@@ -257,10 +277,14 @@ class Service:
                 logging.warning("%s: %s", s["state"], s["reason"])
             atomic(RUN / "status.json", s)
             self.last_status = s
-        if reasons and self.retry is None:
+        # The independent 60-second watchdog covers prolonged outages.
+        if reasons and self.retry is None and self.delay < 60:
             self.retry = GLib.timeout_add_seconds(self.delay, self.reconnect)
             self.delay = min(60, self.delay * 2)
         elif not reasons:
+            if self.retry is not None:
+                GLib.source_remove(self.retry)
+                self.retry = None
             self.delay = 1
 
     def reconnect(self):

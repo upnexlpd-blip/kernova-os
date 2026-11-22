@@ -396,6 +396,7 @@ class WelcomeWindow(QWidget):
         close.clicked.connect(dialog.accept)
         layout.addWidget(close, alignment=Qt.AlignmentFlag.AlignRight)
         dialog.exec()
+        dialog.deleteLater()
 
     def build_credits(self, layout: QVBoxLayout):
         layout.addWidget(label(self.t("credits_text")))

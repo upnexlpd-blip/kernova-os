@@ -93,6 +93,8 @@ class Fetch(QRunnable):
         self.signals = Signals()
 
     def run(self):
+        if self.stopping.is_set():
+            return
         try:
             value, error = self.function(), None
         except Exception as reason:
@@ -448,11 +450,15 @@ class Crypto(QMainWindow):
     def fetch_chart(self):
         if self.chart.rows and time.time() - self.chart_at < 60:
             return
+        if any(key.startswith("chart:") for key in self.pending):
+            return
         symbol, period = self.active_symbol, self.period
         self.fetch("chart:" + symbol + ":" + period, lambda: candles(symbol, period))
 
     def received(self, key, value, error):
-        self.pending.pop(key, None)
+        task = self.pending.pop(key, None)
+        if self.stopping.is_set():
+            return
         if error is not None:
             if isinstance(error, MarketError):
                 self.cooldown = max(self.cooldown, time.monotonic() + error.retry_after)
@@ -492,6 +498,8 @@ class Crypto(QMainWindow):
             self.chart_at = time.time()
             interval = PERIODS[self.period][0]
             self.chart_status.setText(f"{interval} candles · Updated {datetime.now():%H:%M:%S} · Latest candle can still change")
+        elif task is not None and key.startswith("chart:"):
+            self.fetch_chart()
 
     def tick(self):
         if self.snapshot_at and time.time() - self.snapshot_at > 60:

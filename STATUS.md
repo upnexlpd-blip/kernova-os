@@ -1,5 +1,9 @@
 # KERNOVA OS development preview
 
+## Local performance and stability candidate 0.1.24
+
+An installed 0.1.23+stable1 desktop upgraded to all six 0.1.24 packages and cold-booted into Plasma Wayland. Login helpers and the Performance Center returned sooner in the guest, and Adaptive Engine stayed running with damaged settings. The [audit record](docs/evidence/system-audit-0.1.24.md) gives the measurements, test environment and hardware coverage. Distribution status is local testing.
+
 ## Window Tools 0.1.23 on stable
 
 Discover now installs Window Tools automatically with the standard KERNOVA desktop update `0.1.23+stable1`. An installed 0.1.21 guest received all six packages through **Update All** on the public stable channel. First installation preserves KWin settings and leaves activation to the user. See the [Discover screenshot and signed upgrade record](docs/evidence/window-tools-v1/stable.md).
