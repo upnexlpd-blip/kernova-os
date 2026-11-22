@@ -1,0 +1,14 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaEarthAurora",
+    "Name": "KERNOVA · Earth Aurora",
+    "Name[mk]": "KERNOVA · Аурора над Земјата",
+    "Authors": [
+      {
+        "Name": "KERNOVA OS contributors"
+      }
+    ],
+    "License": "AI-generated artwork, MIT overlay"
+  }
+}

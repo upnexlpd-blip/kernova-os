@@ -1,0 +1,14 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaLunarDawn",
+    "Name": "KERNOVA · Lunar Dawn",
+    "Name[mk]": "KERNOVA · Зора на Месечината",
+    "Authors": [
+      {
+        "Name": "KERNOVA OS contributors"
+      }
+    ],
+    "License": "AI-generated artwork, MIT overlay"
+  }
+}

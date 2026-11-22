@@ -1,0 +1,14 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaMarsCanyons",
+    "Name": "KERNOVA · Mars Canyons",
+    "Name[mk]": "KERNOVA · Кањоните на Марс",
+    "Authors": [
+      {
+        "Name": "KERNOVA OS contributors"
+      }
+    ],
+    "License": "AI-generated artwork, MIT overlay"
+  }
+}

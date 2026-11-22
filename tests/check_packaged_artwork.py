@@ -10,7 +10,7 @@ def main(root):
     source = Path(__file__).resolve().parents[1]
     share = root / "usr/share"
     images = sorted((share / "wallpapers").glob("Kernova*/contents/images/3840x2160.jpg"))
-    assert len(images) == 10, f"Expected ten KERNOVA photographs, found {len(images)}"
+    assert len(images) == 15, f"Expected fifteen KERNOVA wallpapers, found {len(images)}"
     for image in images:
         directory = image.parents[2]
         plugin = json.loads((directory / "metadata.json").read_bytes())["KPlugin"]
@@ -26,7 +26,7 @@ def main(root):
     ribbon = share / "kernova/welcome/icons/pro-ribbon.jpg"
     assert not QImageReader(str(ribbon)).read().isNull(), ribbon
     assert (share / "kernova/welcome/pro_comparison.py").is_file()
-    print("Verified ten packaged 4K photographs, twelve application icons and the Pro comparison artwork.")
+    print("Verified fifteen packaged 4K wallpapers, twelve application icons and the Pro comparison artwork.")
 
 
 if __name__ == "__main__":

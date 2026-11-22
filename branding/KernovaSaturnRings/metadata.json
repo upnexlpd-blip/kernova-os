@@ -1,0 +1,14 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaSaturnRings",
+    "Name": "KERNOVA · Saturn Rings",
+    "Name[mk]": "KERNOVA · Прстените на Сатурн",
+    "Authors": [
+      {
+        "Name": "KERNOVA OS contributors"
+      }
+    ],
+    "License": "AI-generated artwork, MIT overlay"
+  }
+}

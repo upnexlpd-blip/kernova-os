@@ -1,0 +1,14 @@
+{
+  "KPackageStructure": "Wallpaper/Images",
+  "KPlugin": {
+    "Id": "KernovaJupiterStorm",
+    "Name": "KERNOVA · Jupiter Storm",
+    "Name[mk]": "KERNOVA · Бура на Јупитер",
+    "Authors": [
+      {
+        "Name": "KERNOVA OS contributors"
+      }
+    ],
+    "License": "AI-generated artwork, MIT overlay"
+  }
+}
