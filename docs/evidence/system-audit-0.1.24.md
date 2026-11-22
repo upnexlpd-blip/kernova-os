@@ -31,4 +31,10 @@ One cold boot per version reached the systemd graphical target. Kernel plus user
 
 The firmware test used UEFI with Secure Boot off. The VM exposed Ethernet and a virtual sound device. Physical battery transitions, Wi-Fi, Bluetooth transfers, GPU performance, suspend/resume and extended uptime require hardware testing. BlueZ logged two contacts-registry warnings because Evolution Data Server was absent. Its OBEX service was active and exposed its client interface, with zero restarts.
 
-The local audit bundle is under `artifacts/system-audit-0.1.24/`. It contains the six Debian packages, their SHA-256 manifest, the benchmark probes and transcripts under `evidence/`. The public update channel was outside this local test.
+The local audit bundle is under `artifacts/system-audit-0.1.24/`. It contains the locally built Debian packages, their SHA-256 manifest, the benchmark probes and transcripts under `evidence/`.
+
+## Stable publication
+
+The Debian testing workflow built and tested all six packages and published a signed testing release from commit `33e3944`. Stable promotion `6c0c7e7` reused those exact packages. Independent downloads verified both signed indexes, the signed testing manifest and all six package hashes against the pinned stable manifest. [Testing workflow](https://github.com/upnexlpd-blip/kernova-os/actions/runs/45018964884) · [Stable workflow](https://github.com/upnexlpd-blip/kernova-os/actions/runs/45019201192) · [Package hashes](../../packages/releases/0.1.24.sha256)
+
+On 22 November 2026 a separate installed Debian 13 UEFI guest started at `0.1.23+stable1` with only the KERNOVA stable source active. PackageKit refreshed the public archive, listed all six `0.1.24` updates and installed them. All package files verified, and the original KWin settings, Debian identity and APT source checksums matched. After a cold boot, Plasma Wayland and Adaptive Engine were active, system and user units reported no failures, and the installed session diagnostic passed. The local evidence directory contains the release signature, PackageKit update and post-boot transcripts.

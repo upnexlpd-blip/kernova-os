@@ -1,8 +1,8 @@
 # KERNOVA OS development preview
 
-## Local performance and stability candidate 0.1.24
+## Performance and stability update 0.1.24 on stable
 
-An installed 0.1.23+stable1 desktop upgraded to all six 0.1.24 packages and cold-booted into Plasma Wayland. Login helpers and the Performance Center returned sooner in the guest, and Adaptive Engine stayed running with damaged settings. The [audit record](docs/evidence/system-audit-0.1.24.md) gives the measurements, test environment and hardware coverage. Distribution status is local testing.
+The signed stable channel delivers 0.1.24 through Discover. An installed 0.1.23+stable1 desktop received all six updates through PackageKit and cold-booted into Plasma Wayland. Login helpers and the Performance Center returned sooner in the local audit, and Adaptive Engine stayed running with damaged settings. [Audit and stable delivery record](docs/evidence/system-audit-0.1.24.md)
 
 ## Window Tools 0.1.23 on stable
 
