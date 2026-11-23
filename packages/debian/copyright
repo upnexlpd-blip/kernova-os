@@ -108,9 +108,10 @@ Files: branding/KernovaEarthAurora/contents/images/3840x2160.jpg
        branding/KernovaLunarDawn/contents/images/3840x2160.jpg
        branding/KernovaJupiterStorm/contents/images/3840x2160.jpg
        branding/KernovaSaturnRings/contents/images/3840x2160.jpg
+       branding/KernovaNewYork/contents/images/3840x2160.jpg
 Copyright: 2026 KERNOVA OS contributors (brand artwork)
 License: Expat
-Comment: The space scenes were generated with OpenAI ImageGen. The KERNOVA
+Comment: The space and New York scenes were generated with OpenAI ImageGen. The KERNOVA
  OS contributors prepared the images and added the KERNOVA mark.
 
 License: GPL-3

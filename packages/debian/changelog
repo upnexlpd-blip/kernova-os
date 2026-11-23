@@ -1,3 +1,15 @@
+kernova-components (0.1.27) trixie; urgency=medium
+
+  * Add the KERNOVA New York 4K wallpaper.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Mon, 23 Nov 2026 22:25:58 +0100
+
+kernova-components (0.1.26) trixie; urgency=medium
+
+  * Diagnose Plasma software rendering and missing NVIDIA GBM support.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Mon, 23 Nov 2026 22:16:50 +0100
+
 kernova-components (0.1.25) trixie; urgency=medium
 
   * Add five 4K space wallpapers to the Plasma wallpaper chooser.

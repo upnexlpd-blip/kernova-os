@@ -4,6 +4,7 @@ import argparse
 from dataclasses import asdict, dataclass
 import json
 import os
+from pathlib import Path
 import platform
 import re
 import subprocess
@@ -189,6 +190,33 @@ def kernel_pressure():
     return "OK", evidence, "CPU, memory and I/O pressure counters are readable."
 
 
+def graphics():
+    if os.environ.get("XDG_SESSION_TYPE") != "wayland":
+        return "NOT_APPLICABLE", "Session type is outside Wayland.", "Run this check in Plasma Wayland."
+    info = command("qdbus6", "org.kde.KWin", "/KWin", "supportInformation")
+    match = re.search(r"^OpenGL renderer string: (.+)$", info, re.M)
+    if not match:
+        raise Unavailable("KWin did not report an OpenGL renderer.")
+    software = re.search(r"\b(llvmpipe|softpipe|swrast|swiftshader)\b", match[1], re.I)
+    if not software:
+        return "OK", "KWin reports an OpenGL renderer.", "No known software renderer detected."
+
+    evidence = f"KWin renderer = {software[1].lower()}."
+    explanation = "The CPU is drawing the desktop, which can cause stuttering."
+    if Path("/sys/module/nvidia_drm").is_dir():
+        components = {
+            "libnvidia-allocator1": "/usr/lib/x86_64-linux-gnu/nvidia/current/nvidia-drm_gbm.so",
+            "libnvidia-egl-gbm1": "/usr/share/egl/egl_external_platform.d/15_nvidia_gbm.json",
+        }
+        missing = [package for package, filename in components.items() if not Path(filename).is_file()]
+        if missing:
+            explanation += " NVIDIA DRM is loaded. Install missing GBM support with sudo apt install "
+            explanation += " ".join(missing) + ". Then sign out and back in."
+        else:
+            explanation += " NVIDIA GBM files are present. If just installed, sign out and back in."
+    return "PROBLEM", evidence, explanation
+
+
 CHECKS = {
     "network.local": (network, "Check the Network and Wi-Fi settings in Plasma."),
     "network.online": (internet, "Retry the optional HTTPS check when internet access is expected."),
@@ -198,6 +226,7 @@ CHECKS = {
     "disk.space": (disk_capacity, "Review filesystem usage with df -h /."),
     "disk.inodes": (lambda: disk_capacity(True), "Review inode usage with df -i /."),
     "adaptive.policy": (adaptive, "Inspect kernova-adaptive status and systemctl status kernova-adaptive."),
+    "graphics.renderer": (graphics, "Recheck after signing in. If it persists, inspect the KWin startup journal."),
     "adaptive.pressure": (kernel_pressure, "Inspect kernova-adaptive report --json for kernel pressure readings."),
 }
 
@@ -276,7 +305,7 @@ def main(argv=None):
     sub = cli.add_subparsers(dest="action", required=True)
     scan = sub.add_parser("scan")
     one = sub.add_parser("check")
-    one.add_argument("area", choices=["network", "audio", "updates", "disk", "adaptive"])
+    one.add_argument("area", choices=list(dict.fromkeys(key.split(".")[0] for key in CHECKS)))
     for parser in (scan, one):
         parser.add_argument("--json", action="store_true")
         parser.add_argument("--online", action="store_true", help="also probe Debian over HTTPS (4s)")

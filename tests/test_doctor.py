@@ -33,6 +33,8 @@ class DoctorTests(unittest.TestCase):
 
     def test_full_scan_only_reads_local_allowlisted_state(self):
         read_commands = {
+            ("qdbus6", "org.kde.KWin", "/KWin", "supportInformation"):
+                "OpenGL renderer string: NVIDIA GeForce RTX 3060",
             ("systemctl", "--user", "show", "pipewire.service", "-p", "ActiveState", "-p", "InvocationID"): PIPEWIRE,
             ("nmcli", "-t", "-f", "STATE", "general"): "connected (site only)",
             ("wpctl", "inspect", "@DEFAULT_AUDIO_SINK@"): sink_info(),
@@ -46,7 +48,8 @@ class DoctorTests(unittest.TestCase):
         read_commands[(*flags, "madison", "kernova-performance")] = "kernova-performance | 0.1.19 | https://private-token@host/"
         state = dict(state="EXTERNAL_OVERRIDE", enabled=True, external_override=True, reason="private-debug-text")
         psi = {k: {"some": {"total": 25}} for k in ("cpu", "memory", "io")}
-        with (patch.object(doctor, "command", side_effect=lambda *a, **kw: read_commands[a]),
+        with (patch.dict(doctor.os.environ, XDG_SESSION_TYPE="wayland"),
+              patch.object(doctor, "command", side_effect=lambda *a, **kw: read_commands[a]),
               patch.object(doctor, "pressure", return_value=psi), patch.object(doctor, "read_status", return_value=state),
               patch.object(doctor.os, "statvfs", create=True, return_value=fs()), patch.object(doctor, "platform_issue", return_value=None)):
             code, report = self.cli("scan", "--json")
@@ -60,6 +63,17 @@ class DoctorTests(unittest.TestCase):
             self.assertTrue(all(row[k] for k in ("evidence", "explanation", "next_step")))
             self.assertEqual(row["status"], "PROBLEM" if key == "audio.mute" else "OK")
             self.assertEqual(row["fix_id"], "audio.unmute" if key == "audio.mute" else None)
+
+    def test_graphics_reports_only_missing_nvidia_components(self):
+        with (patch.dict(doctor.os.environ, XDG_SESSION_TYPE="wayland"),
+              patch.object(doctor, "command", return_value="OpenGL renderer string: llvmpipe (LLVM)"),
+              patch.object(doctor.Path, "is_dir", return_value=True),
+              patch.object(doctor.Path, "is_file", autospec=True,
+                           side_effect=lambda path: path.name == "15_nvidia_gbm.json")):
+            row = doctor.check("graphics.renderer")
+        self.assertEqual((row.status, row.fix_id), ("PROBLEM", None))
+        self.assertIn("sudo apt install libnvidia-allocator1.", row.explanation)
+        self.assertNotIn("libnvidia-egl-gbm1", row.explanation)
 
     def test_offline_and_online_timeout_are_independent(self):
         with (patch.object(doctor, "platform_issue", return_value=None),
