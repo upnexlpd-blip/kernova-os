@@ -30,9 +30,16 @@ Open **AI Tools** from the menu for Codex CLI, Claude Code, Cursor or Alpaca. On
 
 Open **KERNOVA Welcome → Settings** to find Wi-Fi, Ethernet, Bluetooth, display, sound, power, appearance, applications, notifications, search and online accounts. To test a physical wireless adapter, boot the Live USB on the computer, join a Wi-Fi network and open a website with Ethernet disconnected. For Bluetooth, pair a device and exercise it, such as playing audio on headphones. Internet through the virtual Ethernet adapter in QEMU tests the VM network.
 
+### Share photos and files with a phone
+
+Open **KERNOVA Welcome → Getting started → Connect phone → Share photos and files**. Open KDE Connect on your phone and computer on the same trusted Wi-Fi network. Select the other device and accept the pairing request.
+
+- **Phone to KERNOVA** — Select photos or files, tap **Share → KDE Connect**, then choose your computer.
+- **KERNOVA to phone** — In Dolphin, right-click the files, choose the KDE Connect send action and select your phone.
+
 ### Control the desktop from a phone
 
-Connect the phone to the same trusted home network as the computer. Open **KERNOVA Welcome → Getting started → Connect phone**. If Plasma asks which screen to share, select the screen you want to control and allow sharing.
+Connect the phone to the same trusted home network as the computer. Open **KERNOVA Welcome → Getting started → Connect phone → Control the screen**. If Plasma asks which screen to share, select the screen you want to control and allow sharing.
 
 In **RealVNC Viewer** on Android or iPhone, add a direct connection using the computer’s Wi-Fi or Ethernet IP address and the port shown in Krfb. Enter Krfb’s **desktop sharing password**. On the computer, allow remote control and accept the incoming connection. Leave **Enable Unattended Access** unchecked so each connection asks for approval.
 

@@ -1,3 +1,10 @@
+kernova-components (0.1.28) trixie; urgency=medium
+
+  * Offer two-way phone file sharing with KDE Connect and separate screen
+    control in Welcome.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Mon, 23 Nov 2026 22:48:55 +0100
+
 kernova-components (0.1.27) trixie; urgency=medium
 
   * Add the KERNOVA New York 4K wallpaper.

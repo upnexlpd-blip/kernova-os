@@ -142,10 +142,15 @@ class WelcomeQtTests(unittest.TestCase):
             ), patch.object(welcome.QProcess, "startDetached", return_value=(True, 42)) as start:
                 window = self.window(locale_name)
                 page = window.findChild(QStackedWidget).currentWidget()
-                self.assertIn(window.t("connect_phone_help"), [item.text() for item in page.findChildren(QLabel)])
+                with patch.object(QDialog, "exec", autospec=True) as opened:
+                    self.button(page, window.t("connect_phone")).click()
+                    opened.assert_called_once()
+                dialog = next(d for d in window.findChildren(QDialog) if d.windowTitle() == window.t("connect_phone"))
                 start.assert_not_called()
-                self.button(page, window.t("connect_phone")).click()
-                start.assert_called_once_with("/usr/bin/krfb", [])
+                for key, program in (("phone_files", "kdeconnect-app"), ("phone_screen", "krfb")):
+                    self.button(dialog, window.t(key)).click()
+                    start.assert_called_once_with(f"/usr/bin/{program}", [])
+                    start.reset_mock()
                 window.close()
 
     def test_fixed_action_passes_separate_program_and_arguments(self):

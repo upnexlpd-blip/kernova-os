@@ -228,10 +228,26 @@ class WelcomeWindow(QWidget):
         layout.addWidget(self.start_heading)
         layout.addWidget(self.start_text)
         self.add_action(layout, "network")
-        self.add_action(layout, "connect_phone")
-        layout.addWidget(label(self.t("connect_phone_help")))
+        phone = QPushButton(self.t("connect_phone"))
+        phone.clicked.connect(self.show_phone_options)
+        layout.addWidget(phone, alignment=Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(label(self.t("installation_reporting_intro")))
         self.add_registration_action(layout)
+
+    def show_phone_options(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle(self.t("connect_phone"))
+        layout = QVBoxLayout(dialog)
+        self.add_action(layout, "phone_files")
+        layout.addWidget(label(self.t("phone_files_help")))
+        self.add_action(layout, "phone_screen")
+        layout.addWidget(label(self.t("connect_phone_help")))
+        close = QPushButton(self.t("close"))
+        close.clicked.connect(dialog.accept)
+        layout.addWidget(close, alignment=Qt.AlignmentFlag.AlignRight)
+        dialog.resize(min(self.width(), 520), dialog.sizeHint().height())
+        dialog.exec()
+        dialog.deleteLater()
 
     def add_registration_action(self, layout):
         registration = QPushButton(self.t("installation_reporting"))
