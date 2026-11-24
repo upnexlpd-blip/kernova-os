@@ -42,10 +42,11 @@ def main():
         shutil.copytree(ROOT / "packages" / directory, source / directory)
     shutil.copytree(ROOT / "branding", source / "branding")
     shutil.copytree(ROOT / "apps/window-tools", source / "apps/window-tools", ignore=shutil.ignore_patterns("__pycache__"))
-    for pattern in ("product.json", "LICENSE", "docs/window-tools.md", "docs/user-guide.md", "scripts/check-session",
+    for pattern in ("product.json", "LICENSE", "docs/window-tools.md", "docs/kernova-ai.md", "docs/user-guide.md", "scripts/check-session",
                     "apps/integration/kernova-welcome", "apps/integration/kernova-get-apps",
                     "apps/integration/kernova-app-catalog.sh", "apps/integration/kernova-update-source",
-                    "apps/integration/kernova-windows",
+                    "apps/integration/kernova-windows", "apps/integration/kernova-ai",
+                    "apps/ai/*.py", "apps/ai/catalog.json", "apps/ai/locales/*.json",
                     "apps/integration/kernova-weather", "apps/integration/kernova-weather-panel", "apps/integration/kernova-crypto", "apps/adaptive/*.py", "apps/crypto/*.py", "apps/crypto/icons/*",
                     "apps/torrent/kernova-torrent", "apps/torrent/transfers.py", "apps/torrent/queue_state.py",
                     "apps/integration/*.desktop",

@@ -1,0 +1,6 @@
+apps/ai/*.py usr/share/kernova/ai
+apps/ai/catalog.json usr/share/kernova/ai
+apps/ai/locales/*.json usr/share/kernova/ai/locales
+apps/integration/kernova-ai.desktop usr/share/applications
+branding/kernova-ai.svg usr/share/icons/hicolor/scalable/apps
+docs/kernova-ai.md usr/share/doc/kernova-ai

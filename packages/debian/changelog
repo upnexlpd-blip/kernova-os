@@ -1,3 +1,10 @@
+kernova-components (0.1.29) trixie; urgency=medium
+
+  * Add KERNOVA AI for offline local chat, system support and reviewed
+    project edits. Models are downloaded separately through Ollama.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Tue, 24 Nov 2026 21:00:00 +0100
+
 kernova-components (0.1.28) trixie; urgency=medium
 
   * Offer two-way phone file sharing with KDE Connect and separate screen

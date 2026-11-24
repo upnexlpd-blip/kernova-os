@@ -1,5 +1,9 @@
 # KERNOVA OS development preview
 
+## KERNOVA AI 0.1.29 local package
+
+KERNOVA AI adds local Ollama chat, system diagnostics and reviewed project edits to the desktop menu. Models are optional downloads. See the [installation and catalog guide](docs/kernova-ai.md) and [verification record](docs/evidence/kernova-ai-0.1.29/verification.md).
+
 ## Space wallpapers in 0.1.25 on stable
 
 The signed stable channel delivers 0.1.25 through Discover. The branding package adds five 4K wallpapers featuring Earth, Mars, the Moon, Jupiter and Saturn. A Debian 13 guest upgraded from 0.1.24 through PackageKit and verified all five installed images. [Release and upgrade evidence](docs/evidence/wallpapers-0.1.25.md)

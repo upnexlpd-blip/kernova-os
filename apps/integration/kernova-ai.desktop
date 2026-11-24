@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=KERNOVA AI
+Comment=Chat with local models and get help with KERNOVA or code
+Comment[mk]=Разговор со локални модели и помош за KERNOVA или код
+Exec=kernova-ai
+TryExec=kernova-ai
+Icon=kernova-ai
+Terminal=false
+Categories=Utility;
+Keywords=AI;Ollama;Chat;Code;Support;
+Keywords[mk]=ВИ;Ollama;Разговор;Код;Поддршка;

@@ -19,7 +19,7 @@ def build_fixture(target, version):
     for name in ("packages", "branding", "apps"):
         shutil.copytree(ROOT / name, fixture / name, ignore=shutil.ignore_patterns("__pycache__"))
     for name in ("LICENSE", "config/profiles/preview.list.chroot", "scripts/build-packages", "scripts/check-session",
-                 "docs/user-guide.md", "docs/window-tools.md"):
+                 "docs/user-guide.md", "docs/window-tools.md", "docs/kernova-ai.md"):
         dest = fixture / name
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / name, dest)

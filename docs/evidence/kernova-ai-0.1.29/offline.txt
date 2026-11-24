@@ -1,0 +1,23 @@
+KERNOVA AI offline inference, 24 November 2026
+Disposable Debian GNU/Linux 13 amd64 cloud VM, CPU only. Host QEMU used -machine pc,accel=tcg -cpu max -m 2048 -smp 2 -nic none.
+The guest mounted a read-only ISO containing the previously downloaded GGUF and CPU-only Ollama 0.6.6; it had no emulated network adapter. The verification program used unshare --net, enabled only loopback, asserted exactly one interface and empty main IPv4 and IPv6 routing tables, and checked connect_ex(('1.1.1.1',443)) returned ENETUNREACH (101).
+The daemon and production apps/ai/runtime.py client ran as UID 65534 (nobody), with OLLAMA_HOST=127.0.0.1:11434 and OLLAMA_NO_CLOUD=1. The guest registered the GGUF in a fresh temporary model store with ollama create and called Ollama.chat with the prompt 'Once upon a time'.
+Ollama CPU archive https://archive.archlinux.org/packages/o/ollama/ollama-0.6.6-1-x86_64.pkg.tar.zst sha256 d071d1502e1863b60d656f9d4a2a09c0d5360abe5bf2f84d09c4d1f78731f51d
+Model https://huggingface.co/ggml-org/models/resolve/499bc8821c6b12b4e53c5bffcb21ec206f212d81/tinyllamas/stories260K.gguf sha256 270cba1bd5109f42d03350f60406024560464db173c0e387d91f0426d3bd256d (1,185,376 bytes)
+Guest console excerpt
+OFFLINE_GUEST_BOOTED
+OFFLINE_INTERFACES
+lo               UNKNOWN        127.0.0.1/8 ::1/128
+OFFLINE_ROUTES
+OFFLINE_UID 65534
+Linux 6.12.118+deb13-cloud-amd64 x86_64 GNU/Linux
+OFFLINE_EXTERNAL_CONNECT 101
+stories260K.gguf: OK
+{"version":"0.6.6"}
+OFFLINE_CLIENT /tmp/kernova-offline-XMTItD/runtime.py
+OFFLINE_DISCOVER ('ready', ['kernova-offline-test:localtest'])
+OFFLINE_CHUNKS 512
+OFFLINE_REPLY ', there was a little girl named Lily. She loved to play outside in the sunshine. One day, she saw a big box with her friends holding a lot of pretty trees. The box was excited to do an opera nearby and get it up.\nLily said, "Hello little bird, can I help me find the boat?" She stopped playing on the boat and sneezed on the boat. When she got to the boat, Lily saw that the boat was ready! She said, "Let\'s take it so much at the earth."\nLily started crying and the boat started to dance. They looked up higher and until they saw that Lily was very sad. She wanted to show her mom then to find a new'
+OFFLINE_INFERENCE_PASSED
+[GIN] 2026/11/24 - 20:58:50 | 200 | 13.260853555s |       127.0.0.1 | POST     "/api/chat"
+OFFLINE_GUEST_EXIT_0

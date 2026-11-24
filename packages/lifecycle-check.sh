@@ -5,7 +5,7 @@ test -r /tmp/expected-version
 test -d /tmp/older && test -d /tmp/current
 export DEBIAN_FRONTEND=noninteractive LC_ALL=C
 version=$(cat /tmp/expected-version)
-packages='kernova-branding kernova-default-settings kernova-welcome kernova-performance kernova-desktop kernova-window-tools'
+packages='kernova-branding kernova-default-settings kernova-welcome kernova-performance kernova-desktop kernova-window-tools kernova-ai'
 core='kernova-desktop plasma-workspace plasma-desktop kwin-wayland sddm firefox-esr'
 skel=/etc/skel/.config/kdeglobals
 newhome=/home/kernova-new
@@ -46,6 +46,10 @@ sha256sum -c /tmp/os-release.sha256
 dpkg-query -S "$skel" /usr/share/kernova/product.json /usr/bin/kernova-welcome
 test -x /usr/share/kernova/diagnostics/check-session
 test -r /usr/share/doc/kernova-welcome/user-guide.md
+test -x /usr/bin/kernova-ai
+test -r /usr/share/kernova/ai/main.py
+test -r /usr/share/kernova/ai/catalog.json
+desktop-file-validate /usr/share/applications/kernova-ai.desktop
 test -r /usr/share/plasma/look-and-feel/org.kernova.night/contents/layouts/org.kde.plasma.desktop-layout.js
 desktop-file-validate /usr/share/applications/kernova-welcome.desktop /etc/xdg/autostart/kernova-welcome-autostart.desktop
 kpackagetool6 --type Plasma/LookAndFeel --show org.kernova.night

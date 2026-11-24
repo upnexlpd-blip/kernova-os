@@ -33,7 +33,7 @@ Description: offline native introduction and system information for KERNOVA
 Package: kernova-desktop
 Architecture: all
 Section: metapackages
-Depends: ${misc:Depends}, kernova-window-tools (= ${binary:Version}),
+Depends: ${misc:Depends}, kernova-window-tools (= ${binary:Version}), kernova-ai (= ${binary:Version}),
  plasma-desktop, plasma-workspace, kwin-wayland, xwayland, sddm, sddm-theme-breeze, xserver-xorg,
  qt6-wayland, breeze, fonts-noto-core, systemsettings, kde-cli-tools, kinfocenter,
  kscreen, kde-config-screenlocker, libgl1-mesa-dri,
@@ -70,3 +70,12 @@ Depends: ${misc:Depends}, kwin-common (>= 4:6.3), plasma-workspace, python3, pyt
 Description: KERNOVA Window Tools for KWin
  Arrange selected windows with two presets, eight reusable layout templates
  and one-step undo. Enable the extension in Plasma's KWin Scripts settings.
+
+Package: kernova-ai
+Architecture: all
+Section: kde
+Depends: ${misc:Depends}, ${python3:Depends}, python3-pyside6.qtwidgets, qt6-svg-plugins, ca-certificates, kernova-performance (>= 0.1.19)
+Description: local desktop chat and assistants for KERNOVA
+ Chat with models managed by a local Ollama service. Inspect system
+ diagnostics and review suggested project edits before applying changes.
+ Download models separately and keep conversations in the user's account.

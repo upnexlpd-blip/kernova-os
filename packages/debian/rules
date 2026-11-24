@@ -23,10 +23,12 @@ override_dh_auto_test:
 override_dh_auto_install:
 	chmod 755 apps/performance/center.py apps/performance/profiles.py
 	install -Dm755 apps/integration/kernova-welcome debian/kernova-welcome/usr/bin/kernova-welcome
+	install -Dm755 apps/integration/kernova-ai debian/kernova-ai/usr/bin/kernova-ai
 	install -Dm755 scripts/check-session debian/kernova-default-settings/usr/share/kernova/diagnostics/check-session
 
 override_dh_python3:
 	dh_python3 -pkernova-welcome /usr/share/kernova/welcome
+	dh_python3 -pkernova-ai /usr/share/kernova/ai
 
 override_dh_compress:
 	dh_compress -Xuser-guide.md
