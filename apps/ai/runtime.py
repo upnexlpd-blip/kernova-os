@@ -117,6 +117,22 @@ def _cloud_name(tag):
     return suffix == "cloud" or suffix.endswith("-cloud") or "@" in tag
 
 
+def normalize_library_tag(raw_tag):
+    """Normalize a user-entered official Ollama library name[:tag] while rejecting cloud or foreign names."""
+    if not isinstance(raw_tag, str):
+        raise ValueError("Enter a local Ollama model name.")
+    cleaned = raw_tag.strip().lower()
+    if cleaned.startswith("ollama pull "):
+        cleaned = cleaned[12:].strip()
+    if not cleaned or "/" in cleaned or "\\" in cleaned:
+        raise ValueError("Enter an official Ollama library model such as llama3.2:3b.")
+    if ":" not in cleaned:
+        cleaned += ":latest"
+    if not TAG.fullmatch(cleaned) or _cloud_name(cleaned):
+        raise ValueError("Expected a local model name:tag.")
+    return cleaned
+
+
 def _validate_entry(entry):
     if not isinstance(entry, dict):
         raise ValueError("Invalid model entry.")
@@ -294,6 +310,8 @@ class Ollama:
     def discover(self):
         try:
             return "ready", self._names(Cancellation())
+        except PermissionError:
+            return "restricted", []
         except (ConnectionRefusedError, TimeoutError):
             return ("stopped" if _installed_binary() else "missing"), []
 
@@ -355,6 +373,21 @@ class Ollama:
             progress(status, sum(layers.values()), entry["size"])
             if status == "success":
                 return
+        raise RuntimeError("Download interrupted. Retry to resume.")
+
+    def pull_tag(self, raw_tag, token, progress):
+        tag = normalize_library_tag(raw_tag)
+        layers = {}
+        totals = {}
+        for event in self._events("/api/pull", {"model": tag, "stream": True}, token):
+            digest, total = event.get("digest"), event.get("total")
+            if digest and isinstance(total, int) and total > 0:
+                totals[digest] = total
+                layers[digest] = min(total, event.get("completed", 0))
+            status = event.get("status", "")
+            progress(status, sum(layers.values()), sum(totals.values()))
+            if status == "success":
+                return tag
         raise RuntimeError("Download interrupted. Retry to resume.")
 
     def _import_gguf(self, entry, token, progress):

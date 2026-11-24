@@ -33,6 +33,72 @@
         "en": "Small multilingual model for everyday chat and system support.",
         "mk": "Мал повеќејазичен модел за секојдневни разговори и системска поддршка."
       }
+    },
+    {
+      "tag": "llama3.2:3b",
+      "source": "registry",
+      "size": 2019393189,
+      "url": "https://ollama.com/library/llama3.2:3b",
+      "license": "Llama 3.2 Community License",
+      "purpose": {
+        "en": "Fast general assistant for everyday questions, summaries and local agent workflows.",
+        "mk": "Брз општ асистент за секојдневни прашања, резимеа и локални агентски задачи."
+      }
+    },
+    {
+      "tag": "deepseek-r1:7b",
+      "source": "registry",
+      "size": 4683073952,
+      "url": "https://ollama.com/library/deepseek-r1:7b",
+      "license": "MIT",
+      "purpose": {
+        "en": "Open reasoning model for step-by-step problem solving, debugging and analysis.",
+        "mk": "Отворен модел за чекор-по-чекор размислување, дебагирање и анализа."
+      }
+    },
+    {
+      "tag": "gemma3:4b",
+      "source": "registry",
+      "size": 3338801804,
+      "url": "https://ollama.com/library/gemma3:4b",
+      "license": "Gemma Terms of Use",
+      "purpose": {
+        "en": "Compact Google open model for clean writing, multilingual chat and code explanations.",
+        "mk": "Компактен отворен модел за јасно пишување, повеќејазичен разговор и објаснување код."
+      }
+    },
+    {
+      "tag": "mistral:7b",
+      "source": "registry",
+      "size": 4113301824,
+      "url": "https://ollama.com/library/mistral:7b",
+      "license": "Apache-2.0",
+      "purpose": {
+        "en": "Balanced free 7B assistant for drafting, summarization and technical tasks.",
+        "mk": "Балансиран бесплатен 7B асистент за пишување, сумирање и технички задачи."
+      }
+    },
+    {
+      "tag": "codellama:7b",
+      "source": "registry",
+      "size": 3825910662,
+      "url": "https://ollama.com/library/codellama:7b",
+      "license": "Llama 2 Community License",
+      "purpose": {
+        "en": "Dedicated code completion, shell scripting and refactoring model.",
+        "mk": "Специјализиран модел за код, shell скрипти и рефакторирање."
+      }
+    },
+    {
+      "tag": "qwen2.5-coder:14b",
+      "source": "registry",
+      "size": 8988112039,
+      "url": "https://ollama.com/library/qwen2.5-coder:14b",
+      "license": "Apache-2.0",
+      "purpose": {
+        "en": "High-accuracy local coding agent model for systems with 12–16+ GB VRAM.",
+        "mk": "Моќен локален кодинг модел за системи со 12–16+ GB видеомеморија."
+      }
     }
   ]
 }

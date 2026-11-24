@@ -1,3 +1,13 @@
+kernova-components (0.1.30) trixie; urgency=medium
+
+  * Redesign KERNOVA AI with compact typography, modern Markdown chat with
+    step timing, two-row context composer, nested Projects sidebar and an
+    embedded Workspace panel.
+  * Expand the free local Ollama catalog, allow pulling official library model
+    tags and add local Ollama coding agent launchers.
+
+ -- KERNOVA OS contributors <maintainers@kernova.invalid>  Tue, 24 Nov 2026 23:32:00 +0100
+
 kernova-components (0.1.29) trixie; urgency=medium
 
   * Add KERNOVA AI for offline local chat, system support and reviewed

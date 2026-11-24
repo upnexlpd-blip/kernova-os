@@ -415,3 +415,88 @@ class DesktopFlows(unittest.TestCase):
             self.assertEqual([row["role"] for row in messages], ["user", "evidence", "assistant"])
             self.assertIn("25.00 GiB free", messages[-1]["content"])
             self.assertEqual(self.client.requests, [])
+
+    def test_workspace_panels_intents_navigation_and_custom_pull(self):
+        self.client.names = ["qwen2.5-coder:7b"]
+        pulled_tags = []
+
+        def fake_pull_tag(raw_tag, token, progress):
+            tag = raw_tag if ":" in raw_tag else raw_tag + ":latest"
+            progress("pulling", 25, 50)
+            token.check()
+            pulled_tags.append(tag)
+            self.client.names.append(tag)
+            progress("success", 50, 50)
+            return tag
+
+        self.client.pull_tag = fake_pull_tag
+        window = self.window()
+        window.resize(1240, 680)
+        self.app.processEvents()
+
+        # Compact default font scale (12px) instead of oversized fonts
+        self.assertEqual(window.font().pixelSize(), 12)
+
+        # Intent modes (Plan / Test / Ideas) inject structured guidance into system prompt without mutating user text
+        window.apply_quick_intent("plan")
+        self.assertEqual(window.intent, "plan")
+        self.assertTrue(window.chips_row.isVisible())
+        self.send(window, "Build a cache module")
+        sent_system = self.client.requests[-1][1][0]["content"]
+        self.assertIn("step-by-step implementation plan", sent_system)
+        self.assertEqual(self.client.requests[-1][1][-1]["content"], "Build a cache module")
+        # Step duration metadata is recorded and rendered in transcript
+        self.assertTrue(window.transcript.turn_meta)
+        self.assertIn("›", window.transcript.toPlainText())
+
+        # Back / Forward navigation across conversations
+        first_chat = window.chat_id
+        window.new_chat()
+        self.assertIsNone(window.chat_id)
+        self.assertTrue(window.back_btn.isEnabled())
+        window.navigate_back()
+        self.assertEqual(window.chat_id, first_chat)
+        self.assertTrue(window.forward_btn.isEnabled())
+        window.navigate_forward()
+        self.assertIsNone(window.chat_id)
+
+        # Workspace panel sections & free Ollama model pull
+        for section in ("review", "file", "terminal", "browser", "side", "plugins"):
+            window.workspace_pane.open_section(section)
+            self.assertTrue(window.workspace_pane.sub_bar.isVisible())
+        window.workspace_pane.custom_tag_edit.setText("llama3.2:3b")
+        window.workspace_pane._pull_typed_model()
+        self.wait_until(lambda: window.workspace_pane.pull_job is None and window.job is None)
+        self.assertEqual(pulled_tags, ["llama3.2:3b"])
+        self.assertIn("llama3.2:3b", window.names)
+
+        # Top-left sidebar logo is hidden per UI design
+        self.assertFalse(window.brand_mark.isVisible())
+
+        # Rename, Pin, Mark Unread, Duplicate, Archive and Nested Projects tree
+        project_dir = self.root / "agent"
+        project_dir.mkdir()
+        (project_dir / "demo.py").write_text("x = 1\n", encoding="utf-8")
+        with patch.object(ui.QFileDialog, "getExistingDirectory", return_value=str(project_dir)):
+            window.open_project()
+        self.wait_until(lambda: window.job is None)
+        # First row in unified Projects tree is the folder header ("project", ...), second is the indented chat
+        self.assertEqual(window.history.item(0).data(ui.Qt.ItemDataRole.UserRole)[0], "project")
+        with patch.object(ui.QInputDialog, "getText", return_value=("Renamed Architecture Chat", True)):
+            window.rename_chat_dialog(first_chat, "Build a cache module")
+        self.assertEqual(self.store.list()[0][1], "Renamed Architecture Chat")
+        window.toggle_pin_chat(first_chat)
+        self.assertTrue(self.store.meta_map()[first_chat]["pinned"])
+        window.toggle_unread_chat(first_chat)
+        self.assertTrue(self.store.meta_map()[first_chat]["unread"])
+        window._duplicate_chat(first_chat)
+        self.assertEqual(len(self.store.list()), 2)
+        window.toggle_archive_chat(first_chat)
+        self.assertTrue(self.store.meta_map()[first_chat]["archived"])
+        window._set_status_filter("archived")
+        archived_ids = [
+            window.history.item(i).data(ui.Qt.ItemDataRole.UserRole)[0]
+            for i in range(window.history.count())
+            if len(window.history.item(i).data(ui.Qt.ItemDataRole.UserRole)) == 4
+        ]
+        self.assertEqual(archived_ids, [first_chat])

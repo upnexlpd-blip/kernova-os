@@ -20,6 +20,20 @@ The first download requires internet access. From **Models** choose one tag and 
 | [qwen2.5-coder:7b](https://ollama.com/library/qwen2.5-coder:7b) | 4.68 GB | Coding on the 12 GB RTX 3060 | Apache-2.0 |
 | [qwen2.5-coder:3b](https://ollama.com/library/qwen2.5-coder:3b) | 1.93 GB | Lighter coding model | Qwen Research License, non-commercial research and evaluation |
 | [qwen2.5:1.5b](https://ollama.com/library/qwen2.5:1.5b) | 0.99 GB | Multilingual chat and Support | Apache-2.0 |
+| [llama3.2:3b](https://ollama.com/library/llama3.2:3b) | 2.02 GB | Fast general assistant and local agent workflows | Llama 3.2 Community License |
+| [deepseek-r1:7b](https://ollama.com/library/deepseek-r1:7b) | 4.68 GB | Step-by-step reasoning and analysis | MIT |
+| [gemma3:4b](https://ollama.com/library/gemma3:4b) | 3.34 GB | Writing, multilingual chat and code explanations | Gemma Terms of Use |
+| [mistral:7b](https://ollama.com/library/mistral:7b) | 4.11 GB | General drafting, summarization and coding | Apache-2.0 |
+| [codellama:7b](https://ollama.com/library/codellama:7b) | 3.83 GB | Code completion and shell scripting | Llama 2 Community License |
+| [qwen2.5-coder:14b](https://ollama.com/library/qwen2.5-coder:14b) | 8.99 GB | Larger coding model for 12–16+ GB VRAM | Apache-2.0 |
+
+You can also pull any other free official library model tag (for example `phi4:14b` or `qwen3:8b`) directly from **Model library** or the right-hand **Workspace → Plugins** panel.
+
+## Workspace, composer modes and free Ollama agents
+
+- **Composer**: Use `+` (**Add Context**) to attach project files, pick a project folder, insert `@diagnostics` or `@project`, or switch between **Auto**, **Plan**, **Test ideas**, **Ideas** and **Review** modes.
+- **Projects, Automations & Customizations**: Pin project folders in the left sidebar, filter conversations, navigate back/forward between chats, run one-click local checks in **Automations**, and adjust custom instructions or interface text size (`Compact`, `Normal`, `Comfortable`) in **Settings** / **Customizations**.
+- **Right Workspace Panel**: Access **Review** (diffs), **Open File** (preview & attach), **Terminal** (project shell), **Browser** (HTTPS reader), **Side Question** (quick ephemeral query) and **Plugins** (built-in local agent personas plus one-click user-space setup for open-source local Ollama coding agents such as **Aider**, **OpenCode** and **Goose**).
 
 Ollama manages model weights in its own store. The KERNOVA package and ISO contain the catalog only. The Code tool reads one selected UTF-8 text file per request. Large files or requests that exceed the model context produce a size message. The application keeps the current request and fits recent complete turns within a conservative context budget.
 

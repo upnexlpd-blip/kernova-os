@@ -230,6 +230,25 @@ class RuntimeTests(unittest.TestCase):
             self.assertTrue(all(call == ("POST", "/api/pull", {"model": entry["tag"], "stream": True})
                                 for call in calls))
 
+    def test_pull_custom_library_tag_normalizes_and_rejects_cloud_or_foreign(self):
+        self.assertEqual(runtime.normalize_library_tag("llama3.2"), "llama3.2:latest")
+        self.assertEqual(runtime.normalize_library_tag("ollama pull DeepSeek-R1:7B"), "deepseek-r1:7b")
+        for bad in ("", "foreign.org/model:7b", "model:cloud", "model:7b-cloud", "user@model:1b"):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                runtime.normalize_library_tag(bad)
+
+        def route(handler, path, payload):
+            respond(handler,
+                    {"status": "pulling", "digest": "sha256:1", "completed": 50, "total": 200},
+                    {"status": "success"})
+
+        steps = []
+        with service(route) as (client, calls):
+            pulled = client.pull_tag("phi4", self.token, lambda *s: steps.append(s))
+            self.assertEqual(pulled, "phi4:latest")
+            self.assertEqual(calls, [("POST", "/api/pull", {"model": "phi4:latest", "stream": True})])
+            self.assertEqual(steps[0], ("pulling", 50, 200))
+
 
 if __name__ == "__main__":
     unittest.main()
