@@ -6,19 +6,20 @@ The four architecture-independent binaries share the native Debian source packag
 ./scripts/build-packages artifacts/packages-0.1.0
 ```
 
-The builder uses debhelper compatibility level 13 and `dpkg-buildpackage`. It retains the Debian source archive, `.dsc`, `.buildinfo`, `.changes`, binary packages and `build.log` under the printed `build/packages-…` directory. It publishes all four binaries to the output directory after checking their package names, versions and architectures. Private development builds are unsigned. The four `.deb` files can be installed together on the disposable KERNOVA guest using APT.
+The builder uses debhelper compatibility level 13 and `dpkg-buildpackage`. It retains the Debian source archive, `.dsc`, `.buildinfo`, `.changes`, binary packages and `build.log` under the printed `build/packages-…` directory. It publishes the binaries listed in `config/profiles/preview.list.chroot` after checking their package names, versions and architectures. Private development builds are unsigned. The `.deb` files can be installed together on the disposable KERNOVA guest using APT.
 
 ```sh
 sudo apt install ./kernova-*.deb
 ```
 
-Run that guest command from a directory containing only the intended four local packages. APT obtains dependencies using the guest’s configured Debian archives. To release a newer local version, edit `product.json`, create a matching new entry at the top of `packages/debian/changelog`, then repeat the build with a new output directory. The builder stops on a version mismatch.
+Run that guest command from a directory containing only the intended local packages. APT obtains dependencies using the guest’s configured Debian archives. To release a newer local version, edit `product.json`, create a matching new entry at the top of `packages/debian/changelog`, then repeat the build with a new output directory. The builder stops on a version mismatch.
 
 | Package | Owned files and behavior |
 | --- | --- |
 | `kernova-branding` | Product metadata in `/usr/share/kernova/product.json`, hicolor SVG icon, KERNOVA Night global theme, color scheme and Parallax wallpaper. |
 | `kernova-default-settings` | Initial `kdeglobals` and `mimeapps.list` under `/etc/skel/.config` and the guest session diagnostic. Debian account creation copies the skeleton. Subsequent package changes leave existing home directories to their owners. |
 | `kernova-welcome` | Ordinary-user launcher, application and autostart entries, native Python/Qt application, translation catalogs and offline Markdown guide. |
+| `kernova-ai` | Ordinary-user local chat, diagnostics and code review. Contains the launcher, menu entry, icon, Python/Qt app, translations and offline model catalog. Ollama manages the separately downloaded weights. |
 | `kernova-desktop` | Depends on the Plasma session, device support, Discover/PackageKit and everyday applications. It recommends the three KERNOVA customization packages. The preview ISO explicitly selects all four. Removing cosmetics keeps the metapackage and core desktop dependencies. |
 
 ## Appearance and file ownership

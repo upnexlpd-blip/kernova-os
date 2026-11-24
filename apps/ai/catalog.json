@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "tag": "qwen2.5-coder:7b",
+      "source": "registry",
+      "size": 4683087561,
+      "url": "https://ollama.com/library/qwen2.5-coder:7b",
+      "license": "Apache-2.0",
+      "purpose": {
+        "en": "Code generation and editing. Recommended for an RTX 3060 with 12 GB VRAM.",
+        "mk": "Пишување и уредување код. Препорачан за RTX 3060 со 12 GB видеомеморија."
+      }
+    },
+    {
+      "tag": "qwen2.5-coder:3b",
+      "source": "registry",
+      "size": 1929912626,
+      "url": "https://ollama.com/library/qwen2.5-coder:3b",
+      "license": "Qwen Research License",
+      "purpose": {
+        "en": "Lighter coding model for non-commercial research and evaluation.",
+        "mk": "Полесен модел за кодирање за некомерцијално истражување и евалуација."
+      }
+    },
+    {
+      "tag": "qwen2.5:1.5b",
+      "source": "registry",
+      "size": 986061892,
+      "url": "https://ollama.com/library/qwen2.5:1.5b",
+      "license": "Apache-2.0",
+      "purpose": {
+        "en": "Small multilingual model for everyday chat and system support.",
+        "mk": "Мал повеќејазичен модел за секојдневни разговори и системска поддршка."
+      }
+    }
+  ]
+}

@@ -2,6 +2,12 @@
 
 KERNOVA OS uses KDE Plasma on Debian 13. Open the application launcher with the Meta key. Search for KERNOVA Welcome to return to this guide. Use the checkbox at the bottom of Welcome to choose whether it opens after sign-in.
 
+### KERNOVA AI
+
+Open **KERNOVA AI** from the application launcher. If it asks for Ollama, follow the Linux installation link in the window and select **Check again**. For an RTX 3060 with 12 GB, choose **Choose a model → qwen2.5-coder:7b → Download** (4.68 GB). Close the catalog, select the installed model, type a question and choose **Send**. After installation, all three modes work over the local connection to Ollama, including when the computer is offline. **Stop** interrupts generation. Select a chat in the left sidebar to continue it.
+
+The interface starts in English. Open **Settings** for the dark theme or the Macedonian language. Select **Free disk space** for measured usage or **Check system** for disk, memory and graphics readings. In **Support**, you can also ask for recent Ollama or Plasma warnings. **Unmute audio** previews an operation on the current playback output for confirmation. **Open project** switches to Code so you can choose a folder and a text file. Ask a question about the file, or enable **Propose an edit** to review a diff. **Apply** writes the reviewed file and **Reject** discards the proposal.
+
 ### System Help
 
 If Plasma stutters when opening apps, run `kernova-doctor check graphics` from Konsole in Plasma Wayland. If it reports software rendering and missing NVIDIA GBM support, run the displayed APT command, save your work, and sign out and back in. Run the graphics check again and reopen the apps to verify the fix.

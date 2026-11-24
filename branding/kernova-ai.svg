@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>KERNOVA AI</title>
+  <defs>
+    <linearGradient id="spine" gradientUnits="userSpaceOnUse" x1="12" y1="124" x2="89" y2="144">
+      <stop stop-color="#001143"/><stop offset=".38" stop-color="#043482"/>
+      <stop offset=".76" stop-color="#0649b6"/><stop offset="1" stop-color="#001c70"/>
+    </linearGradient>
+    <linearGradient id="upperBlue" gradientUnits="userSpaceOnUse" x1="9" y1="62" x2="67" y2="87">
+      <stop stop-color="#00309b"/><stop offset=".27" stop-color="#005bea"/>
+      <stop offset=".58" stop-color="#119bfa"/><stop offset=".77" stop-color="#007ff1"/>
+      <stop offset="1" stop-color="#0642ba"/>
+    </linearGradient>
+    <linearGradient id="lowerArm" gradientUnits="userSpaceOnUse" x1="154" y1="156" x2="111" y2="207">
+      <stop stop-color="#022d58"/><stop offset=".30" stop-color="#00788d"/>
+      <stop offset=".55" stop-color="#00c3cc"/><stop offset=".72" stop-color="#14eded"/>
+      <stop offset="1" stop-color="#007b92"/>
+    </linearGradient>
+    <linearGradient id="lowerBlue" gradientUnits="userSpaceOnUse" x1="190" y1="168" x2="165" y2="212">
+      <stop stop-color="#49d5ff"/><stop offset=".18" stop-color="#088dff"/>
+      <stop offset=".53" stop-color="#075bd7"/><stop offset="1" stop-color="#00174c"/>
+    </linearGradient>
+    <linearGradient id="upperArm" gradientUnits="userSpaceOnUse" x1="76" y1="145" x2="228" y2="42">
+      <stop stop-color="#00d8ed"/><stop offset=".24" stop-color="#02b7bc"/>
+      <stop offset=".42" stop-color="#29d2c5"/><stop offset=".61" stop-color="#8fc5a7"/>
+      <stop offset=".78" stop-color="#ffa347"/><stop offset=".93" stop-color="#fa593d"/>
+      <stop offset="1" stop-color="#b7202b"/>
+    </linearGradient>
+    <radialGradient id="upperShade" gradientUnits="userSpaceOnUse" cx="118" cy="69" r="82">
+      <stop stop-color="#00353d" stop-opacity=".90"/><stop offset=".45" stop-color="#003c43" stop-opacity=".48"/>
+      <stop offset="1" stop-color="#004351" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cap" gradientUnits="userSpaceOnUse" x1="157" y1="24" x2="178" y2="73">
+      <stop stop-color="#fff7a2"/><stop offset=".24" stop-color="#ffda49"/>
+      <stop offset=".57" stop-color="#ffa515"/><stop offset="1" stop-color="#f0522e"/>
+    </linearGradient>
+    <radialGradient id="capGlint" gradientUnits="userSpaceOnUse" cx="183" cy="32" r="39">
+      <stop stop-color="#fff9b2" stop-opacity=".58"/><stop offset="1" stop-color="#fff9b2" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="frontBlue" gradientUnits="userSpaceOnUse" x1="11" y1="191" x2="89" y2="135">
+      <stop stop-color="#0032ae"/><stop offset=".32" stop-color="#0060dd"/>
+      <stop offset=".61" stop-color="#008df4"/><stop offset=".83" stop-color="#07c4f0"/>
+      <stop offset="1" stop-color="#80f1fb"/>
+    </linearGradient>
+    <linearGradient id="rim" gradientUnits="userSpaceOnUse" x1="8" y1="225" x2="239" y2="25">
+      <stop stop-color="#0059e9"/><stop offset=".41" stop-color="#14e8ff"/>
+      <stop offset=".74" stop-color="#ffec69"/><stop offset="1" stop-color="#ff7956"/>
+    </linearGradient>
+    <path id="blade" d="M64 158C69 125 74 99 98 80C123 65 146 43 162 29Q168 23 175 24L238 25L187 94Q183 100 174 104Z"/>
+  </defs>
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <path d="M7 247L9 39Q9 33 16 30L88 8L88 219Z" fill="url(#spine)" stroke="#0053c9" stroke-width="2"/>
+    <path d="M8 173L9 39Q9 34 16 31L88 8C72 35 23 107 8 173Z" fill="url(#upperBlue)"/>
+    <path d="M10 39Q10 34 16 31L88 8C67 45 24 107 8 173" fill="none" stroke="#21b9ff" stroke-width="1.5"/>
+    <path d="M9 246L86 218" fill="none" stroke="#236eee" stroke-width="1.6"/>
+    <path d="M63 157L118 126L248 230L177 233Q166 233 158 226Z" fill="url(#lowerArm)" stroke="#006980" stroke-width="1.3"/>
+    <path d="M118 126C157 144 176 213 200 231L248 230Z" fill="url(#lowerBlue)" stroke="#2867d3" stroke-width="1.2"/>
+    <path d="M123 132L247 229" fill="none" stroke="#4db6ff" stroke-width="1.5"/>
+    <path d="M65 158L158 225Q165 231 174 232" fill="none" stroke="#3de6e3" stroke-width="1.3"/>
+    <use href="#blade" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#blade" fill="url(#upperArm)"/>
+    <use href="#blade" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#blade" fill="url(#upperShade)" stroke="url(#rim)" stroke-width="1.6"/>
+    <path d="M98 80C126 62 145 44 162 29Q168 23 175 24L238 25C216 43 184 56 153 64C130 70 112 73 98 80Z" fill="url(#cap)"/>
+    <path d="M98 80C126 62 145 44 162 29Q168 23 175 24L238 25C216 43 184 56 153 64C130 70 112 73 98 80Z" fill="url(#capGlint)"/>
+    <path d="M99 80C114 72 135 69 153 64C184 56 215 44 237 26" fill="none" stroke="#ffea64" stroke-width="1.7"/>
+    <path d="M162 29Q168 23 175 24L237 25" fill="none" stroke="#ffe9a6" stroke-width="1.4"/>
+    <path d="M7 247L8 174C9 151 20 138 43 120L98 80C78 95 71 117 66 146L58 200Q57 205 54 207C32 222 17 233 7 247Z" fill="url(#frontBlue)" stroke="#0563c9" stroke-width="1.6"/>
+    <path d="M8 173C10 151 21 137 43 120L97 80C78 95 72 116 66 146L59 197" fill="none" stroke="#5ee5ff" stroke-opacity=".78" stroke-width="1.3"/>
+    <path d="M8 245C21 229 36 218 54 207" fill="none" stroke="#087cf4" stroke-width="1.7"/>
+  </g>
+</svg>
